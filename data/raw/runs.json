@@ -663,7 +663,7 @@
   "serving": {
    "dash": "concurrent-v24",
    "cohort": "h100sxm-five-models-24h-20261016",
-   "generated_at": "2026-10-19T09:45:17.881133+00:00",
+   "generated_at": "2026-10-24T06:48:17.341601+00:00",
    "metric": {
     "name": "valid_steps_per_min",
     "unit": "valid steps/min",
@@ -1047,10 +1047,10 @@
      "final_score": 144.66666666666666,
      "final_valid": true,
      "final_suite": "隐藏 swe192（300 s 预热 + 1800 s 计分）",
-     "best_score": 154.33333333333334,
+     "best_score": 149.9,
      "counts": {
-      "submissions": 22,
-      "valid": 19,
+      "submissions": 21,
+      "valid": 18,
       "invalid": 2,
       "infrastructure": 1,
       "waiting": 0
@@ -1159,11 +1159,6 @@
       [
        22.2947,
        144.73333333333332,
-       "valid"
-      ],
-      [
-       23.3179,
-       154.33333333333334,
        "valid"
       ]
      ]
@@ -1327,7 +1322,8 @@
       ]
      ]
     }
-   }
+   },
+   "source": "concurrent-v24-personal.zip"
   },
   "eagle3": {
    "dash": "eagle3-v1",

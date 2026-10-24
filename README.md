@@ -38,6 +38,7 @@ python3 -m unittest discover -s tests -v
 `extract_dashboard.py` keeps the latest cohort folder of each task (by the trailing date) and applies the paper's run selection.
 The selection drops Gemini, the voided LLaDA DeepSeek attempt, and Sol's local Mamba-2 rerun.
 Flags, exclusions and task text live in `data/tasks.json`.
+The serving records currently follow `concurrent-v24-personal.zip`, which omits Qwen's agent-22 submission; its best displayed score is 149.9. A full dashboard re-extraction replaces this task-specific update.
 If a new export changes the paper's numbers, update the expected values in `tests/test_data.py` along with the paper.
 
 Preview locally with `python3 -m http.server -d site 8000`.

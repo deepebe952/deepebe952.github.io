@@ -79,6 +79,16 @@ class SiteData(unittest.TestCase):
             for m, r in t["ranks"].items():
                 self.assertAlmostEqual(t["contrib"][m], 100 * (n - r) / (n - 1), places=3)
 
+    def test_serving_matches_personal_export(self):
+        serving = next(t for t in DATA["tasks"] if t["key"] == "serving")
+        qwen = serving["results"]["qwen"]
+        self.assertEqual(qwen["n_sub"], 21)
+        self.assertEqual(qwen["counts"]["valid"], 18)
+        self.assertEqual(qwen["best"], 149.9)
+        self.assertEqual(qwen["subs"][-1], [22.295, 144.7333, "v"])
+        self.assertEqual(serving["winner"], "claude")
+        self.assertEqual(serving["ranks"]["qwen"], 2)
+
     def test_no_final_artifact_fields(self):
         bundle = (ROOT / "site/data/infrathon.js").read_text()
         self.assertNotIn('"final"', bundle)

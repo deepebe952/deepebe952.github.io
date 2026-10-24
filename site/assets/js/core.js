@@ -193,7 +193,8 @@ window.IX = (() => {
       layers[m] = g;
       if (o.dots) for (const [x, v] of r.subs) if (v != null) s("circle", { cx: xs(x), cy: ys(v), r: 2.3, fill: COLOR[m], "fill-opacity": 0.35 }, g);
       if (!r.traj.length) continue;
-      const end = r.elapsed_h ?? T;
+      // The best known score carries forward through the full task budget.
+      const end = T;
       let d = `M${xs(r.traj[0][0]).toFixed(1)},${ys(r.traj[0][1]).toFixed(1)}`;
       for (let k = 1; k < r.traj.length; k++) d += `H${xs(r.traj[k][0]).toFixed(1)}V${ys(r.traj[k][1]).toFixed(1)}`;
       d += `H${xs(end).toFixed(1)}`;
@@ -215,7 +216,7 @@ window.IX = (() => {
       if (x < X0 || x > X1) { cross.setAttribute("visibility", "hidden"); hideTip(); return; }
       const tt = ((x - X0) / (X1 - X0)) * T;
       cross.setAttribute("x1", x); cross.setAttribute("x2", x); cross.setAttribute("visibility", "visible");
-      const rows = runs.map((m) => ({ m, v: bestAt(t.results[m].traj, Math.min(tt, t.results[m].elapsed_h ?? T)) }))
+      const rows = runs.map((m) => ({ m, v: bestAt(t.results[m].traj, tt) }))
         .sort((a, b) => (b.v ?? -Infinity) - (a.v ?? -Infinity))
         .map(({ m, v }) => ({ color: COLOR[m], value: v == null ? "—" : withUnit(t, v), label: MODEL[m].name }));
       showTip(e.clientX, e.clientY, `${t.name} · ${fmt(tt, 1)} h`, rows, "best valid score so far");
@@ -251,7 +252,7 @@ window.IX = (() => {
       if (r.traj.length) {
         let d = `M${xs(r.traj[0][0]).toFixed(1)},${yv(r.traj[0][1]).toFixed(1)}`;
         for (let k = 1; k < r.traj.length; k++) d += `H${xs(r.traj[k][0]).toFixed(1)}V${yv(r.traj[k][1]).toFixed(1)}`;
-        d += `H${xs(r.elapsed_h ?? T).toFixed(1)}`;
+        d += `H${xs(T).toFixed(1)}`;
         s("path", { d: `${d}V${base}H${xs(r.traj[0][0]).toFixed(1)}Z`, fill: COLOR[m], "fill-opacity": 0.16 }, g);
         s("path", { d, fill: "none", stroke: COLOR[m], "stroke-width": 2, "stroke-linejoin": "round" }, g);
       }
