@@ -190,7 +190,7 @@ figcaption { margin-top: 10px; font-size: 12.5px; color: var(--ink-3); max-width
 .die { padding: 14px; }
 .die-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 2px 4px 12px; }
 .die-body { overflow-x: auto; }
-.die-body > svg { width: 100%; min-width: 460px; height: auto; display: block; }
+.die-body > svg { width: 100%; min-width: 500px; height: auto; display: block; }
 .die .tile { cursor: pointer; }
 .die .tile rect.bg { transition: fill-opacity .15s ease, stroke-opacity .15s ease; }
 .die .tile:hover rect.bg, .die .tile:focus rect.bg { fill-opacity: 0.42; stroke-opacity: 1; }
@@ -400,3 +400,15 @@ details.notes li { margin-bottom: 6px; }
 .card-head > * { min-width: 0; }
 .run-controls { min-width: 0; }
 .run-controls .select { width: min(100%, 340px); }
+
+/* ---------------- home: spec sheet + task map ---------------- */
+.sheet { padding: 6px 0 4px; }
+.sheet-head { display: flex; justify-content: space-between; gap: 12px; padding: 12px 20px 10px; border-bottom: 1px solid var(--hair); }
+.sheet dl { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); }
+.sheet dt, .sheet dd { margin: 0; padding: 10px 20px; border-bottom: 1px solid var(--hair); font-size: 13.5px; }
+.sheet dt { font: 500 10.5px/2 var(--f-mono); letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-3); padding-right: 8px; }
+.sheet dd { color: var(--ink); text-align: right; font-variant-numeric: tabular-nums; min-width: 0; }
+.sheet dd .who { justify-content: flex-end; white-space: normal; }
+.sheet dt:last-of-type, .sheet dd:last-of-type { border-bottom: 0; }
+.map-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: clamp(20px, 3vw, 40px); align-items: start; }
+@media (max-width: 980px) { .map-grid { grid-template-columns: minmax(0, 1fr); } }

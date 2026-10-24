@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Infrathon Task</title>
-<meta name="description" content="One Infrathon task: description, final scores, optimization trajectories and the run trace of every configuration.">
+<meta name="description" content="One Infrathon task: description, best scores, optimization trajectories and the run trace of every configuration.">
 <meta property="og:title" content="Infrathon">
 <meta property="og:description" content="Can frontier models solve long-horizon AI infrastructure tasks? 25 tasks, 6 configurations, 149 runs on H100s.">
 <meta name="theme-color" content="#060709">
@@ -25,7 +25,7 @@
     <div class="task-grid">
       <div class="card"><div class="card-head"><h3>Details</h3></div><div class="card-body" id="t-facts"></div></div>
       <div class="stack">
-        <div class="card"><div class="card-head"><div><h3>Final score</h3><p id="t-metric"></p></div></div><div class="card-body bars" id="t-bars"></div></div>
+        <div class="card"><div class="card-head"><div><h3>Best score during the run</h3><p id="t-metric"></p></div></div><div class="card-body bars" id="t-bars"></div></div>
         <div class="card"><div class="card-head"><div><h3>Best valid score over the run</h3><p>Line: running best. Dots: every scored submission. Axis ticks: failed checks (red) and infrastructure failures (dotted).</p></div></div>
           <div class="card-body"><div class="legend" id="t-legend" style="margin-bottom:12px"></div><div class="chart" id="t-traj"></div></div></div>
       </div>
@@ -36,7 +36,7 @@
         <div class="trace-keys" style="margin-top:10px"><span class="key"><i></i>scored submission</span><span class="key"><i class="bad"></i>failed checks</span><span class="key"><i class="rej"></i>rejected by integrity review</span><span class="key"><i class="infra"></i>infrastructure failure</span></div></div>
     </div>
     <div class="card">
-      <div class="card-head"><div><h3>Per-configuration results</h3><p>Final evaluation of the implementation frozen at the deadline, against the best score reached while working.</p></div></div>
+      <div class="card-head"><div><h3>Per-configuration results</h3><p>Each configuration's best valid score, when it got there, and how its submissions went.</p></div></div>
       <div class="scroll-x"><table class="data" id="t-table" style="min-width:980px"></table></div>
       <div class="card-foot" id="t-flags"></div>
     </div>

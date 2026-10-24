@@ -15,15 +15,14 @@
   ft.append(fb);
 
   const ct = $("#cfg-table");
-  ct.append(h("thead", {}, h("tr", {}, ["Configuration", "Provider", "Reasoning effort", "Tasks with a run", "Tasks with a numeric final", "Rank score (25 / 17 tasks)"].map((x, i) => h("th", { scope: "col", class: i > 2 ? "n" : null, text: x })))));
+  ct.append(h("thead", {}, h("tr", {}, ["Configuration", "Provider", "Reasoning effort", "Tasks with a run", "Tasks with a valid score", "Rank score"].map((x, i) => h("th", { scope: "col", class: i > 2 ? "n" : null, text: x })))));
   const cb = h("tbody");
   for (const m of MODELS) {
-    const runs = D.tasks.filter((t) => t.results[m]).length, finals = D.tasks.filter((t) => t.ranks[m] != null).length;
-    const xhigh = D.tasks.filter((t) => t.flags[m] === "x").map((t) => t.name);
+    const runs = D.tasks.filter((t) => t.results[m]).length, valid = D.tasks.filter((t) => t.results[m]?.best != null).length;
     cb.append(h("tr", {}, h("td", {}, X.who(m)), h("td", { class: "muted", text: X.PROVIDER[m] }),
-      h("td", { class: "muted", text: xhigh.length ? `max; xhigh on ${xhigh.join(", ")}` : "max" }),
-      h("td", { class: "n", text: runs }), h("td", { class: "n", text: finals }),
-      h("td", { class: "n", text: `${X.fmt(D.views.all.rank_score[m], 1)} / ${X.fmt(D.views.paper.rank_score[m], 1)}` })));
+      h("td", { class: "muted", text: "max" }),
+      h("td", { class: "n", text: runs }), h("td", { class: "n", text: valid }),
+      h("td", { class: "n", text: X.fmt(D.ranking.rank_score[m], 1) })));
   }
   ct.append(cb);
 })();

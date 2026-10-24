@@ -8,16 +8,14 @@ Inputs (all under ``data/``):
 
 Output: ``site/data/infrathon.js``, which sets ``window.INFRATHON``.
 
-Ranking follows the paper's Eq. 6. On a task, the configurations with a numeric final are
-ranked by score (rank 1 = best, exact ties share the average rank) and configuration m
-earns 100 (n - rank) / (n - 1), where n is the number of ranked configurations. A model's
-rank score is the mean over the tasks it is ranked on. Two views are published:
+Ranking uses the rank-score method of the paper (Eq. 6) applied to each run's best valid
+score during the run. On a task, every configuration with a run is ranked by that score
+(rank 1 = best, exact ties share the average rank; a run with no valid scored submission
+ranks last) and earns 100 (n - rank) / (n - 1), where n is the number of configurations
+that ran the task. A model's rank score is the mean over the tasks it ran.
 
-  all    every one of the 25 tasks; results are used as recorded, and a configuration
-         without a numeric final (no run, no final, failed final) is left out of that
-         task rather than counted as zero.
-  paper  the paper's 17 tasks where all six configurations have a comparable final;
-         here n = 6 on every task and the score is exactly Eq. 6.
+``paper_figures`` recomputes the paper's own final-artifact numbers (Figure 3, Table 13)
+from the same sources; the tests use it to check the extraction against the paper.
 """
 from __future__ import annotations
 
@@ -31,8 +29,6 @@ ROOT = Path(__file__).resolve().parents[1]
 FLASH_KMEANS_WORK_TFLOP_MS = 4694.344299  # equivalent TFLOP/s = this / weighted latency (ms)
 BOOTSTRAP_SAMPLES = 10000
 BOOTSTRAP_SEED = 20261023
-# Runs kept in the tables but not drawn on shared trajectory axes (paper, Appendix B).
-HIDDEN_CURVES = {("mamba2", "astra")}
 # Compact submission status codes used in the bundle.
 STATUS_CODE = {"valid": "v", "invalid": "x", "rejected": "r", "infrastructure": "n", "waiting": "w"}
 
@@ -89,17 +85,15 @@ def run_summary(task_key: str, run: dict) -> dict:
         if best is None or s > best:
             best = s
             traj.append([round(t, 3), round(s, 4)])
-    final = to_score(task_key, run["final_score"])
     counts = {k: 0 for k in STATUS_CODE}
     for s in subs:
         counts[s[2]] = counts.get(s[2], 0) + 1
     return {
-        "final": None if final is None else round(final, 4),
         "best": None if best is None else round(best, 4),
+        "best_at_h": traj[-1][0] if traj else None,
         "first_valid_h": round(valid[0][0], 3) if valid else None,
         "elapsed_h": round(run["elapsed_h"], 3) if run["elapsed_h"] is not None else None,
         "budget_h": run["budget_h"],
-        "effort": run["effort"],
         "n_sub": len(subs),
         "counts": counts,
         "traj": traj,
@@ -137,7 +131,7 @@ def view_summary(tasks: list[dict], models: list[str]) -> dict:
     coverage = {m: sum(1 for t in tasks if m in t["ranks"]) for m in models}
     rel = {}
     for m in models:
-        vals = [t["results"][m]["final"] / max(t["results"][o]["final"] for o in t["ranks"]) for t in tasks if m in t["ranks"]]
+        vals = [(t["results"][m]["best"] or 0) / max(t["results"][o]["best"] or 0 for o in t["ranks"]) for t in tasks if m in t["ranks"]]
         rel[m] = round(statistics.mean(vals), 3)
     rank_counts = {m: [sum(1 for t in tasks if m in t["ranks"] and round(t["ranks"][m]) == k) for k in range(1, 7)] for m in models}
 
@@ -166,31 +160,37 @@ def view_summary(tasks: list[dict], models: list[str]) -> dict:
             loo["leader_changes"].append(t["key"])
         for m in pos:
             loo["pos_range"][m] = [min(loo["pos_range"][m][0], pos[m]), max(loo["pos_range"][m][1], pos[m])]
-
-    changes = []
-    taus = []
-    for t in tasks:
-        fw = sorted(m for m, r in t["ranks"].items() if r == 1)
-        bw = sorted(m for m, r in t["ranks_best"].items() if r == 1)
-        if fw != bw:
-            changes.append({"task": t["key"], "final_winner": fw, "best_winner": bw})
-        common = {m: -t["ranks"][m] for m in t["ranks"] if m in t["ranks_best"]}
-        if len(common) > 2:
-            taus.append(kendall_tau(common, {m: -t["ranks_best"][m] for m in common}))
     return {
         "n": len(tasks),
-        "tasks": [t["key"] for t in tasks],
         "rank_score": {m: None if v is None else round(v, 2) for m, v in rs.items()},
-        "rank_score_best": {m: None if v is None else round(v, 2) for m, v in rank_score([t["contrib_best"] for t in tasks], models).items()},
         "coverage": coverage,
         "wins": wins,
         "mean_relative": rel,
         "rank_counts": rank_counts,
         "bootstrap": bootstrap,
         "leave_one_out": loo,
-        "winner_changes": changes,
-        "mean_kendall_tau": round(statistics.mean(taus), 3),
     }
+
+
+def paper_figures(registry, raw) -> dict:
+    """The paper's final-artifact numbers on its 17-task common subset (Figure 3, Table 13)."""
+    models = [m["key"] for m in registry["models"]]
+    ranked = set(registry["paper"]["ranked_tasks"])
+    tasks = []
+    for t in registry["tasks"]:
+        if t["key"] not in ranked:
+            continue
+        finals = {m: to_score(t["key"], r["final_score"]) for m, r in raw["tasks"][t["key"]]["runs"].items()}
+        assert set(finals) == set(models) and None not in finals.values(), t["key"]
+        tasks.append({"key": t["key"], "stage": t["stage"], "level": t["level"], "finals": finals, "contrib": contributions(average_ranks(finals))})
+    groups = {}
+    for stage in ("training", "inference"):
+        for level in ("operator", "module", "system"):
+            sel = [t for t in tasks if t["stage"] == stage and t["level"] == level]
+            groups[f"{stage}/{level}"] = {"n": len(sel), "rank_score": rank_score([t["contrib"] for t in sel], models)}
+    rel = {m: statistics.mean(t["finals"][m] / max(t["finals"].values()) for t in tasks) for m in models}
+    wins = {m: sum(1 for t in tasks if t["finals"][m] == max(t["finals"].values())) for m in models}
+    return {"n": len(tasks), "groups": groups, "mean_relative": rel, "wins": wins}
 
 
 def compute(registry, raw, tokens) -> dict:
@@ -201,47 +201,21 @@ def compute(registry, raw, tokens) -> dict:
         results = {m: run_summary(t["key"], r) for m, r in src["runs"].items()}
         for m, r in results.items():
             r["flag"] = t["flags"].get(m)
-            r["hide_curve"] = (t["key"], m) in HIDDEN_CURVES
-        finals = {m: r["final"] for m, r in results.items() if r["final"] is not None}
-        bests = {m: r["best"] for m, r in results.items() if r["best"] is not None}
-        ranks, ranks_best = average_ranks(finals), average_ranks(bests)
-        unflagged = {m: v for m, v in finals.items() if t["flags"].get(m) in (None, "x")}
-        paper_winner = max(unflagged, key=unflagged.get) if len(unflagged) >= 2 and t["key"] != "opd" else None
-        entry = {k: t[k] for k in ("key", "name", "short", "stage", "level", "budget_h", "metric", "start", "gpus", "target", "summary", "ranked")}
+        # Every configuration that ran the task is ranked; a run with no valid score ranks last.
+        scores = {m: (r["best"] if r["best"] is not None else float("-inf")) for m, r in results.items()}
+        ranks = average_ranks(scores)
+        entry = {k: t[k] for k in ("key", "name", "short", "stage", "level", "budget_h", "metric", "start", "gpus", "target", "summary")}
         entry.update({
-            "exclusion": t.get("exclusion"),
+            "note": t.get("note"),
             "flags": t["flags"],
             "unit": "TFLOP/s (equiv.)" if t["key"] == "flash-kmeans" else (src["metric"] or {}).get("unit"),
             "cohort": src["cohort"],
-            "winner": min(ranks, key=ranks.get) if ranks else None,
-            "paper_winner": paper_winner,
+            "winner": min(ranks, key=ranks.get),
             "results": results,
             "ranks": ranks,
-            "ranks_best": ranks_best,
             "contrib": {m: round(v, 4) for m, v in contributions(ranks).items()},
-            "contrib_best": {m: round(v, 4) for m, v in contributions(ranks_best).items()},
         })
-        if t["ranked"]:
-            assert set(finals) == set(models), f"{t['key']}: paper-ranked task needs six finals"
         tasks_out.append(entry)
-
-    paper = [t for t in tasks_out if t["ranked"]]
-    groups = {}
-    for stage in ("training", "inference"):
-        for level in ("operator", "module", "system"):
-            sel = [t for t in paper if t["stage"] == stage and t["level"] == level]
-            groups[f"{stage}/{level}"] = {"n": len(sel), "rank_score": {m: round(v, 2) for m, v in rank_score([t["contrib"] for t in sel], models).items()}}
-
-    drops, n_compared = [], 0
-    for t in tasks_out:
-        for m, r in t["results"].items():
-            if r["final"] is None or r["best"] is None or r["flag"] in ("P", "F", "*"):
-                continue
-            n_compared += 1
-            change = r["final"] / r["best"] - 1 if r["best"] > 0 else 0.0
-            if change <= -0.10:
-                drops.append({"task": t["key"], "model": m, "best": r["best"], "final": r["final"], "change": round(change, 4)})
-    drops.sort(key=lambda d: d["change"])
 
     first_valid = {}
     for m in models:
@@ -255,15 +229,13 @@ def compute(registry, raw, tokens) -> dict:
         "models": registry["models"],
         "flag_legend": registry["flag_legend"],
         "tasks": tasks_out,
-        "views": {"all": view_summary(tasks_out, models), "paper": view_summary(paper, models)},
-        "paper_groups": groups,
+        "ranking": view_summary(tasks_out, models),
         "summary": {
             "n_runs": sum(len(t["results"]) for t in tasks_out),
             "n_submissions": sum(t["results"][m]["n_sub"] for t in tasks_out for m in t["results"]),
             "first_valid": first_valid,
             "status_totals": status_totals,
         },
-        "drops": {"rows": drops, "n_compared": n_compared},
         "tokens": tokens,
     }
 
@@ -275,11 +247,10 @@ def main() -> int:
     body = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
     out.write_text("/* Generated by scripts/build_data.py. Do not edit. */\nwindow.INFRATHON=" + body + ";\n")
     print(f"wrote {out.relative_to(ROOT)} ({len(body) / 1024:.0f} KB)", file=sys.stderr)
-    for view, v in data["views"].items():
-        print(f"  [{view}: {v['n']} tasks]", file=sys.stderr)
-        for m in sorted(v["rank_score"], key=lambda m: -(v["rank_score"][m] or -1)):
-            b = v["bootstrap"][m]
-            print(f"    {m:<9} {v['rank_score'][m]:6.2f}  CI [{b['lo']:5.1f}, {b['hi']:5.1f}]  P1 {b['p_pos'][0]:.3f}  wins {v['wins'][m]:>2}  cov {v['coverage'][m]}  rel {v['mean_relative'][m]:.3f}", file=sys.stderr)
+    v = data["ranking"]
+    for m in sorted(v["rank_score"], key=lambda m: -v["rank_score"][m]):
+        b = v["bootstrap"][m]
+        print(f"  {m:<9} {v['rank_score'][m]:6.2f}  CI [{b['lo']:5.1f}, {b['hi']:5.1f}]  P1 {b['p_pos'][0]:.3f}  wins {v['wins'][m]:>2}  ran {v['coverage'][m]}  rel {v['mean_relative'][m]:.3f}", file=sys.stderr)
     return 0
 
 

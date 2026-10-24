@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Infrathon Analysis</title>
-<meta name="description" content="Infrathon analysis: ranking by stage and level, ranking stability, final versus in-run scores, optimization trajectories, token efficiency and agent behaviour.">
+<meta name="description" content="Infrathon analysis: ranking by stage and level, ranking stability, optimization trajectories, token efficiency and agent behaviour.">
 <meta property="og:title" content="Infrathon">
 <meta property="og:description" content="Can frontier models solve long-horizon AI infrastructure tasks? 25 tasks, 6 configurations, 149 runs on H100s.">
 <meta name="theme-color" content="#060709">
@@ -19,39 +19,24 @@
   <header class="page-head"><div class="wrap">
     <div class="crumbs"><a href="index.html">Infrathon</a><span>/</span><span>Analysis</span></div>
     <h1>Analysis</h1>
-    <p class="lede">How stable the ranking is, where final artifacts fall short of what agents reached during the run, how long agents take to land a first valid score, and what goes wrong over 12 to 24 hours of autonomous engineering.</p>
+    <p class="lede">How stable the ranking is, how scores evolve over a run, how long agents take to land a first valid score, and what goes wrong over 12 to 24 hours of autonomous engineering.</p>
   </div></header>
   <nav class="subnav" aria-label="Analysis sections"><div class="wrap">
-    <a href="#ranking">Stage × level</a><a href="#stability">Stability</a><a href="#drops">Final vs best</a><a href="#trajectories">Trajectories</a><a href="#efficiency">Efficiency</a><a href="#behavior">Behavior</a>
+    <a href="#ranking">Stage × level</a><a href="#stability">Stability</a><a href="#trajectories">Trajectories</a><a href="#efficiency">Efficiency</a><a href="#behavior">Behavior</a>
   </div></nav>
 
   <section class="sec" id="ranking"><div class="wrap">
-    <div class="sec-title"><div><h2>Rank score by stage and level</h2><p>The rank score within each of the six categories. Hover a row for the per-task ranks behind it.</p></div>
-      <span class="tool"><span class="tool-label">Tasks</span><span class="seg" id="cat-view"></span></span></div>
-    <div class="tabs" role="tablist" aria-label="Category view">
-      <button type="button" role="tab" aria-selected="true" aria-controls="cat-live" id="tab-cat-live">Interactive</button>
-      <button type="button" role="tab" aria-selected="false" aria-controls="cat-paper" id="tab-cat-paper">Paper figure 3</button>
-    </div>
-    <div id="cat-live" role="tabpanel" aria-labelledby="tab-cat-live"><div class="cat-grid" id="cat-grid"></div></div>
-    <div id="cat-paper" role="tabpanel" aria-labelledby="tab-cat-paper" hidden>
-      <figure><div class="paper-fig"><img src="assets/img/fig3-rank-leaderboard.webp" width="1584" height="974" loading="lazy" alt="Paper Figure 3: rank-based leaderboard across training and inference at operator, module and system level."></div>
-      <figcaption>Figure 3 from the paper: mean rank score per category on the 17-task common subset. The paper uses its own colours for the six configurations.</figcaption></figure>
-    </div>
+    <div class="sec-title"><div><h2>Rank score by stage and level</h2><p>The rank score within each of the six categories, from each run's best valid score. Hover a row for the per-task ranks behind it.</p></div></div>
+    <div class="cat-grid" id="cat-grid"></div>
   </div></section>
 
   <section class="sec" id="stability"><div class="wrap">
-    <div class="sec-title"><div><h2>How much can the ranking move?</h2><p>We resample the task set with replacement 10,000 times, recompute every rank score, and count where each configuration lands. We also drop one task at a time.</p></div>
-      <span class="tool"><span class="tool-label">Tasks</span><span class="seg" id="stab-view"></span></span></div>
+    <div class="sec-title"><div><h2>How much can the ranking move?</h2><p>We resample the 25 tasks with replacement 10,000 times, recompute every rank score, and count where each configuration lands. We also drop one task at a time.</p></div></div>
     <div class="two">
       <div class="card"><div class="card-head"><div><h3>Probability of each leaderboard position</h3><p>Share of resamples in which the configuration finishes 1st to 6th. Ties share a position.</p></div></div>
         <div class="card-body scroll-x"><table class="pmat" id="pmat"></table></div></div>
       <div class="card stat-tiles" id="stab-tiles"></div>
     </div>
-  </div></section>
-
-  <section class="sec" id="drops"><div class="wrap">
-    <div class="sec-title"><div><h2>Final artifact versus best score during the run</h2><p id="drops-sub"></p></div></div>
-    <div class="card"><div class="card-body" id="drop-rows"></div></div>
   </div></section>
 
   <section class="sec" id="trajectories"><div class="wrap">

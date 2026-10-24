@@ -33,7 +33,7 @@
     </div>
     <div class="card diagram" style="margin-top:12px;padding:12px">
       <svg viewBox="0 0 1000 360" role="img" aria-labelledby="arch-title" style="min-width:720px">
-        <title id="arch-title">Run architecture. In Work, the agent edits candidates and runs public tests. Submissions go to the Controller, which snapshots them and runs an integrity review. Rejected candidates return rule feedback without a score. Admitted candidates go to the Judge, which runs private tests and returns a score, status and diagnostics. At the deadline the Controller freezes the final implementation for independent final evaluation and replay.</title>
+        <title id="arch-title">Run architecture. In Work, the agent edits candidates and runs public tests. Submissions go to the Controller, which snapshots them and runs an integrity review. Rejected candidates return rule feedback without a score. Admitted candidates go to the Judge, which runs private tests and returns a score, status and diagnostics. At the deadline the Controller stops the run and keeps every saved candidate for replay.</title>
         <defs>
           <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#ededef"/></marker>
           <marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#777d88"/></marker>
@@ -75,12 +75,12 @@
         <text x="330" y="262" fill="#777d88" font-size="10.5" text-anchor="middle">I = 0: rule feedback, no score</text>
         <path d="M840 242 V 300 H 120 V 244" fill="none" stroke="#ededef" stroke-width="1.4" marker-end="url(#a2)"/>
         <text x="480" y="292" fill="#a3a8b1" font-size="10.5" text-anchor="middle">permitted judge feedback returns to Work within T</text>
-        <text x="500" y="336" fill="#777d88" font-size="11" text-anchor="middle">At T the controller freezes c_T for independent final evaluation; saved candidates are replayed on a fixed evaluator.</text>
+        <text x="500" y="336" fill="#777d88" font-size="11" text-anchor="middle">At T the controller stops the run; every saved candidate is kept for replay on a fixed evaluator.</text>
       </svg>
     </div>
     <div class="two" style="margin-top:12px">
       <div class="card card-body prose"><h3 style="margin:0 0 8px">Scoring</h3><p style="color:var(--ink-2);margin:0">Each task keeps its own engineering objective: compute throughput for kernels, bandwidth for KV transfer, fidelity or retained accuracy for KV policies, quality gained per training hour for RL and distillation systems, and throughput for serving. A candidate that fails a correctness, quality or memory check scores by the task's rule, often zero. Infrastructure failures are kept separate from candidate failures and are never scored.</p></div>
-      <div class="card card-body prose"><h3 style="margin:0 0 8px">Final evaluation</h3><p style="color:var(--ink-2);margin:0">The primary endpoint is an independent evaluation of the implementation frozen at the deadline, run outside the agent's budget. Scores seen during the run are kept separately; the gap between the two is one of the benchmark's measurements. Missing results are never counted as zero.</p></div>
+      <div class="card card-body prose"><h3 style="margin:0 0 8px">Run score</h3><p style="color:var(--ink-2);margin:0">Every submission is evaluated by the private judge while the run is in progress. Submissions that pass all of the task's checks get a score; a run's result is the best of those scores, and the time it was reached is recorded alongside it. Infrastructure failures and integrity rejections never count as scores.</p></div>
     </div>
   </div></section>
 
@@ -90,22 +90,22 @@
       <div class="card card-body">
         <div class="label" style="margin-bottom:10px">Per task, then averaged</div>
         <div class="formula">RankScore<sub>m</sub> = mean over tasks τ of&nbsp; 100 · (n<sub>τ</sub> − ρ<sub>τ,m</sub>) / (n<sub>τ</sub> − 1)</div>
-        <p style="color:var(--ink-2);margin:14px 0 0;font-size:14px">ρ<sub>τ,m</sub> is the rank of configuration m on task τ by final score (1 = best; exact ties share the average rank) and n<sub>τ</sub> is the number of configurations ranked on that task. 100 means first on every task, 0 means last on every task. Only the ordering matters, so the score does not change if a task's metric is rescaled; it also ignores how large the gaps are, which is why the mean relative score (final ÷ best final) is reported alongside it.</p>
+        <p style="color:var(--ink-2);margin:14px 0 0;font-size:14px">ρ<sub>τ,m</sub> is the rank of configuration m on task τ by its best valid score during the run (1 = best; exact ties share the average rank; a run with no valid score ranks last) and n<sub>τ</sub> is the number of configurations that ran the task. 100 means first on every task, 0 means last on every task. Only the ordering matters, so the score does not change if a task's metric is rescaled; it also ignores how large the gaps are, which is why the mean relative score (a run's best ÷ the top score on the task) is reported alongside it.</p>
       </div>
       <div class="card card-body">
-        <div class="label" style="margin-bottom:10px">Two task sets</div>
-        <p style="color:var(--ink-2);margin:0 0 10px;font-size:14px"><b style="color:var(--ink);font-weight:500">All 25 tasks (default).</b> Every task counts. A configuration without a numeric final on a task (no run in the cohort, no final evaluation, or a failed final with no numeric score) is left out of that task instead of being counted as zero. GPT-6 Astra is ranked on 23 tasks and GLM 5.3 Flash on 24; flagged results are used as recorded.</p>
-        <p style="color:var(--ink-2);margin:0;font-size:14px"><b style="color:var(--ink);font-weight:500">Paper subset, 17 tasks.</b> The tasks where all six configurations have a complete, comparable final. Here n<sub>τ</sub> = 6 everywhere and the score is exactly the paper's Eq. 6; this view reproduces the paper's Figure 3 and Table 13.</p>
+        <div class="label" style="margin-bottom:10px">Coverage</div>
+        <p style="color:var(--ink-2);margin:0 0 10px;font-size:14px"><b style="color:var(--ink);font-weight:500">All 25 tasks count equally.</b> Every configuration that ran a task is ranked on it. A run that never produced a valid scored submission ranks last there; a configuration with no run in the cohort is left out of that task instead of being counted as zero. GPT-6 Astra has no run on Miles OPD, so its rank score averages 24 tasks.</p>
+        <p style="color:var(--ink-2);margin:0;font-size:14px"><b style="color:var(--ink);font-weight:500">Uncertainty.</b> The leaderboard's 95% intervals and P(#1) come from resampling the task set with replacement. The Analysis page shows the full distribution of positions and what happens when single tasks are dropped.</p>
       </div>
     </div>
-    <div class="card" style="margin-top:12px"><div class="card-head"><div><h3>Flags</h3><p>Results the paper qualifies. They appear in the 25-task view and are excluded from the paper subset.</p></div></div>
+    <div class="card" style="margin-top:12px"><div class="card-head"><div><h3>Flags</h3><p>Runs that differ from the rest of the cohort. They are ranked as recorded and marked wherever they appear.</p></div></div>
       <div class="scroll-x"><table class="data" id="flag-table"></table></div></div>
   </div></section>
 
   <section class="sec" id="configs"><div class="wrap">
     <div class="sec-title"><div><h2>Configurations and data</h2><p>Six deployed model configurations, each run once per task. The comparison is between deployed configurations, not model weights alone.</p></div></div>
     <div class="card"><div class="scroll-x"><table class="data" id="cfg-table" style="min-width:720px"></table></div>
-      <div class="card-foot">Reasoning effort is max except GPT-6 Astra at xhigh on Flux/Comet, ORPO, MInference and StreamDiffusionV2. Astra was evaluated later than most of the other runs, under different service conditions. Results come from the October 23, 2026 export, using the latest cohort of each task. Token and turn counts come from a separate analysis of 152 runs; they are exact where per-request usage was logged and estimated otherwise.</div></div>
+      <div class="card-foot">All configurations run at reasoning effort max. Astra was evaluated later than most of the other runs, under different service conditions. Results come from the October 23, 2026 export, using the latest cohort of each task. Token and turn counts come from a separate analysis of 152 runs; they are exact where per-request usage was logged and estimated otherwise.</div></div>
   </div></section>
 
   <section class="sec" id="cite"><div class="wrap">

@@ -32,8 +32,8 @@
     $("#r-tasklink").textContent = `${t.name} task page`;
     const c = r.counts;
     const k = [
-      [r.final == null ? "—" : withUnit(t, r.final), `final${r.flag ? ` [${r.flag}]` : ""}${t.ranks[state.model] ? ` · rank ${X.ordinal(Math.round(t.ranks[state.model]))}` : ""}`],
-      [r.best == null ? "—" : withUnit(t, r.best), "best during run"],
+      [r.best == null ? "—" : withUnit(t, r.best), `best during run${r.flag ? ` [${r.flag}]` : ""}${t.ranks[state.model] ? ` · rank ${X.ordinal(Math.round(t.ranks[state.model]))}` : ""}`],
+      [r.best_at_h == null ? "—" : `${fmt(r.best_at_h, 2)} h`, "best reached at"],
       [r.first_valid_h == null ? "none" : `${fmt(r.first_valid_h, 2)} h`, "first valid score"],
       [`${r.n_sub}`, `submissions · ${c.valid} scored`],
       [`${c.invalid + c.rejected} / ${c.infrastructure + c.waiting}`, `failed or rejected / infra`],
@@ -61,10 +61,10 @@
 
   /* ---------- all runs ---------- */
   const rows = D.tasks.flatMap((t) => Object.entries(t.results).map(([m, r]) => ({
-    t, m, task: t.name, model: MODEL[m].name, final: r.final, best: r.best, ratio: r.final != null && r.best ? r.final / r.best : null,
+    t, m, task: t.name, model: MODEL[m].name, best: r.best, rank: t.ranks[m], at: r.best_at_h,
     first: r.first_valid_h, scored: r.counts.valid, failed: r.counts.invalid, rejected: r.counts.rejected, infra: r.counts.infrastructure + r.counts.waiting, len: r.elapsed_h,
   })));
-  const COLS = [["task", "Task"], ["model", "Configuration"], ["final", "Final"], ["best", "Best during run"], ["ratio", "Final ÷ best"], ["first", "First valid (h)"], ["scored", "Scored"], ["failed", "Failed"], ["rejected", "Rejected"], ["infra", "Infra"], ["len", "Run length (h)"]];
+  const COLS = [["task", "Task"], ["model", "Configuration"], ["best", "Best during run"], ["rank", "Rank"], ["at", "Best at (h)"], ["first", "First valid (h)"], ["scored", "Scored"], ["failed", "Failed"], ["rejected", "Rejected"], ["infra", "Infra"], ["len", "Run length (h)"]];
   const sort = { key: null, dir: 1 };
   const filt = { model: "all", q: "" };
   X.seg($("#all-model"), [["all", "All"], ...MODELS.map((m) => [m, MODEL[m].short])], "all", (v) => { filt.model = v; renderAll(); });
@@ -73,7 +73,7 @@
     const tbl = $("#all-runs");
     tbl.replaceChildren(h("thead", {}, h("tr", {}, COLS.map(([k, label], i) => {
       const th = h("th", { scope: "col", class: `sortable${i > 1 ? " n" : ""}`, tabindex: 0, "aria-sort": sort.key === k ? (sort.dir > 0 ? "ascending" : "descending") : null, text: label + (sort.key === k ? (sort.dir > 0 ? " ↑" : " ↓") : "") });
-      const act = () => { sort.dir = sort.key === k ? -sort.dir : i > 1 ? -1 : 1; sort.key = k; renderAll(); };
+      const act = () => { sort.dir = sort.key === k ? -sort.dir : i > 1 && k !== "rank" ? -1 : 1; sort.key = k; renderAll(); };
       th.addEventListener("click", act); th.addEventListener("keydown", (e) => { if (e.key === "Enter") act(); });
       return th;
     }))));
@@ -84,8 +84,8 @@
       const open = () => { state.task = r.t.key; state.model = r.m; go(); renderRun(); $("#explorer").scrollIntoView({ behavior: X.reduceMotion ? "auto" : "smooth" }); };
       tb.append(h("tr", { class: "rowlink", tabindex: 0, onclick: open, onkeydown: (e) => { if (e.key === "Enter") open(); } },
         h("td", { text: r.task }), h("td", {}, X.who(r.m, MODEL[r.m].short)),
-        h("td", { class: "n", text: r.final == null ? "—" : fmt(r.final) }), h("td", { class: "n", text: fmt(r.best) }),
-        h("td", { class: "n", text: r.ratio == null ? "—" : `${(r.ratio * 100).toFixed(0)}%` }), h("td", { class: "n", text: r.first == null ? "—" : fmt(r.first, 2) }),
+        h("td", { class: "n", text: fmt(r.best) }), h("td", { class: "n", text: X.ordinal(Math.round(r.rank)) }),
+        h("td", { class: "n", text: r.at == null ? "—" : fmt(r.at, 2) }), h("td", { class: "n", text: r.first == null ? "—" : fmt(r.first, 2) }),
         h("td", { class: "n", text: r.scored }), h("td", { class: "n", text: r.failed }), h("td", { class: "n", text: r.rejected }), h("td", { class: "n", text: r.infra }),
         h("td", { class: "n", text: fmt(r.len, 1) })));
     }

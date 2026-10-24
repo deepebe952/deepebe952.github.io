@@ -27,17 +27,10 @@
           <a class="btn primary" href="#leaderboard">View leaderboard</a>
           <a class="btn" href="tasks.html">Explore the tasks</a>
         </div>
-        <div class="hero-stats">
-          <div><b>25</b><span>tasks</span></div>
-          <div><b id="stat-runs">149</b><span>runs</span></div>
-          <div><b id="stat-subs">2,958</b><span>judged submissions</span></div>
-          <div><b>12–24 h</b><span>per run</span></div>
-        </div>
       </div>
-      <div class="card die">
-        <div class="die-head"><span class="label">Task map · stage × level</span><span class="label">tile colour = best final score</span></div>
-        <div class="die-body" id="die"></div>
-        <div class="die-legend" id="die-legend"></div>
+      <div class="card sheet">
+        <div class="sheet-head"><span class="label">Spec sheet</span><span class="label">Oct 23, 2026 cohort</span></div>
+        <dl id="sheet"></dl>
       </div>
     </div>
   </section>
@@ -51,10 +44,8 @@
         </div>
         <div class="lb-controls">
           <div class="toolbar">
-            <span class="tool"><span class="tool-label">Tasks</span><span class="seg" id="seg-view"></span></span>
             <span class="tool"><span class="tool-label">Stage</span><span class="seg" id="seg-stage"></span></span>
             <span class="tool"><span class="tool-label">Level</span><span class="seg" id="seg-level"></span></span>
-            <span class="tool"><span class="tool-label">Endpoint</span><span class="seg" id="seg-ep"></span></span>
           </div>
         </div>
         <div class="scroll-x"><table class="lb" id="lb">
@@ -70,10 +61,24 @@
     </div>
   </section>
 
+  <section class="sec" id="map">
+    <div class="wrap map-grid">
+      <div class="card die">
+        <div class="die-head"><span class="label">Task map · stage × level</span><span class="label">tile colour = top configuration</span></div>
+        <div class="die-body" id="die"></div>
+        <div class="die-legend" id="die-legend"></div>
+      </div>
+      <div>
+        <div class="sec-title" style="margin-bottom:14px"><div><h2>Who leads where</h2><p>The 25 tasks laid out by stage and optimization level. Each tile takes the colour of the configuration with the best score on that task; hover for the top three, click for the task page.</p></div></div>
+        <div class="card scroll-x"><table class="data" id="cat-leaders"></table></div>
+      </div>
+    </div>
+  </section>
+
   <section class="sec" id="results">
     <div class="wrap">
       <div class="sec-title">
-        <div><h2>Results by task</h2><p>Final score of every configuration on every task, in each task's own unit. Shading shows the score relative to the best on that row; the outlined cell is the winner. Click a row for the task page.</p></div>
+        <div><h2>Results by task</h2><p>Best valid score of every configuration during its run, in each task's own unit. Shading shows the score relative to the best on that row; the outlined cell is the top configuration. Click a row for the task page.</p></div>
         <a class="more" href="tasks.html">All tasks →</a>
       </div>
       <div class="card"><div class="scroll-x"><table class="matrix" id="matrix"></table></div>

@@ -12,7 +12,7 @@
     $("#t-group").textContent = `${cap(t.stage)} · ${cap(t.level)}`;
     $("#t-name").textContent = t.name;
     $("#t-summary").textContent = t.summary;
-    $("#t-metric").textContent = `${metricLabel(t)}, higher is better. Outlined value = best final.`;
+    $("#t-metric").textContent = `${metricLabel(t)}, higher is better. Best valid score each configuration reached during its run.`;
 
     const facts = h("dl", { class: "facts" },
       h("dt", { text: "Target" }), h("dd", { text: t.target }),
@@ -21,21 +21,20 @@
       h("dt", { text: "Hardware" }), h("dd", { text: t.gpus }),
       h("dt", { text: "Start" }), h("dd", { text: t.start === "seed" ? "Seed: a working baseline to improve" : "Scratch: an empty file or stub" }),
       h("dt", { text: "Category" }), h("dd", { text: `${cap(t.stage)}, ${t.level}-level` }),
-      h("dt", { text: "Ranking" }), h("dd", { text: t.ranked ? "In the paper's 17-task ranking and the 25-task ranking" : "In the 25-task ranking only" }),
       h("dt", { text: "Cohort" }), h("dd", { class: "mono", style: "font-size:12px", text: t.cohort }));
     const box = $("#t-facts");
     box.replaceChildren(facts);
-    if (t.exclusion) box.append(h("div", { class: "note-box" }, h("b", { text: "Why it is outside the paper's ranking" }), t.exclusion));
+    if (t.note) box.append(h("div", { class: "note-box" }, h("b", { text: "Note" }), t.note));
 
     const bars = $("#t-bars");
     bars.replaceChildren();
-    const max = Math.max(...MODELS.map((m) => t.results[m]?.final ?? 0), 1e-9);
-    const order = [...MODELS].sort((a, b) => (t.results[b]?.final ?? -1) - (t.results[a]?.final ?? -1));
+    const max = Math.max(...MODELS.map((m) => t.results[m]?.best ?? 0), 1e-9);
+    const order = [...MODELS].sort((a, b) => (t.results[b]?.best ?? -1) - (t.results[a]?.best ?? -1));
     for (const m of order) {
-      const r = t.results[m], v = r?.final;
-      const label = v == null ? (!r ? "no run in this cohort" : r.flag === "F" ? "failed final checks · no numeric score" : "no final evaluation")
-        : `${withUnit(t, v)}${r.flag ? `  [${r.flag}]` : ""}${t.winner === m ? "  · best" : ""}`;
-      bars.append(h("div", { class: "bar-row" }, X.who(m, MODEL[m].short), X.hbar(COLOR[m], v == null ? 0 : v / max, label, { max: 62, faded: !!(r?.flag && r.flag !== "x"), muted: v == null })));
+      const r = t.results[m], v = r?.best;
+      const label = v == null ? (!r ? "no run in this cohort" : "no valid scored submission")
+        : `${withUnit(t, v)}${r.flag ? `  [${r.flag}]` : ""}${t.winner === m ? "  · top" : ""}`;
+      bars.append(h("div", { class: "bar-row" }, X.who(m, MODEL[m].short), X.hbar(COLOR[m], v == null ? 0 : v / max, label, { max: 62, faded: !!r?.flag, muted: v == null })));
     }
 
     const leg = $("#t-legend");
@@ -45,19 +44,17 @@
     $("#t-trace").replaceChildren(X.traceChart(t, true));
 
     const tbl = $("#t-table");
-    tbl.replaceChildren(h("thead", {}, h("tr", {}, ["Configuration", "Final", "Rank", "Best during run", "Final vs best", "First valid score", "Scored / failed / rejected / infra", "Run length", ""].map((x, i) => h("th", { scope: "col", class: i > 0 && i < 8 ? "n" : null, text: x })))));
+    tbl.replaceChildren(h("thead", {}, h("tr", {}, ["Configuration", "Best during run", "Rank", "Best reached at", "First valid score", "Scored / failed / rejected / infra", "Run length", ""].map((x, i) => h("th", { scope: "col", class: i > 0 && i < 7 ? "n" : null, text: x })))));
     const tb = h("tbody");
     for (const m of MODELS) {
       const r = t.results[m];
-      if (!r) { tb.append(h("tr", {}, h("td", {}, X.who(m)), h("td", { colspan: 8, class: "muted", text: "No run in this cohort" }))); continue; }
-      const vs = r.final != null && r.best ? r.final / r.best - 1 : null;
+      if (!r) { tb.append(h("tr", {}, h("td", {}, X.who(m)), h("td", { colspan: 7, class: "muted", text: "No run in this cohort" }))); continue; }
       const c = r.counts;
       tb.append(h("tr", {},
         h("td", {}, X.who(m), r.flag ? h("span", { class: "chip", style: "margin-left:8px", text: r.flag }) : null),
-        h("td", { class: "n", text: r.final == null ? "—" : fmt(r.final) }),
-        h("td", { class: "n", text: t.ranks[m] ? ordinal(Math.round(t.ranks[m])) : "—" }),
         h("td", { class: "n", text: fmt(r.best) }),
-        h("td", { class: "n", text: vs == null ? "—" : `${vs >= 0 ? "+" : ""}${(vs * 100).toFixed(1)}%` }),
+        h("td", { class: "n", text: t.ranks[m] ? ordinal(Math.round(t.ranks[m])) : "—" }),
+        h("td", { class: "n", text: r.best_at_h == null ? "—" : `${fmt(r.best_at_h, 2)} h` }),
         h("td", { class: "n", text: r.first_valid_h == null ? "none" : `${fmt(r.first_valid_h, 2)} h` }),
         h("td", { class: "n", text: `${c.valid} / ${c.invalid} / ${c.rejected} / ${c.infrastructure + c.waiting}` }),
         h("td", { class: "n", text: `${fmt(r.elapsed_h, 1)} h` }),

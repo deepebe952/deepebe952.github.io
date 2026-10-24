@@ -1,4 +1,8 @@
-"""Regression tests: the site's numbers must reproduce the paper's published figures."""
+"""Regression tests for the data pipeline.
+
+The extraction is checked against the paper's published final-artifact numbers (Figure 3,
+Table 13); the site itself ranks each run's best valid score during the run.
+"""
 import json
 import sys
 import unittest
@@ -9,7 +13,9 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 import build_data  # noqa: E402
 
-DATA = build_data.compute(*build_data.load())
+REGISTRY, RAW, TOKENS = build_data.load()
+DATA = build_data.compute(REGISTRY, RAW, TOKENS)
+PAPER = build_data.paper_figures(REGISTRY, RAW)
 
 # Paper, Figure 3: mean rank score per stage x level (Sol, Claude, Qwen, DeepSeek, GLM, Astra).
 FIGURE_3 = {
@@ -29,50 +35,54 @@ MODELS = ("sol", "claude", "qwen", "deepseek", "glm", "astra")
 
 
 class PaperNumbers(unittest.TestCase):
-    def test_coverage(self):
-        self.assertEqual(len(DATA["tasks"]), 25)
-        self.assertEqual(DATA["summary"]["n_runs"], 149)
-        self.assertEqual(DATA["views"]["paper"]["n"], 17)
-        self.assertEqual(DATA["views"]["all"]["n"], 25)
-        levels = {}
-        for t in DATA["tasks"]:
-            levels[(t["stage"], t["level"])] = levels.get((t["stage"], t["level"]), 0) + 1
-        self.assertEqual(levels, {("training", "operator"): 3, ("training", "module"): 2, ("training", "system"): 5,
-                                  ("inference", "operator"): 8, ("inference", "module"): 3, ("inference", "system"): 4})
+    """The extracted runs reproduce the paper's final-artifact results."""
 
     def test_figure_3(self):
+        self.assertEqual(PAPER["n"], 17)
         for group, expected in FIGURE_3.items():
-            got = DATA["paper_groups"][group]
+            got = PAPER["groups"][group]
             self.assertEqual(got["n"], FIGURE_3_N[group], group)
             for m, v in zip(MODELS, expected):
                 self.assertAlmostEqual(got["rank_score"][m], v, delta=0.05, msg=f"{group} {m}")
 
     def test_table_13_aggregate(self):
         for m, rel, wins in zip(MODELS, TABLE_13_REL, TABLE_13_WINS):
-            self.assertAlmostEqual(DATA["views"]["paper"]["mean_relative"][m], rel, delta=0.0005, msg=m)
-            self.assertEqual(DATA["views"]["paper"]["wins"][m], wins, m)
+            self.assertAlmostEqual(PAPER["mean_relative"][m], rel, delta=0.0005, msg=m)
+            self.assertEqual(PAPER["wins"][m], wins, m)
 
-    def test_flash_kmeans_conversion(self):
-        fk = next(t for t in DATA["tasks"] if t["key"] == "flash-kmeans")
-        self.assertAlmostEqual(fk["results"]["claude"]["final"], 206.08, delta=0.01)
 
-    def test_flagged_entries(self):
-        mi = next(t for t in DATA["tasks"] if t["key"] == "minference")
-        self.assertIsNone(mi["results"]["astra"]["final"])
-        self.assertEqual(mi["results"]["deepseek"]["flag"], "†")
-        opd = next(t for t in DATA["tasks"] if t["key"] == "opd")
-        self.assertNotIn("astra", opd["results"])
-        self.assertIsNone(opd["paper_winner"])
-
-    def test_all_tasks_view(self):
-        view = DATA["views"]["all"]
-        self.assertEqual(view["coverage"], {"sol": 25, "claude": 25, "qwen": 25, "deepseek": 25, "glm": 24, "astra": 23})
-        self.assertEqual(sum(view["wins"].values()), 25)
-        # On tasks where all six have finals, the per-task contribution is exactly Eq. 6.
+class SiteData(unittest.TestCase):
+    def test_coverage(self):
+        self.assertEqual(len(DATA["tasks"]), 25)
+        self.assertEqual(DATA["summary"]["n_runs"], 149)
+        levels = {}
         for t in DATA["tasks"]:
-            if len(t["ranks"]) == 6:
-                for m, r in t["ranks"].items():
-                    self.assertAlmostEqual(t["contrib"][m], 100 * (6 - r) / 5, places=3)
+            levels[(t["stage"], t["level"])] = levels.get((t["stage"], t["level"]), 0) + 1
+        self.assertEqual(levels, {("training", "operator"): 3, ("training", "module"): 2, ("training", "system"): 5,
+                                  ("inference", "operator"): 8, ("inference", "module"): 3, ("inference", "system"): 4})
+        # Astra has no run on Miles OPD; everyone else ran all 25 tasks.
+        self.assertEqual(DATA["ranking"]["coverage"], {"sol": 25, "claude": 25, "qwen": 25, "deepseek": 25, "glm": 25, "astra": 24})
+        self.assertEqual(sum(DATA["ranking"]["wins"].values()), 25)
+
+    def test_best_during_run(self):
+        t = {x["key"]: x for x in DATA["tasks"]}
+        self.assertAlmostEqual(t["flash-kmeans"]["results"]["claude"]["best"], 208.8314, places=3)
+        self.assertAlmostEqual(t["kvzip"]["results"]["sol"]["best_at_h"], 5.757, places=3)
+        # A run without a valid scored submission ranks last on its task.
+        wan = t["wan22"]
+        self.assertIsNone(wan["results"]["glm"]["best"])
+        self.assertEqual(wan["ranks"]["glm"], 6)
+
+    def test_rank_score_is_eq6(self):
+        for t in DATA["tasks"]:
+            n = len(t["ranks"])
+            for m, r in t["ranks"].items():
+                self.assertAlmostEqual(t["contrib"][m], 100 * (n - r) / (n - 1), places=3)
+
+    def test_no_final_artifact_fields(self):
+        bundle = (ROOT / "site/data/infrathon.js").read_text()
+        self.assertNotIn('"final"', bundle)
+        self.assertNotIn("xhigh", bundle)
 
     def test_bundle_is_fresh(self):
         bundle = (ROOT / "site/data/infrathon.js").read_text()

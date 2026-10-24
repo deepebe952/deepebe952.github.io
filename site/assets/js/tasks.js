@@ -16,7 +16,7 @@
   $("#f-q").addEventListener("input", (e) => { state.q = e.target.value.trim().toLowerCase(); render(); });
 
   const tbl = $("#task-table");
-  tbl.append(h("thead", {}, h("tr", {}, ["Task", "Category", "Budget", "Metric", "Start", "Best final", "All six finals", "Paper ranking"].map((x, i) => h("th", { scope: "col", class: i === 2 ? "n" : null, text: x })))));
+  tbl.append(h("thead", {}, h("tr", {}, ["Task", "Category", "Budget", "Metric", "Start", "Top configuration", "All six"].map((x, i) => h("th", { scope: "col", class: i === 2 ? "n" : null, text: x })))));
   const tb = h("tbody");
   tbl.append(tb);
   function render() {
@@ -30,12 +30,11 @@
         h("td", { class: "n", text: `${t.budget_h} h` }),
         h("td", { class: "muted", text: metricLabel(t) }),
         h("td", {}, h("span", { class: "chip", text: t.start })),
-        h("td", {}, X.who(w, `${MODEL[w].short} · ${withUnit(t, t.results[w].final)}`)),
-        h("td", { title: "Final score of each configuration relative to the best (Sol, Claude, Qwen, DeepSeek, GLM, Astra)" }, X.fingerprint(t)),
-        h("td", { class: "muted", text: t.ranked ? "ranked" : "excluded" })));
+        h("td", {}, X.who(w, `${MODEL[w].short} · ${withUnit(t, t.results[w].best)}`)),
+        h("td", { title: "Best score of each configuration relative to the top score (Sol, Claude, Qwen, DeepSeek, GLM, Astra)" }, X.fingerprint(t))));
     }
-    if (!ts.length) tb.append(h("tr", {}, h("td", { colspan: 8, class: "muted", text: "No task matches these filters." })));
-    $("#task-foot").textContent = `${ts.length} of ${D.tasks.length} tasks. "Best final" uses every recorded final score; "Paper ranking" marks the 17 tasks with a comparable final for all six configurations. Bars: Sol, Claude, Qwen, DeepSeek, GLM, Astra, scaled to the best final on the task (faded = flagged result).`;
+    if (!ts.length) tb.append(h("tr", {}, h("td", { colspan: 7, class: "muted", text: "No task matches these filters." })));
+    $("#task-foot").textContent = `${ts.length} of ${D.tasks.length} tasks. Scores are each run's best valid score during the run. Bars: Sol, Claude, Qwen, DeepSeek, GLM, Astra, scaled to the top score on the task (faded = flagged run).`;
     segs();
   }
   render();

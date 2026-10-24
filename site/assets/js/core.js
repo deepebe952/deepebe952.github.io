@@ -105,36 +105,34 @@ window.IX = (() => {
   const hideTip = () => { if (tip) tip.hidden = true; };
 
   /* ---------- rank math ---------- */
-  const viewTasks = (view) => (view === "paper" ? D.tasks.filter((t) => t.ranked) : D.tasks);
   const filterTasks = (ts, stage, level) => ts.filter((t) => (stage === "all" || t.stage === stage) && (level === "all" || t.level === level));
-  function rankScores(ts, ep) {
-    const key = ep === "best" ? "contrib_best" : "contrib", out = {};
+  function rankScores(ts) {
+    const out = {};
     for (const m of MODELS) {
-      const v = ts.filter((t) => m in t[key]).map((t) => t[key][m]);
+      const v = ts.filter((t) => m in t.contrib).map((t) => t.contrib[m]);
       out[m] = v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
     }
     return out;
   }
   function mulberry32(a) { return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
-  function bootstrap(ts, ep, B = 3000) {
+  function bootstrap(ts, B = 3000) {
     const rnd = mulberry32(20261023), sm = {}, first = {};
     MODELS.forEach((m) => { sm[m] = []; first[m] = 0; });
     for (let b = 0; b < B; b++) {
       const pick = ts.map(() => ts[Math.floor(rnd() * ts.length)]);
-      const rs = rankScores(pick, ep);
+      const rs = rankScores(pick);
       const vals = MODELS.map((m) => rs[m]).filter((v) => v != null), top = Math.max(...vals);
       for (const m of MODELS) if (rs[m] != null) { sm[m].push(rs[m]); if (rs[m] === top) first[m]++; }
     }
     const q = (xs, p) => { if (!xs.length) return null; const a = [...xs].sort((x, y) => x - y), i = (a.length - 1) * p, lo = Math.floor(i); return a[lo] + (a[Math.min(lo + 1, a.length - 1)] - a[lo]) * (i - lo); };
     return Object.fromEntries(MODELS.map((m) => [m, { lo: q(sm[m], 0.025), hi: q(sm[m], 0.975), p1: first[m] / B }]));
   }
-  function standings(ts, ep) {
-    const rk = ep === "best" ? "ranks_best" : "ranks", f = ep === "best" ? "best" : "final";
-    const rs = rankScores(ts, ep), bs = bootstrap(ts, ep);
+  function standings(ts) {
+    const rs = rankScores(ts), bs = bootstrap(ts);
     return MODELS.map((m) => {
-      const cov = ts.filter((t) => m in t[rk]);
-      const rel = cov.length ? cov.reduce((a, t) => a + t.results[m][f] / Math.max(...Object.keys(t[rk]).map((o) => t.results[o][f])), 0) / cov.length : null;
-      return { m, score: rs[m], ci: bs[m], wins: cov.filter((t) => t[rk][m] === 1).length, rel, cov: cov.length, n: ts.length };
+      const cov = ts.filter((t) => m in t.ranks);
+      const rel = cov.length ? cov.reduce((a, t) => a + (t.results[m].best || 0) / Math.max(...Object.keys(t.ranks).map((o) => t.results[o].best || 0)), 0) / cov.length : null;
+      return { m, score: rs[m], ci: bs[m], wins: cov.filter((t) => t.ranks[m] === 1).length, rel, cov: cov.length, n: ts.length };
     }).sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
   }
 
@@ -170,7 +168,7 @@ window.IX = (() => {
     const o = Object.assign({ W: 320, H: 170, compact: true, dots: false, rug: false, models: null, tooltip: true }, opts);
     const pad = { l: o.compact ? 38 : 54, r: 12, t: 10, b: o.compact ? 22 : 30 };
     const svg = s("svg", { viewBox: `0 0 ${o.W} ${o.H}`, role: "img", "aria-label": `Best score so far over time for ${t.name} (${metricLabel(t)})` });
-    const runs = (o.models || MODELS).filter((m) => t.results[m] && !t.results[m].hide_curve);
+    const runs = (o.models || MODELS).filter((m) => t.results[m]);
     const vals = runs.flatMap((m) => (o.dots ? t.results[m].subs.filter((x) => x[1] != null).map((x) => x[1]) : t.results[m].traj.map((p) => p[1])));
     if (!vals.length) { st(svg, o.W / 2, o.H / 2, "no valid scores", { fill: C.ink3, "font-size": 11, "text-anchor": "middle" }); return svg; }
     const vmin = Math.min(...vals), vmax = Math.max(...vals);
@@ -248,7 +246,7 @@ window.IX = (() => {
       if (!r) { st(svg, X0 + 8, y0 + 26, "no run in this cohort", { fill: C.ink3, "font-size": 11 }); return; }
       const g = s("g", { "clip-path": `url(#${clipId})` }, svg);
       const yv = (v) => (vmax > vmin ? base - ((v - vmin) / (vmax - vmin)) * (base - hi - 4) - 4 : base - 14);
-      if (r.traj.length && !r.hide_curve) {
+      if (r.traj.length) {
         let d = `M${xs(r.traj[0][0]).toFixed(1)},${yv(r.traj[0][1]).toFixed(1)}`;
         for (let k = 1; k < r.traj.length; k++) d += `H${xs(r.traj[k][0]).toFixed(1)}V${yv(r.traj[k][1]).toFixed(1)}`;
         d += `H${xs(r.elapsed_h ?? T).toFixed(1)}`;
@@ -275,8 +273,8 @@ window.IX = (() => {
       scanLabel.setAttribute("x", Math.min(Math.max(X, X0 + 14), X1 - 14));
       scanLabel.textContent = showScan ? `${fmt(tt, 1)} h` : "";
       for (const m in read) {
-        const r = t.results[m], v = r.hide_curve ? null : bestAt(r.traj, tt);
-        read[m].textContent = r.hide_curve ? "not comparable" : v == null ? (tt >= T - 1e-6 && !r.traj.length ? "no valid score" : "—") : withUnit(t, v);
+        const r = t.results[m], v = bestAt(r.traj, tt);
+        read[m].textContent = v == null ? (tt >= T - 1e-6 && !r.traj.length ? "no valid score" : "—") : withUnit(t, v);
         read[m].setAttribute("fill", v == null ? C.ink3 : C.ink);
       }
     }
@@ -301,15 +299,14 @@ window.IX = (() => {
   /* ---------- small marks ---------- */
   function fingerprint(t, w = 120, hgt = 24) {
     const svg = s("svg", { class: "finger", viewBox: `0 0 ${w} ${hgt}`, preserveAspectRatio: "none", "aria-hidden": "true" });
-    const finals = MODELS.map((m) => t.results[m]?.final).filter((v) => v != null);
-    const max = Math.max(...finals, 1e-9), bw = w / K;
+    const bests = MODELS.map((m) => t.results[m]?.best).filter((v) => v != null);
+    const max = Math.max(...bests, 1e-9), bw = w / K;
     MODELS.forEach((m, i) => {
-      const v = t.results[m]?.final, x = i * bw + 1.5;
+      const v = t.results[m]?.best, x = i * bw + 1.5;
       s("rect", { x, y: hgt - 1, width: bw - 3, height: 1, fill: C.hair2 }, svg);
       if (v == null || v === 0) return;
       const hh = Math.max(1.5, (v / max) * (hgt - 2));
-      const flagged = t.results[m].flag && t.results[m].flag !== "x";
-      s("rect", { x, y: hgt - 1 - hh, width: bw - 3, height: hh, rx: 1.5, fill: COLOR[m], "fill-opacity": flagged ? 0.35 : 0.95 }, svg);
+      s("rect", { x, y: hgt - 1 - hh, width: bw - 3, height: hh, rx: 1.5, fill: COLOR[m], "fill-opacity": t.results[m].flag ? 0.35 : 0.95 }, svg);
     });
     return svg;
   }
@@ -366,7 +363,7 @@ window.IX = (() => {
   return {
     D, K, MODELS, MODEL, PROVIDER, COLOR, C, TASK, STAGES, LEVELS, reduceMotion, cap,
     s, st, h, $, fmt, unitOf, withUnit, metricLabel, ordinal, pct, taskHref, runHref, groupName,
-    marker, swatch, who, showTip, hideTip, viewTasks, filterTasks, rankScores, bootstrap, standings,
+    marker, swatch, who, showTip, hideTip, filterTasks, rankScores, bootstrap, standings,
     niceTicks, bestAt, makeLegend, setFocus, trajChart, traceChart, fingerprint, hbar, wireTabs, seg,
   };
 })();
