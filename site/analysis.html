@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Infrathon Analysis</title>
+<meta name="description" content="Infrathon analysis: ranking by stage and level, ranking stability, final versus in-run scores, optimization trajectories, token efficiency and agent behaviour.">
+<meta property="og:title" content="Infrathon">
+<meta property="og:description" content="Can frontier models solve long-horizon AI infrastructure tasks? 25 tasks, 6 configurations, 149 runs on H100s.">
+<meta name="theme-color" content="#060709">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23060709'/%3E%3Cpath d='M7 22h4v-8h4v5h4V9h4v10h3' fill='none' stroke='%23ededef' stroke-width='2.4'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body data-page="analysis">
+<main>
+  <header class="page-head"><div class="wrap">
+    <div class="crumbs"><a href="index.html">Infrathon</a><span>/</span><span>Analysis</span></div>
+    <h1>Analysis</h1>
+    <p class="lede">How stable the ranking is, where final artifacts fall short of what agents reached during the run, how long agents take to land a first valid score, and what goes wrong over 12 to 24 hours of autonomous engineering.</p>
+  </div></header>
+  <nav class="subnav" aria-label="Analysis sections"><div class="wrap">
+    <a href="#ranking">Stage × level</a><a href="#stability">Stability</a><a href="#drops">Final vs best</a><a href="#trajectories">Trajectories</a><a href="#efficiency">Efficiency</a><a href="#behavior">Behavior</a>
+  </div></nav>
+
+  <section class="sec" id="ranking"><div class="wrap">
+    <div class="sec-title"><div><h2>Rank score by stage and level</h2><p>The rank score within each of the six categories. Hover a row for the per-task ranks behind it.</p></div>
+      <span class="tool"><span class="tool-label">Tasks</span><span class="seg" id="cat-view"></span></span></div>
+    <div class="tabs" role="tablist" aria-label="Category view">
+      <button type="button" role="tab" aria-selected="true" aria-controls="cat-live" id="tab-cat-live">Interactive</button>
+      <button type="button" role="tab" aria-selected="false" aria-controls="cat-paper" id="tab-cat-paper">Paper figure 3</button>
+    </div>
+    <div id="cat-live" role="tabpanel" aria-labelledby="tab-cat-live"><div class="cat-grid" id="cat-grid"></div></div>
+    <div id="cat-paper" role="tabpanel" aria-labelledby="tab-cat-paper" hidden>
+      <figure><div class="paper-fig"><img src="assets/img/fig3-rank-leaderboard.webp" width="1584" height="974" loading="lazy" alt="Paper Figure 3: rank-based leaderboard across training and inference at operator, module and system level."></div>
+      <figcaption>Figure 3 from the paper: mean rank score per category on the 17-task common subset. The paper uses its own colours for the six configurations.</figcaption></figure>
+    </div>
+  </div></section>
+
+  <section class="sec" id="stability"><div class="wrap">
+    <div class="sec-title"><div><h2>How much can the ranking move?</h2><p>We resample the task set with replacement 10,000 times, recompute every rank score, and count where each configuration lands. We also drop one task at a time.</p></div>
+      <span class="tool"><span class="tool-label">Tasks</span><span class="seg" id="stab-view"></span></span></div>
+    <div class="two">
+      <div class="card"><div class="card-head"><div><h3>Probability of each leaderboard position</h3><p>Share of resamples in which the configuration finishes 1st to 6th. Ties share a position.</p></div></div>
+        <div class="card-body scroll-x"><table class="pmat" id="pmat"></table></div></div>
+      <div class="card stat-tiles" id="stab-tiles"></div>
+    </div>
+  </div></section>
+
+  <section class="sec" id="drops"><div class="wrap">
+    <div class="sec-title"><div><h2>Final artifact versus best score during the run</h2><p id="drops-sub"></p></div></div>
+    <div class="card"><div class="card-body" id="drop-rows"></div></div>
+  </div></section>
+
+  <section class="sec" id="trajectories"><div class="wrap">
+    <div class="sec-title"><div><h2>Optimization trajectories</h2><p>Best valid score so far for every run, from its first valid scored submission to the end of the run. Pick a configuration to isolate it; click a panel for the task page.</p></div></div>
+    <div class="tabs" role="tablist" aria-label="Trajectory view">
+      <button type="button" role="tab" aria-selected="true" aria-controls="traj-live" id="tab-traj-live">All 25 tasks</button>
+      <button type="button" role="tab" aria-selected="false" aria-controls="traj-paper" id="tab-traj-paper">Paper figure 4</button>
+    </div>
+    <div id="traj-live" role="tabpanel" aria-labelledby="tab-traj-live"><div class="legend" id="traj-legend" style="margin-bottom:14px"></div><div class="multiples" id="multiples"></div></div>
+    <div id="traj-paper" role="tabpanel" aria-labelledby="tab-traj-paper" hidden>
+      <figure><div class="paper-fig"><img src="assets/img/fig4-trajectories.webp" width="1577" height="1700" loading="lazy" alt="Paper Figure 4: best-so-far interaction performance on 12 selected tasks."></div>
+      <figcaption>Figure 4 from the paper: best-so-far interaction performance on 12 selected tasks. Flash-KMeans is shown as latency there and as equivalent throughput on this site.</figcaption></figure>
+    </div>
+  </div></section>
+
+  <section class="sec" id="efficiency"><div class="wrap">
+    <div class="sec-title"><div><h2>Time, turns and tokens to the first valid score</h2><p>How long an agent works before the judge accepts and scores something, and how many tokens a run consumes over its whole budget. Per-model medians across 25 tasks (152 runs).</p></div></div>
+    <div class="eff" id="eff"></div>
+    <div class="card" style="margin-top:12px"><div class="scroll-x"><table class="data" id="eff-table" style="min-width:720px"></table></div>
+      <div class="card-foot"><details class="notes" id="eff-notes"><summary>How these numbers were measured</summary></details></div></div>
+  </div></section>
+
+  <section class="sec" id="behavior"><div class="wrap">
+    <div class="sec-title"><div><h2>Where long-horizon agents break down</h2><p>We read archived code changes, tool executions and judge feedback and asked four questions. This audit covers the original five model families.</p></div></div>
+    <div class="find-grid">
+      <article class="card find">
+        <span class="label">Do agents keep searching?</span>
+        <div class="big">5.8% → 28.1%<small>Share of submissions that repeat an earlier candidate's exact contents, first half versus second half of the budget (96 complete-budget runs).</small></div>
+        <ul>
+          <li>Agents declare completion early. After the stop hook blocks it, GLM gains <b>+24.8%</b> on SageAttention and <b>+6.4%</b> on ORPO, and DeepSeek gains <b>+14.0%</b> on SD3.5.</li>
+          <li>Qwen's repeats on grouped FP8 GEMM go from 0 of 2 in the first half to 26 of 30 in the second.</li>
+          <li>Useful search reaches beyond kernels: copy-engine staging on LMCache, and a Ray serialization fix on SD3.5 (146.58 → 8.45 ms).</li>
+        </ul>
+      </article>
+      <article class="card find">
+        <span class="label">Can they manage their own experiments?</span>
+        <div class="big">14 cases · 11 tasks<small>Documented failures where the agent corrupted its own evidence: wrong state records, faulty diagnostics, interfering processes, incomplete edits.</small></div>
+        <ul>
+          <li>GLM credits a deeper tile change to Wgrad v022. Its contents are identical to v011.</li>
+          <li>Qwen's Mamba-2 sweep reuses a cached plan, so every "new" configuration runs the same kernel.</li>
+          <li>Claude leaves an OPCD profiling service holding GPU memory; the next training run fails to allocate an NCCL buffer.</li>
+        </ul>
+      </article>
+      <article class="card find">
+        <span class="label">Do optimizations keep the semantics?</span>
+        <div class="big">9 driver stalls · 154 runs<small>Node-wide GPU faults in a historical audit. None came from GPT (35 runs) or Claude (22 runs).</small></div>
+        <ul>
+          <li>GLM's OPD trainer runs with zero loss and zero gradients while reporting normal steps.</li>
+          <li>Sol's SD3.5 candidate passes forward checks but has gradient cosine <b>0.581</b>; after repair it reaches 0.990.</li>
+          <li>Batching breaks sample identity: shuffled ALFWorld games get the wrong advantages.</li>
+        </ul>
+      </article>
+      <article class="card find">
+        <span class="label">Do they take shortcuts?</span>
+        <div class="big" id="rej-big">Rejected before scoring<small>The integrity review blocks submissions that skip required work and returns the rule instead of a score.</small></div>
+        <ul>
+          <li>Qwen notes that old KV state mixed with new OPD weights is inconsistent, then submits exactly that.</li>
+          <li>DeepSeek signals completion on Wan2.2 before the log is fsynced.</li>
+          <li>Historical KVzip runs downloaded and quantized official gating weights instead of writing a scorer; two results were invalidated.</li>
+        </ul>
+      </article>
+    </div>
+    <figure style="margin-top:16px"><div class="paper-fig"><img src="assets/img/fig5-behavior.webp" width="1567" height="641" loading="lazy" alt="Paper Figure 5: verified gains after a completion claim, and repeat submissions in the first versus second half of the budget."></div>
+      <figcaption>Figure 5 from the paper. (a) Score gains after the stop hook blocks a completion claim. (b) Content-identical repeat submissions as a share of identifiable submissions, first versus second half, pooled per configuration.</figcaption></figure>
+  </div></section>
+</main>
+<script src="data/infrathon.js"></script>
+<script src="assets/js/core.js"></script>
+<script src="assets/js/analysis.js"></script>
+</body>
+</html>

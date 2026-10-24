@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Infrathon Tasks</title>
+<meta name="description" content="The 25 Infrathon tasks: GPU kernels, training modules and full training and serving systems, with each configuration's final score.">
+<meta property="og:title" content="Infrathon">
+<meta property="og:description" content="Can frontier models solve long-horizon AI infrastructure tasks? 25 tasks, 6 configurations, 149 runs on H100s.">
+<meta name="theme-color" content="#060709">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23060709'/%3E%3Cpath d='M7 22h4v-8h4v5h4V9h4v10h3' fill='none' stroke='%23ededef' stroke-width='2.4'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body data-page="tasks">
+<main>
+  <header class="page-head"><div class="wrap">
+    <div class="crumbs"><a href="index.html">Infrathon</a><span>/</span><span>Tasks</span></div>
+    <h1>25 tasks across the AI infrastructure stack</h1>
+    <p class="lede">10 training and 15 inference tasks, at three levels of editable scope. Operators are single kernels with a 12-hour budget. Modules are components inside a fixed workflow, such as a training loss or a KV-cache policy. Systems are whole training or serving loops. Modules and systems get 24 hours.</p>
+  </div></header>
+  <section class="sec"><div class="wrap">
+    <div class="card">
+      <div class="lb-controls">
+        <div class="toolbar">
+          <span class="tool"><span class="tool-label">Stage</span><span class="seg" id="f-stage"></span></span>
+          <span class="tool"><span class="tool-label">Level</span><span class="seg" id="f-level"></span></span>
+          <span class="tool"><span class="tool-label">Start</span><span class="seg" id="f-start"></span></span>
+        </div>
+        <label class="sr-only" for="f-q">Search tasks</label>
+        <input class="search" id="f-q" type="search" placeholder="Search tasks" autocomplete="off">
+      </div>
+      <div class="scroll-x"><table class="data" id="task-table" style="min-width:980px"></table></div>
+      <div class="card-foot" id="task-foot"></div>
+    </div>
+  </div></section>
+</main>
+<script src="data/infrathon.js"></script>
+<script src="assets/js/core.js"></script>
+<script src="assets/js/tasks.js"></script>
+</body>
+</html>

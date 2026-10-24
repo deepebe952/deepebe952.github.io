@@ -35,15 +35,19 @@ class Refs(HTMLParser):
 
 def main() -> int:
     errors = []
-    html = (SITE / "index.html").read_text()
-    p = Refs()
-    p.feed(html)
-    for ref in p.refs:
-        if not (SITE / ref.split("#")[0].split("?")[0]).is_file():
-            errors.append(f"missing file: {ref}")
-    for anchor in p.anchors:
-        if anchor not in p.ids:
-            errors.append(f"dangling anchor: #{anchor}")
+    n_refs = n_anchors = 0
+    pages = sorted(SITE.glob("*.html"))
+    for page in pages:
+        p = Refs()
+        p.feed(page.read_text())
+        n_refs += len(p.refs)
+        n_anchors += len(p.anchors)
+        for ref in p.refs:
+            if not (SITE / ref.split("#")[0].split("?")[0]).is_file():
+                errors.append(f"{page.name}: missing file {ref}")
+        for anchor in p.anchors:
+            if anchor not in p.ids:
+                errors.append(f"{page.name}: dangling anchor #{anchor}")
     bundle = (SITE / "data/infrathon.js").read_text()
     m = re.search(r"window\.INFRATHON=(\{.*\});\s*$", bundle, re.S)
     if not m:
@@ -57,7 +61,7 @@ def main() -> int:
             errors.append(f"local path leaked into {f.relative_to(SITE)}")
     for e in errors:
         print(f"error: {e}", file=sys.stderr)
-    print(f"checked {len(p.refs)} local references, {len(p.anchors)} anchors: {'FAIL' if errors else 'ok'}")
+    print(f"checked {len(pages)} pages, {n_refs} local references, {n_anchors} anchors: {'FAIL' if errors else 'ok'}")
     return 1 if errors else 0
 
 

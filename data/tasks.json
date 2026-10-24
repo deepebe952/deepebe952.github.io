@@ -18,35 +18,35 @@
   },
   "tasks": [
     {
-      "key": "attn-qat", "dash": "attnqat", "name": "Attn-QAT NVFP4 attention", "stage": "training", "level": "operator",
+      "key": "attn-qat", "short": "ATTN-QAT", "dash": "attnqat", "name": "Attn-QAT NVFP4 attention", "stage": "training", "level": "operator",
       "budget_h": 12, "metric": "TFLOPS", "start": "seed", "gpus": "1×H100",
       "target": "Quantized attention forward and backward",
       "summary": "One training step of a 4-bit quantization-aware attention layer used to fine-tune video diffusion models (Wan2.1, LTX-2, Kandinsky 5). Q, K, V and the attention probabilities are fake-quantized to NVFP4 in both passes. The agent starts from a correct Triton port of the FastVideo SM90 kernels and must make it faster without changing what it computes.",
       "ranked": true, "flags": {}
     },
     {
-      "key": "wgrad", "dash": "kgrouped-wgrad-v2", "name": "K-grouped FP8 Wgrad", "stage": "training", "level": "operator",
+      "key": "wgrad", "short": "WGRAD", "dash": "kgrouped-wgrad-v2", "name": "K-grouped FP8 Wgrad", "stage": "training", "level": "operator",
       "budget_h": 12, "metric": "TFLOPS", "start": "scratch", "gpus": "1×H100",
       "target": "Expert-grouped weight-gradient GEMM",
       "summary": "The training-side MoE GEMM that DeepGEMM provides: groups of token rows are concatenated along K and each group accumulates an FP32 weight gradient. Written from an empty file in self-contained Triton, correct and memory-safe for arbitrary shapes and empty groups, and timed on DeepGEMM's own benchmark grid.",
       "ranked": true, "flags": {}
     },
     {
-      "key": "flux-moe", "dash": "flux-moe-ag", "name": "Flux/Comet MoE primitive", "stage": "training", "level": "operator",
+      "key": "flux-moe", "short": "FLUX-MOE", "dash": "flux-moe-ag", "name": "Flux/Comet MoE primitive", "stage": "training", "level": "operator",
       "budget_h": 12, "metric": "TFLOPS", "start": "seed", "gpus": "2×H100 (NVLink)",
       "target": "All-gather, token scatter and grouped GEMM",
       "summary": "A fused tensor-parallel MoE operator across two peer-connected H100s: each rank all-gathers the other's token shard over NVLink, scatters rows into expert order and runs a grouped BF16 GEMM. The seed is a Triton implementation derived from ByteDance Flux; the result must stay exact.",
       "ranked": true, "flags": {"astra": "x"}
     },
     {
-      "key": "orpo", "dash": "qwen3-orpo-v4", "name": "Qwen3 ORPO", "stage": "training", "level": "module",
+      "key": "orpo", "short": "ORPO", "dash": "qwen3-orpo-v4", "name": "Qwen3 ORPO", "stage": "training", "level": "module",
       "budget_h": 24, "metric": "Score", "start": "seed", "gpus": "2×H100",
       "target": "Vocabulary projection and ORPO loss",
       "summary": "Speed up one full-parameter ORPO training step for Qwen3-1.7B under FSDP on two GPUs. The agent replaces the ORPO objective and may patch some layers; model, data, optimizer and timing stay under the trusted runtime. Score is end-to-end throughput relative to the official TRL implementation (100 = parity).",
       "ranked": true, "flags": {"astra": "x"}
     },
     {
-      "key": "gkd", "dash": "gkd-v1", "name": "Qwen3 GKD", "stage": "training", "level": "module",
+      "key": "gkd", "short": "GKD", "dash": "gkd-v1", "name": "Qwen3 GKD", "stage": "training", "level": "module",
       "budget_h": 24, "metric": "Score", "start": "seed", "gpus": "2×H100",
       "target": "Teacher/student projection and distillation loss",
       "summary": "Generalized knowledge distillation from a frozen Qwen3-4B teacher into a trainable Qwen3-1.7B student, sharded with FSDP. Raise training-step throughput while staying numerically equivalent to TRL's generalized JSD loss. Score is throughput relative to the official TRL step (100 = parity).",
@@ -54,14 +54,14 @@
       "flags": {}
     },
     {
-      "key": "opcd", "dash": "miles-opcd-v3", "name": "Miles Qwen3 OPCD", "stage": "training", "level": "system",
+      "key": "opcd", "short": "OPCD", "dash": "miles-opcd-v3", "name": "Miles Qwen3 OPCD", "stage": "training", "level": "system",
       "budget_h": 24, "metric": "Score", "start": "seed", "gpus": "2×H100 (NVLink)",
       "target": "Context-conditioned online distillation loop",
       "summary": "Implement on-policy context distillation inside the Miles RL framework (SGLang rollouts, Megatron-Core, Ray): Qwen3-1.7B learns to behave without a system prompt the way it does with one. Then make the fixed-size training run fast while it keeps learning. Score is accuracy points gained per training hour.",
       "ranked": true, "flags": {}
     },
     {
-      "key": "opd", "dash": "miles-opd-v2", "name": "Miles Qwen3 OPD", "stage": "training", "level": "system",
+      "key": "opd", "short": "OPD", "dash": "miles-opd-v2", "name": "Miles Qwen3 OPD", "stage": "training", "level": "system",
       "budget_h": 24, "metric": "Score", "start": "seed", "gpus": "2×H100 (NVLink)",
       "target": "Online distillation integration and execution",
       "summary": "Re-implement sampled-token on-policy distillation in a Miles checkout where it was removed: a Qwen3-1.7B student samples, a frozen Qwen3-4B teacher scores the same tokens, and the student trains toward the teacher. Score is accuracy points gained per training hour, zero below a 1.6-point gain.",
@@ -69,21 +69,21 @@
       "flags": {}
     },
     {
-      "key": "alfworld", "dash": "miles-alfworld-v1", "name": "Miles ALFWorld RL", "stage": "training", "level": "system",
+      "key": "alfworld", "short": "ALFWORLD", "dash": "miles-alfworld-v1", "name": "Miles ALFWorld RL", "stage": "training", "level": "system",
       "budget_h": 24, "metric": "Score", "start": "seed", "gpus": "2×H100 (NVLink)",
       "target": "Environment rollouts, GRPO updates and publication",
       "summary": "Integrate the ALFWorld text household environment into Miles so Qwen3-4B trains with multi-turn GRPO on whether it wins each game, then make the run fast while it keeps learning. Score is success-rate points gained per training hour, zero below a 15-point gain.",
       "ranked": true, "flags": {}
     },
     {
-      "key": "sd35", "dash": "miles-sd35m-v2", "name": "Miles SD3.5-M multi-teacher OPD", "stage": "training", "level": "system",
+      "key": "sd35", "short": "SD3.5", "dash": "miles-sd35m-v2", "name": "Miles SD3.5-M multi-teacher OPD", "stage": "training", "level": "system",
       "budget_h": 24, "metric": "Score", "start": "seed", "gpus": "2×H100 (NVLink)",
       "target": "Teacher routing, training and student publication",
       "summary": "Add multi-teacher on-policy distillation to miles_diffusion for Stable Diffusion 3.5 Medium: OCR and aesthetics LoRA teachers are distilled into one student LoRA on the student's own trajectories. Score is teacher-gap closure per replay hour, behind quality and KL gates.",
       "ranked": true, "flags": {}
     },
     {
-      "key": "wan22", "dash": "miles-wan22-v2", "name": "Miles Wan2.2 DanceGRPO", "stage": "training", "level": "system",
+      "key": "wan22", "short": "WAN2.2", "dash": "miles-wan22-v2", "name": "Miles Wan2.2 DanceGRPO", "stage": "training", "level": "system",
       "budget_h": 24, "metric": "Score", "start": "seed", "gpus": "2×H100 (NVLink)",
       "target": "Video rewards, policy updates and publication",
       "summary": "Implement DanceGRPO for Wan2.2-TI2V-5B text-to-video with full-parameter training: the Dance-SDE transition, shared-noise seed groups and the official HPSv3 video reward. Score is fixed replay workloads completed per hour, behind a video-quality gate.",
@@ -91,14 +91,14 @@
       "flags": {"qwen": "*"}
     },
     {
-      "key": "grouped-fp8", "dash": "kernel-v3", "name": "Dynamic grouped FP8 GEMM", "stage": "inference", "level": "operator",
+      "key": "grouped-fp8", "short": "GEMM-FP8", "dash": "kernel-v3", "name": "Dynamic grouped FP8 GEMM", "stage": "inference", "level": "operator",
       "budget_h": 12, "metric": "TFLOPS", "start": "scratch", "gpus": "1×H100",
       "target": "Dynamic grouping and GEMM scheduling",
       "summary": "The block-scaled FP8 mixture-of-experts GEMM that DeepGEMM provides, written from an empty file in self-contained Triton, with padded/masked and packed prefix-sum entry points. Correct and memory-safe for every per-group row count, timed on DeepGEMM's masked grouped-GEMM grid.",
       "ranked": true, "flags": {}
     },
     {
-      "key": "sparse-mla", "dash": "sparse-mla-v2", "name": "Sparse-MLA prefill", "stage": "inference", "level": "operator",
+      "key": "sparse-mla", "short": "SP-MLA", "dash": "sparse-mla-v2", "name": "Sparse-MLA prefill", "stage": "inference", "level": "operator",
       "budget_h": 12, "metric": "TFLOPS", "start": "scratch", "gpus": "1×H100",
       "target": "Sparse attention with prescribed indices",
       "summary": "The prefill kernel of DeepSeek Sparse Attention, following FlashMLA's sparse forward semantics: each query attends a top-k set of indexed keys, with an optional attention sink. Written from scratch in Triton and timed on FlashMLA's own sparse-prefill cases.",
@@ -106,7 +106,7 @@
       "flags": {"deepseek": "H"}
     },
     {
-      "key": "paged-gqa", "dash": "paged-gqa-v2", "name": "Paged-GQA decode", "stage": "inference", "level": "operator",
+      "key": "paged-gqa", "short": "PG-GQA", "dash": "paged-gqa-v2", "name": "Paged-GQA decode", "stage": "inference", "level": "operator",
       "budget_h": 12, "metric": "TFLOPS", "start": "scratch", "gpus": "1×H100",
       "target": "Decode attention over paged KV caches",
       "summary": "A paged-KV grouped-query attention kernel for decode and short-query prefill with FlashAttention's kv-cache semantics, correct over a support domain drawn from FlashAttention, vLLM, FlashInfer and SGLang tests. Written from scratch in Triton.",
@@ -114,14 +114,14 @@
       "flags": {"deepseek": "P"}
     },
     {
-      "key": "sageattention", "dash": "sageattention-v2", "name": "SageAttention", "stage": "inference", "level": "operator",
+      "key": "sageattention", "short": "SAGE", "dash": "sageattention-v2", "name": "SageAttention", "stage": "inference", "level": "operator",
       "budget_h": 12, "metric": "TFLOPS", "start": "seed", "gpus": "1×H100",
       "target": "Quantized attention forward",
       "summary": "A quantized attention forward pass in self-contained Triton that does K smoothing, quantization, softmax and P·V inside the timed call. Accuracy is judged against SageAttention-1 numerics on real CogVideoX-2B and Llama-3.1-8B activations; speed on video-DiT and causal-LLM shapes.",
       "ranked": true, "flags": {}
     },
     {
-      "key": "minference", "dash": "minference-v3", "name": "MInference", "stage": "inference", "level": "operator",
+      "key": "minference", "short": "MINFER", "dash": "minference-v3", "name": "MInference", "stage": "inference", "level": "operator",
       "budget_h": 12, "metric": "TFLOPS", "start": "seed", "gpus": "1×H100 + Judge",
       "target": "Long-context sparse prefill attention",
       "summary": "Long-context sparse prefill attention in the style of Microsoft MInference (vertical/slash patterns) on real Llama-3.1-8B activations, inside a fixed error budget against an FP32 dense reference. Reported as dense-equivalent TFLOPS.",
@@ -129,21 +129,21 @@
       "flags": {"deepseek": "†", "astra": "F"}
     },
     {
-      "key": "lmcache", "dash": "lmcache-v1", "name": "LMCache KV block transfer", "stage": "inference", "level": "operator",
+      "key": "lmcache", "short": "LMCACHE", "dash": "lmcache-v1", "name": "LMCache KV block transfer", "stage": "inference", "level": "operator",
       "budget_h": 12, "metric": "GB/s", "start": "seed", "gpus": "1×H100",
       "target": "KV block movement and layout conversion",
       "summary": "The LMCache kernel that moves KV-cache blocks between a serving engine's paged per-layer buffers and contiguous token-major chunks. The agent starts from an upstream-faithful CUDA port; every byte it moves must stay bit-exact.",
       "ranked": true, "flags": {}
     },
     {
-      "key": "flash-kmeans", "dash": "flash-kmeans", "name": "Flash-KMeans", "stage": "inference", "level": "operator",
+      "key": "flash-kmeans", "short": "KMEANS", "dash": "flash-kmeans", "name": "Flash-KMeans", "stage": "inference", "level": "operator",
       "budget_h": 12, "metric": "TFLOPS", "start": "scratch", "gpus": "1×H100",
       "target": "Cluster assignment and center-update primitives",
       "summary": "One exact Lloyd K-Means iteration (nearest-centroid assignment and centroid update) on batched FP16 data, written from an empty directory. The Judge scores weighted latency; we report it as equivalent throughput, 4694.34 / latency(ms) TFLOP/s.",
       "ranked": true, "flags": {}
     },
     {
-      "key": "mamba2", "dash": "tilelang-mamba2-v2", "name": "Mamba-2 SSD forward", "stage": "inference", "level": "operator",
+      "key": "mamba2", "short": "MAMBA2", "dash": "tilelang-mamba2-v2", "name": "Mamba-2 SSD forward", "stage": "inference", "level": "operator",
       "budget_h": 12, "metric": "TFLOPS", "start": "seed", "gpus": "1×H100",
       "target": "Sequence-level SSD forward computation",
       "summary": "The Mamba-2 state-space-dual forward pass in TileLang, as used by Mamba-2, Codestral Mamba, Nemotron-H and Falcon-H1. The agent starts from a correct but deliberately unoptimized four-stage implementation.",
@@ -151,35 +151,35 @@
       "flags": {"astra": "H"}
     },
     {
-      "key": "kvpress", "dash": "kvpress-v2", "name": "kvpress KV eviction", "stage": "inference", "level": "module",
+      "key": "kvpress", "short": "KVPRESS", "dash": "kvpress-v2", "name": "kvpress KV eviction", "stage": "inference", "level": "module",
       "budget_h": 24, "metric": "Fidelity", "start": "scratch", "gpus": "1×H100 + Judge",
       "target": "Per-layer token retention and cache budgets",
       "summary": "Design a KV-cache eviction policy for frozen Qwen3-8B that keeps next-token distributions close to the full cache when 50%, 75% or 87.5% of cached positions are evicted, on long-context items from RULER, LongBench, LooGLE and Zero-SCROLLS.",
       "ranked": true, "flags": {}
     },
     {
-      "key": "kvzip", "dash": "kvzip-v2", "name": "KVzip KV scoring", "stage": "inference", "level": "module",
+      "key": "kvzip", "short": "KVZIP", "dash": "kvzip-v2", "name": "KVzip KV scoring", "stage": "inference", "level": "module",
       "budget_h": 24, "metric": "Rel. accuracy", "start": "scratch", "gpus": "1×H100 + Judge",
       "target": "Query-agnostic KV importance scoring",
       "summary": "Write a scorer that assigns one query-agnostic importance score to every cached key/value pair of Qwen3-8B. The runtime keeps the top 10%, 20% and 30% and measures how much full-cache answer quality survives on contexts of 64 to 32,000 tokens.",
       "ranked": true, "flags": {}
     },
     {
-      "key": "qvg", "dash": "qvg-v4", "name": "Quant-VideoGen KV codec", "stage": "inference", "level": "module",
+      "key": "qvg", "short": "QVG", "dash": "qvg-v4", "name": "Quant-VideoGen KV codec", "stage": "inference", "level": "module",
       "budget_h": 24, "metric": "Ratio", "start": "scratch", "gpus": "1×H100 + Judge",
       "target": "Persistent KV cache encoding and decoding",
       "summary": "Design a persistent KV-cache codec for autoregressive video generators that works unchanged across two hidden workloads, preserving generation quality while storing as few GPU bytes as possible. Score is the compression ratio, geometric mean over both models.",
       "ranked": true, "flags": {}
     },
     {
-      "key": "eagle3", "dash": "eagle3-v1", "name": "EAGLE-3 speculative decoding", "stage": "inference", "level": "system",
+      "key": "eagle3", "short": "EAGLE3", "dash": "eagle3-v1", "name": "EAGLE-3 speculative decoding", "stage": "inference", "level": "system",
       "budget_h": 24, "metric": "tok/s", "start": "seed", "gpus": "1×H100",
       "target": "Draft, verification, acceptance and KV rollback",
       "summary": "Optimize a complete EAGLE-3 draft-tree speculative-decoding engine for a frozen Qwen3-8B target. Maximize generated tokens per second for lossless greedy decoding across chat, math, code, long-context and thinking-mode workloads.",
       "ranked": true, "flags": {}
     },
     {
-      "key": "llada", "dash": "llada-v2", "name": "LLaDA decoding", "stage": "inference", "level": "system",
+      "key": "llada", "short": "LLADA", "dash": "llada-v2", "name": "LLaDA decoding", "stage": "inference", "level": "system",
       "budget_h": 24, "metric": "tok/s", "start": "seed", "gpus": "1×H100",
       "target": "Iterative denoising and cache reuse",
       "summary": "Inference for LLaDA-8B-Instruct, a masked-diffusion language model that generates by iteratively unmasking a token buffer. The starting engine re-evaluates the full model at every step; the agent must raise useful tokens per second while keeping answer quality, determinism and request isolation.",
@@ -187,14 +187,14 @@
       "flags": {"deepseek": "R"}
     },
     {
-      "key": "sdv2", "dash": "sdv2-v2", "name": "StreamDiffusionV2", "stage": "inference", "level": "system",
+      "key": "sdv2", "short": "SDV2", "dash": "sdv2-v2", "name": "StreamDiffusionV2", "stage": "inference", "level": "system",
       "budget_h": 24, "metric": "FPS", "start": "seed", "gpus": "2×H100",
       "target": "Multi-GPU video-pipeline orchestration",
       "summary": "Rewrite the runtime around frozen StreamDiffusionV2 / Wan2.1 math on two GPUs (stage placement, transfers, overlap, rolling-KV bookkeeping, CUDA graphs) to maximize latency-weighted frames per second while every output stays bit-exact.",
       "ranked": true, "flags": {"astra": "x"}
     },
     {
-      "key": "serving", "dash": "concurrent-v24", "name": "Concurrent agent serving", "stage": "inference", "level": "system",
+      "key": "serving", "short": "SERVE", "dash": "concurrent-v24", "name": "Concurrent agent serving", "stage": "inference", "level": "system",
       "budget_h": 24, "metric": "steps/min", "start": "seed", "gpus": "2×H100 (vLLM)",
       "target": "Admission, scheduling and workflow progress",
       "summary": "192 concurrent multi-turn coding agents work on SWE-bench Lite against one vLLM server hosting Qwen3.6-27B. The agent builds an OpenAI-compatible scheduling gateway in front of the server and must raise valid executable agent steps per minute.",

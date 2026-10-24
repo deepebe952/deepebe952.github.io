@@ -12,7 +12,8 @@ Selection rules (same as the paper's main table):
   * Mamba-2 keeps Sol's cloud run, not its local NVL rerun.
 
 Output (``data/raw/runs.json``) keeps scores, timestamps and submission statuses
-only; internal report links, hostnames and image digests are not copied.
+only (``rejected`` marks submissions blocked by the integrity review); judge
+feedback text, internal report links, hostnames and image digests are not copied.
 
 Usage: python scripts/extract_dashboard.py <dashboard.zip | dashboard dir> [-o data/raw/runs.json]
 """
@@ -29,6 +30,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA_RE = re.compile(r'<script id="dashboard-data" type="application/json"[^>]*>(.*?)</script>', re.S)
 PAGE_RE = re.compile(r"(?:^|/)dashboard/tasks/([^/]+)/([^/]+)/results\.html$")
 DATE_RE = re.compile(r"(\d{8})$")
+INTEGRITY_RE = re.compile(r"integrity review rejected", re.I)
 
 
 def iter_pages(src: Path):
@@ -60,8 +62,11 @@ def keep_run(task_dir: str, run: dict) -> bool:
 def slim_run(run: dict, model_key: str) -> dict:
     points = []
     for p in run.get("points") or []:
-        score = p.get("score") if p.get("status") == "valid" else None
-        points.append([round(p["elapsed_h"], 4), score, p.get("status")])
+        status = p.get("status")
+        score = p.get("score") if status == "valid" else None
+        if status == "invalid" and INTEGRITY_RE.search(p.get("summary") or ""):
+            status = "rejected"  # blocked by the integrity review before benchmarking
+        points.append([round(p["elapsed_h"], 4), score, status])
     points.sort(key=lambda x: x[0])
     final = run.get("final") or {}
     return {

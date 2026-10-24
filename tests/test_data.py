@@ -32,7 +32,8 @@ class PaperNumbers(unittest.TestCase):
     def test_coverage(self):
         self.assertEqual(len(DATA["tasks"]), 25)
         self.assertEqual(DATA["summary"]["n_runs"], 149)
-        self.assertEqual(DATA["groups"]["all"]["n"], 17)
+        self.assertEqual(DATA["views"]["paper"]["n"], 17)
+        self.assertEqual(DATA["views"]["all"]["n"], 25)
         levels = {}
         for t in DATA["tasks"]:
             levels[(t["stage"], t["level"])] = levels.get((t["stage"], t["level"]), 0) + 1
@@ -41,15 +42,15 @@ class PaperNumbers(unittest.TestCase):
 
     def test_figure_3(self):
         for group, expected in FIGURE_3.items():
-            got = DATA["groups"][group]
+            got = DATA["paper_groups"][group]
             self.assertEqual(got["n"], FIGURE_3_N[group], group)
             for m, v in zip(MODELS, expected):
                 self.assertAlmostEqual(got["rank_score"][m], v, delta=0.05, msg=f"{group} {m}")
 
     def test_table_13_aggregate(self):
         for m, rel, wins in zip(MODELS, TABLE_13_REL, TABLE_13_WINS):
-            self.assertAlmostEqual(DATA["summary"]["mean_relative"][m], rel, delta=0.0005, msg=m)
-            self.assertEqual(DATA["summary"]["wins"][m], wins, m)
+            self.assertAlmostEqual(DATA["views"]["paper"]["mean_relative"][m], rel, delta=0.0005, msg=m)
+            self.assertEqual(DATA["views"]["paper"]["wins"][m], wins, m)
 
     def test_flash_kmeans_conversion(self):
         fk = next(t for t in DATA["tasks"] if t["key"] == "flash-kmeans")
@@ -61,7 +62,17 @@ class PaperNumbers(unittest.TestCase):
         self.assertEqual(mi["results"]["deepseek"]["flag"], "†")
         opd = next(t for t in DATA["tasks"] if t["key"] == "opd")
         self.assertNotIn("astra", opd["results"])
-        self.assertIsNone(opd["winner"])
+        self.assertIsNone(opd["paper_winner"])
+
+    def test_all_tasks_view(self):
+        view = DATA["views"]["all"]
+        self.assertEqual(view["coverage"], {"sol": 25, "claude": 25, "qwen": 25, "deepseek": 25, "glm": 24, "astra": 23})
+        self.assertEqual(sum(view["wins"].values()), 25)
+        # On tasks where all six have finals, the per-task contribution is exactly Eq. 6.
+        for t in DATA["tasks"]:
+            if len(t["ranks"]) == 6:
+                for m, r in t["ranks"].items():
+                    self.assertAlmostEqual(t["contrib"][m], 100 * (6 - r) / 5, places=3)
 
     def test_bundle_is_fresh(self):
         bundle = (ROOT / "site/data/infrathon.js").read_text()
