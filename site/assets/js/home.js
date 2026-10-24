@@ -10,6 +10,85 @@
   $("#stat-runs").textContent = D.summary.n_runs;
   $("#stat-subs").textContent = D.summary.n_submissions.toLocaleString("en-US");
 
+  /* ---------------- hero wafer ---------------- */
+  (function renderWafer() {
+    const cv = $("#wafer");
+    if (!cv || getComputedStyle(cv.parentElement).display === "none") return;
+    const ctx = cv.getContext("2d");
+    const N = 15, NOTCH = 0.13;
+    let W = 0, R = 0, cx = 0, cy = 0, dies = [], lit = [], hover = null, raf = 0, visible = true;
+    const rnd = (() => { let a = 20261023; return () => { a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; })();
+    const order = [];
+    function layout() {
+      const box = cv.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
+      W = box.width; cv.width = Math.round(W * dpr); cv.height = Math.round(W * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      R = W * 0.43; cx = W / 2; cy = W / 2;
+      const step = (2 * R) / N, d = step - Math.max(2, W / 260);
+      dies = [];
+      for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
+        const x = cx - R + i * step, y = cy - R + j * step;
+        const corners = [[x, y], [x + d, y], [x, y + d], [x + d, y + d]];
+        if (corners.every(([px, py]) => Math.hypot(px - cx, py - cy) <= R - W * 0.012) && y + d < cy + R * Math.cos(NOTCH) - 4) dies.push({ x, y, d });
+      }
+      if (!order.length) { const idx = dies.map((_, i) => i); for (let i = idx.length - 1; i > 0; i--) { const k = Math.floor(rnd() * (i + 1)); [idx[i], idx[k]] = [idx[k], idx[i]]; } order.push(...idx.slice(0, D.tasks.length)); }
+      lit = D.tasks.map((t, i) => ({ t, die: dies[order[i] % dies.length], col: COLOR[t.winner], phase: rnd() * Math.PI * 2 }));
+    }
+    function waferPath() {
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, Math.PI / 2 + NOTCH, Math.PI / 2 - NOTCH + Math.PI * 2);
+      ctx.closePath();
+    }
+    function rr(x, y, w, hh, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + hh, r); ctx.arcTo(x + w, y + hh, x, y + hh, r); ctx.arcTo(x, y + hh, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+    function draw(time) {
+      ctx.clearRect(0, 0, W, W);
+      const glow = ctx.createRadialGradient(cx, cy, R * 0.2, cx, cy, R * 1.25);
+      glow.addColorStop(0, "rgba(120,135,255,0.10)"); glow.addColorStop(1, "rgba(120,135,255,0)");
+      ctx.fillStyle = glow; ctx.fillRect(0, 0, W, W);
+      for (let a = 0; a < 360; a += 6) {
+        const r0 = R + W * 0.03, r1 = r0 + (a % 30 === 0 ? W * 0.018 : W * 0.008), t = (a * Math.PI) / 180;
+        ctx.strokeStyle = a % 30 === 0 ? "rgba(255,255,255,0.18)" : "rgba(255,255,255,0.08)"; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(cx + r0 * Math.cos(t), cy + r0 * Math.sin(t)); ctx.lineTo(cx + r1 * Math.cos(t), cy + r1 * Math.sin(t)); ctx.stroke();
+      }
+      waferPath();
+      const disc = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.35, R * 0.1, cx, cy, R);
+      disc.addColorStop(0, "#14171d"); disc.addColorStop(1, "#090a0d");
+      ctx.fillStyle = disc; ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,0.16)"; ctx.lineWidth = 1; ctx.stroke();
+      const rad = Math.max(1.5, W / 300);
+      for (const dd of dies) { rr(dd.x, dd.y, dd.d, dd.d, rad); ctx.fillStyle = "rgba(255,255,255,0.028)"; ctx.fill(); ctx.strokeStyle = "rgba(255,255,255,0.07)"; ctx.stroke(); }
+      for (const L of lit) {
+        const p = time == null ? 0.5 : 0.5 + 0.5 * Math.sin(time / 1400 + L.phase), on = hover === L;
+        rr(L.die.x, L.die.y, L.die.d, L.die.d, rad);
+        ctx.save(); ctx.shadowColor = L.col; ctx.shadowBlur = on ? 22 : 8 + 8 * p;
+        ctx.globalAlpha = on ? 0.9 : 0.32 + 0.22 * p; ctx.fillStyle = L.col; ctx.fill(); ctx.restore();
+        ctx.save(); ctx.globalAlpha = on ? 1 : 0.75; ctx.strokeStyle = L.col; ctx.lineWidth = on ? 1.6 : 1; ctx.stroke(); ctx.restore();
+      }
+      if (time != null) {
+        const span = W * 1.6, pos = ((time / 7000) % 1) * (span + W * 0.6) - W * 0.3;
+        ctx.save(); waferPath(); ctx.clip();
+        const g = ctx.createLinearGradient(pos - W * 0.25, pos - W * 0.25, pos + W * 0.25, pos + W * 0.25);
+        g.addColorStop(0, "rgba(255,255,255,0)"); g.addColorStop(0.5, "rgba(255,255,255,0.06)"); g.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.fillStyle = g; ctx.fillRect(0, 0, W, W); ctx.restore();
+      }
+    }
+    const loop = (t) => { draw(t); raf = visible ? requestAnimationFrame(loop) : 0; };
+    function start() { if (X.reduceMotion) { draw(null); return; } if (!raf) raf = requestAnimationFrame(loop); }
+    layout(); start();
+    new ResizeObserver(() => { layout(); if (X.reduceMotion || !raf) draw(X.reduceMotion ? null : performance.now()); }).observe(cv);
+    new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) start(); }).observe(cv);
+    const hit = (e) => { const b = cv.getBoundingClientRect(), x = e.clientX - b.left, y = e.clientY - b.top; return lit.find((L) => x >= L.die.x && x <= L.die.x + L.die.d && y >= L.die.y && y <= L.die.y + L.die.d) || null; };
+    cv.addEventListener("pointermove", (e) => {
+      hover = hit(e);
+      cv.style.cursor = hover ? "pointer" : "default";
+      if (hover) X.showTip(e.clientX, e.clientY, `${cap(hover.t.stage)} · ${hover.t.level}`, [{ color: hover.col, value: hover.t.name, label: MODEL[hover.t.winner].short }], "click for the task page");
+      else X.hideTip();
+      if (X.reduceMotion) draw(null);
+    });
+    cv.addEventListener("pointerleave", () => { hover = null; X.hideTip(); if (X.reduceMotion) draw(null); });
+    cv.addEventListener("click", (e) => { const L = hit(e); if (L) location.href = X.taskHref(L.t.key); });
+  })();
+
   /* ---------------- leaderboard ---------------- */
   const state = { stage: "all", level: "all" };
   const TK = D.tokens.models;
