@@ -94,6 +94,7 @@ def run_summary(task_key: str, run: dict) -> dict:
         "first_valid_h": round(valid[0][0], 3) if valid else None,
         "elapsed_h": round(run["elapsed_h"], 3) if run["elapsed_h"] is not None else None,
         "budget_h": run["budget_h"],
+        "effort": run["effort"],
         "n_sub": len(subs),
         "counts": counts,
         "traj": traj,

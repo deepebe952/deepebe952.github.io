@@ -20,7 +20,7 @@
   for (const m of MODELS) {
     const runs = D.tasks.filter((t) => t.results[m]).length, valid = D.tasks.filter((t) => t.results[m]?.best != null).length;
     cb.append(h("tr", {}, h("td", {}, X.who(m)), h("td", { class: "muted", text: X.PROVIDER[m] }),
-      h("td", { class: "muted", text: "max" }),
+      h("td", { class: "muted", text: X.xhighTasks(m).length ? `max; xhigh on ${X.xhighTasks(m).map((t) => t.name).join(", ")}` : "max" }),
       h("td", { class: "n", text: runs }), h("td", { class: "n", text: valid }),
       h("td", { class: "n", text: X.fmt(D.ranking.rank_score[m], 1) })));
   }

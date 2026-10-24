@@ -44,14 +44,15 @@
     $("#t-trace").replaceChildren(X.traceChart(t, true));
 
     const tbl = $("#t-table");
-    tbl.replaceChildren(h("thead", {}, h("tr", {}, ["Configuration", "Best during run", "Rank", "Best reached at", "First valid score", "Scored / failed / rejected / infra", "Run length", ""].map((x, i) => h("th", { scope: "col", class: i > 0 && i < 7 ? "n" : null, text: x })))));
+    tbl.replaceChildren(h("thead", {}, h("tr", {}, ["Configuration", "Effort", "Best during run", "Rank", "Best reached at", "First valid score", "Scored / failed / rejected / infra", "Run length", ""].map((x, i) => h("th", { scope: "col", class: i > 1 && i < 8 ? "n" : null, text: x })))));
     const tb = h("tbody");
     for (const m of MODELS) {
       const r = t.results[m];
-      if (!r) { tb.append(h("tr", {}, h("td", {}, X.who(m)), h("td", { colspan: 7, class: "muted", text: "No run in this cohort" }))); continue; }
+      if (!r) { tb.append(h("tr", {}, h("td", {}, X.who(m)), h("td", { colspan: 8, class: "muted", text: "No run in this cohort" }))); continue; }
       const c = r.counts;
       tb.append(h("tr", {},
         h("td", {}, X.who(m), r.flag ? h("span", { class: "chip", style: "margin-left:8px", text: r.flag }) : null),
+        h("td", { class: "muted", text: r.effort }),
         h("td", { class: "n", text: fmt(r.best) }),
         h("td", { class: "n", text: t.ranks[m] ? ordinal(Math.round(t.ranks[m])) : "—" }),
         h("td", { class: "n", text: r.best_at_h == null ? "—" : `${fmt(r.best_at_h, 2)} h` }),

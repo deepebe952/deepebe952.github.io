@@ -64,6 +64,8 @@ window.IX = (() => {
   const taskHref = (key) => `task.html#${key}`;
   const runHref = (key, m) => `runs.html#${key}/${m}`;
   const groupName = (t) => `${cap(t.stage)} · ${cap(t.level)}`;
+  const xhighTasks = (m) => D.tasks.filter((t) => t.results[m]?.effort === "xhigh");
+  const effortNote = (m) => { const n = xhighTasks(m).length; return n ? `effort max · xhigh on ${n}` : "effort max"; };
 
   /* ---------- marks ---------- */
   function marker(parent, key, x, y, r, opts) {
@@ -362,7 +364,7 @@ window.IX = (() => {
   chrome();
   return {
     D, K, MODELS, MODEL, PROVIDER, COLOR, C, TASK, STAGES, LEVELS, reduceMotion, cap,
-    s, st, h, $, fmt, unitOf, withUnit, metricLabel, ordinal, pct, taskHref, runHref, groupName,
+    s, st, h, $, fmt, unitOf, withUnit, metricLabel, ordinal, pct, taskHref, runHref, groupName, xhighTasks, effortNote,
     marker, swatch, who, showTip, hideTip, filterTasks, rankScores, bootstrap, standings,
     niceTicks, bestAt, makeLegend, setFocus, trajChart, traceChart, fingerprint, hbar, wireTabs, seg,
   };

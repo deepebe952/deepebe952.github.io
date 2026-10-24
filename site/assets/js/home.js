@@ -1,4 +1,4 @@
-/* Home: spec sheet, leaderboard, task map, results matrix, highlights, headline facts. */
+/* Home: leaderboard, task map, results matrix, highlights, headline facts. */
 (() => {
   "use strict";
   const X = window.IX;
@@ -7,22 +7,8 @@
   const R = D.ranking;
   const leader = [...MODELS].sort((a, b) => R.rank_score[b] - R.rank_score[a])[0];
 
-  /* ---------------- spec sheet ---------------- */
-  (function renderSheet() {
-    const rows = [
-      ["Tasks", "25 · 10 training, 15 inference"],
-      ["Levels", "11 operator · 5 module · 9 system"],
-      ["Budget", "12 h operators · 24 h modules, systems"],
-      ["Hardware", "NVIDIA H100 · 1–2 GPUs per agent"],
-      ["Configurations", "6 frontier models · effort max"],
-      ["Runs", `${D.summary.n_runs}`],
-      ["Judged submissions", D.summary.n_submissions.toLocaleString("en-US")],
-      ["Judge", "private tests + integrity review"],
-    ];
-    const dl = $("#sheet");
-    for (const [k, v] of rows) dl.append(h("dt", { text: k }), h("dd", { text: v }));
-    dl.append(h("dt", { text: "Top rank score" }), h("dd", {}, X.who(leader, `${MODEL[leader].name} · ${fmt(R.rank_score[leader], 1)}`)));
-  })();
+  $("#stat-runs").textContent = D.summary.n_runs;
+  $("#stat-subs").textContent = D.summary.n_submissions.toLocaleString("en-US");
 
   /* ---------------- leaderboard ---------------- */
   const state = { stage: "all", level: "all" };
@@ -54,7 +40,7 @@
       const tk = TK[r.m];
       tb.append(h("tr", {},
         h("td", { class: "rk", text: r.score == null ? "–" : String(pos) }),
-        h("td", {}, h("div", { class: "model" }, h("span", { class: "badge" }, X.swatch(r.m, 14)), h("div", {}, h("b", { text: MODEL[r.m].name }), h("small", { text: `${X.PROVIDER[r.m]} · effort max` })))),
+        h("td", {}, h("div", { class: "model" }, h("span", { class: "badge" }, X.swatch(r.m, 14)), h("div", {}, h("b", { text: MODEL[r.m].name }), h("small", { text: `${X.PROVIDER[r.m]} · ${X.effortNote(r.m)}` })))),
         h("td", {}, h("div", { class: "score" }, r.score == null ? "—" : fmt(r.score, 1), h("small", { text: r.ci.lo == null ? "" : `${fmt(r.ci.lo, 1)}–${fmt(r.ci.hi, 1)}` }))),
         h("td", { class: "barcell" }, scoreBar(r.m, r.score ?? 0, r.ci)),
         h("td", { class: "n" }, `${r.wins}`, h("small", { text: `of ${r.cov}` })),
@@ -163,7 +149,7 @@
             continue;
           }
           const win = t.winner === m;
-          tr.append(h("td", {}, h("div", { class: `cell${win ? " win" : ""}`, style: win ? `--wc:${COLOR[m]}` : null, title: `${MODEL[m].name}: ${withUnit(t, r.best)}${r.flag ? ` [${r.flag}] ${D.flag_legend[r.flag]}` : ""}` },
+          tr.append(h("td", {}, h("div", { class: `cell${win ? " win" : ""}`, style: win ? `--wc:${COLOR[m]}` : null, title: `${MODEL[m].name} (effort ${r.effort}): ${withUnit(t, r.best)}${r.flag ? ` [${r.flag}] ${D.flag_legend[r.flag]}` : ""}` },
             h("i", { style: `width:${max > 0 ? (r.best / max) * 100 : 0}%` }), h("span", { text: fmt(r.best) }), r.flag ? h("span", { class: "flag", text: r.flag }) : null)));
         }
         tr.append(h("td", { class: "unit", text: unitOf(t) || "score" }));
