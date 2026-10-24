@@ -94,10 +94,7 @@ class SiteData(unittest.TestCase):
         self.assertNotIn('"final"', bundle)
 
     def test_reasoning_effort(self):
-        # Paper, Section 4: max everywhere except Astra at xhigh on Flux/Comet, ORPO, MInference, StreamDiffusionV2.
-        xhigh = sorted((t["key"], m) for t in DATA["tasks"] for m, r in t["results"].items() if r["effort"] != "max")
-        self.assertEqual(xhigh, [("flux-moe", "astra"), ("minference", "astra"), ("orpo", "astra"), ("sdv2", "astra")])
-        self.assertTrue(all(r["effort"] in ("max", "xhigh") for t in DATA["tasks"] for r in t["results"].values()))
+        self.assertTrue(all(r["effort"] == "max" for t in DATA["tasks"] for r in t["results"].values()))
 
     def test_bundle_is_fresh(self):
         bundle = (ROOT / "site/data/infrathon.js").read_text()
