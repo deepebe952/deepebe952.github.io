@@ -1,5 +1,6 @@
 {
- "source": "dashboard-tasks-html-20261023-110626.zip",
+ "source": "dashboard-latest-results-20261025.zip",
+ "snapshot": "2026-10-25",
  "tasks": {
   "attn-qat": {
    "dash": "attnqat",
@@ -12,6 +13,7 @@
    },
    "runs": {
     "qwen": {
+     "id": "agent--attnqat--qwen3-8-flash-da666201--max--12h--20261009-084555--da46f8",
      "model": "qwen",
      "label": "Qwen 3.8 Flash",
      "effort": "max",
@@ -109,6 +111,7 @@
      ]
     },
     "sol": {
+     "id": "agent--attnqat--gpt-6-1-sol-dedfefd5--max--12h--20261009-084555--c8762e",
      "model": "sol",
      "label": "GPT-6.1 Sol",
      "effort": "max",
@@ -216,6 +219,7 @@
      ]
     },
     "glm": {
+     "id": "agent--attnqat--zhipu-glm-5-3-flash-26f6afdb--max--12h--20261009-084555--1c3a61",
      "model": "glm",
      "label": "GLM 5.3 Flash",
      "effort": "max",
@@ -338,6 +342,7 @@
      ]
     },
     "deepseek": {
+     "id": "agent--attnqat--deepseek-v4-1-flash-eb1394ac--max--12h--20261009-084555--56e3d0",
      "model": "deepseek",
      "label": "DeepSeek V4.1 Flash",
      "effort": "max",
@@ -440,6 +445,7 @@
      ]
     },
     "claude": {
+     "id": "agent--attnqat--claude-opus-5-5--max--12h--20261009-084555--a0595a",
      "model": "claude",
      "label": "Claude Opus 5.5",
      "effort": "max",
@@ -537,6 +543,7 @@
      ]
     },
     "astra": {
+     "id": "agent--attnqat--gpt-6-astra--max--12h--20261019-104326--df2706",
      "model": "astra",
      "label": "GPT-6 Astra（max）",
      "effort": "max",
@@ -663,7 +670,7 @@
   "serving": {
    "dash": "concurrent-v24",
    "cohort": "h100sxm-five-models-24h-20261016",
-   "generated_at": "2026-10-24T06:48:17.341601+00:00",
+   "generated_at": "2026-10-25T09:46:04.396499+00:00",
    "metric": {
     "name": "valid_steps_per_min",
     "unit": "valid steps/min",
@@ -671,6 +678,7 @@
    },
    "runs": {
     "astra": {
+     "id": "concurrent-astra-max-24h-20261018-081415",
      "model": "astra",
      "label": "GPT-6 Astra",
      "effort": "max",
@@ -813,6 +821,7 @@
      ]
     },
     "sol": {
+     "id": "concurrent-sol61-max-24h-20261016-194327",
      "model": "sol",
      "label": "GPT-6.1 Sol",
      "effort": "max",
@@ -945,6 +954,7 @@
      ]
     },
     "claude": {
+     "id": "concurrent-opus55-max-24h-20261016-213420",
      "model": "claude",
      "label": "Claude Opus 5.5",
      "effort": "max",
@@ -1037,6 +1047,7 @@
      ]
     },
     "qwen": {
+     "id": "concurrent-qwen38-max-24h-20261018-075444",
      "model": "qwen",
      "label": "Qwen 3.8 Flash",
      "effort": "max",
@@ -1047,10 +1058,10 @@
      "final_score": 144.66666666666666,
      "final_valid": true,
      "final_suite": "隐藏 swe192（300 s 预热 + 1800 s 计分）",
-     "best_score": 149.9,
+     "best_score": 154.33333333333334,
      "counts": {
-      "submissions": 21,
-      "valid": 18,
+      "submissions": 22,
+      "valid": 19,
       "invalid": 2,
       "infrastructure": 1,
       "waiting": 0
@@ -1160,10 +1171,16 @@
        22.2947,
        144.73333333333332,
        "valid"
+      ],
+      [
+       23.3179,
+       154.33333333333334,
+       "valid"
       ]
      ]
     },
     "deepseek": {
+     "id": "concurrent-deepseek41-max-24h-20261017-051222",
      "model": "deepseek",
      "label": "DeepSeek V4.1 Flash",
      "effort": "max",
@@ -1206,6 +1223,7 @@
      ]
     },
     "glm": {
+     "id": "concurrent-glm53-max-24h-20261017-051222",
      "model": "glm",
      "label": "GLM 5.3 Flash",
      "effort": "max",
@@ -1322,8 +1340,7 @@
       ]
      ]
     }
-   },
-   "source": "concurrent-v24-personal.zip"
+   }
   },
   "eagle3": {
    "dash": "eagle3-v1",
@@ -1336,6 +1353,7 @@
    },
    "runs": {
     "astra": {
+     "id": "eagle3-astra-max-24h-20261018-111408",
      "model": "astra",
      "label": "GPT-6 Astra",
      "effort": "max",
@@ -1548,6 +1566,7 @@
      ]
     },
     "claude": {
+     "id": "eagle3-opus55-max-24h-20261013-120504",
      "model": "claude",
      "label": "Claude Opus 5.5",
      "effort": "max",
@@ -1725,6 +1744,7 @@
      ]
     },
     "qwen": {
+     "id": "eagle3-qwen38-max-24h-20261013-120521",
      "model": "qwen",
      "label": "Qwen 3.8 Flash",
      "effort": "max",
@@ -1827,6 +1847,7 @@
      ]
     },
     "sol": {
+     "id": "eagle3-sol61-max-24h-20261013-120447",
      "model": "sol",
      "label": "GPT-6.1 Sol",
      "effort": "max",
@@ -2039,6 +2060,7 @@
      ]
     },
     "deepseek": {
+     "id": "eagle3-deepseek41-max-24h-20261013-120556",
      "model": "deepseek",
      "label": "DeepSeek V4.1 Flash",
      "effort": "max",
@@ -2126,6 +2148,7 @@
      ]
     },
     "glm": {
+     "id": "eagle3-glm53-max-24h-20261013-120539",
      "model": "glm",
      "label": "GLM 5.3 Flash",
      "effort": "max",
@@ -2285,6 +2308,7 @@
    },
    "runs": {
     "qwen": {
+     "id": "agent--flash-kmeans--qwen3-8-flash-da666201--max--12h--20261009-205450--6958d2",
      "model": "qwen",
      "label": "Qwen 3.8 Flash",
      "effort": "max",
@@ -2367,6 +2391,7 @@
      ]
     },
     "sol": {
+     "id": "agent--flash-kmeans--gpt-6-1-sol-dedfefd5--max--12h--20261009-205520--653f49",
      "model": "sol",
      "label": "GPT-6.1 Sol",
      "effort": "max",
@@ -2504,6 +2529,7 @@
      ]
     },
     "glm": {
+     "id": "agent--flash-kmeans--zhipu-glm-5-3-flash-26f6afdb--max--12h--20261009-205551--ff85d6",
      "model": "glm",
      "label": "GLM 5.3 Flash",
      "effort": "max",
@@ -2651,6 +2677,7 @@
      ]
     },
     "deepseek": {
+     "id": "agent--flash-kmeans--deepseek-v4-1-flash-eb1394ac--max--12h--20261009-205621--4eb2e6",
      "model": "deepseek",
      "label": "DeepSeek V4.1 Flash",
      "effort": "max",
@@ -2783,6 +2810,7 @@
      ]
     },
     "claude": {
+     "id": "agent--flash-kmeans--claude-opus-5-5--max--12h--20261009-205706--e11c74",
      "model": "claude",
      "label": "Claude Opus 5.5",
      "effort": "max",
@@ -2990,6 +3018,7 @@
      ]
     },
     "astra": {
+     "id": "agent--flash-kmeans--gpt-6-astra--max--12h--20261019-101708--349895",
      "model": "astra",
      "label": "GPT-6 Astra（max）",
      "effort": "max",
@@ -3206,7 +3235,7 @@
   "flux-moe": {
    "dash": "flux-moe-ag",
    "cohort": "h100sxm-five-models-12h-20261010",
-   "generated_at": "2026-10-18T00:31:14.752927+00:00",
+   "generated_at": "2026-10-25T10:02:01.979325+00:00",
    "metric": {
     "name": "score_tflops",
     "unit": "TFLOPS",
@@ -3214,6 +3243,7 @@
    },
    "runs": {
     "astra": {
+     "id": "flux-moe-ag-v1-astra-xhigh-12h-20261017-102126-43200s-20261017-102126",
      "model": "astra",
      "label": "GPT-6 Astra（max）",
      "effort": "max",
@@ -3496,6 +3526,7 @@
      ]
     },
     "claude": {
+     "id": "flux-moe-ag-v1-opus55-max-12h-20261010-053707-43200s-20261010-053708",
      "model": "claude",
      "label": "Claude Opus 5.5",
      "effort": "max",
@@ -3603,6 +3634,7 @@
      ]
     },
     "qwen": {
+     "id": "flux-moe-ag-v1-qwen38-max-12h-20261010-011529-43200s-20261010-011529",
      "model": "qwen",
      "label": "Qwen 3.8 Flash",
      "effort": "max",
@@ -3670,6 +3702,7 @@
      ]
     },
     "sol": {
+     "id": "flux-moe-ag-v1-sol61-max-12h-20261010-011529-43200s-20261010-011529",
      "model": "sol",
      "label": "GPT-6.1 Sol",
      "effort": "max",
@@ -3817,6 +3850,7 @@
      ]
     },
     "deepseek": {
+     "id": "flux-moe-ag-v1-deepseek41-max-12h-20261010-011529-43200s-20261010-011530",
      "model": "deepseek",
      "label": "DeepSeek V4.1 Flash",
      "effort": "max",
@@ -3884,6 +3918,7 @@
      ]
     },
     "glm": {
+     "id": "flux-moe-ag-v1-glm53-max-12h-20261010-011453-43200s-20261010-011454",
      "model": "glm",
      "label": "GLM 5.3 Flash",
      "effort": "max",
@@ -4398,6 +4433,7 @@
    },
    "runs": {
     "sol": {
+     "id": "qwen3-gkd-v1-gpt-6.1-sol-max-1440m-20261013-015818",
      "model": "sol",
      "label": "GPT-6.1 Sol",
      "effort": "max",
@@ -4595,6 +4631,7 @@
      ]
     },
     "claude": {
+     "id": "qwen3-gkd-v1-claude-opus-5-5-max-1440m-20261013-015646",
      "model": "claude",
      "label": "Claude Opus 5.5",
      "effort": "max",
@@ -4817,6 +4854,7 @@
      ]
     },
     "astra": {
+     "id": "qwen3-gkd-v1-gpt-6-astra-max-1440m-20261019-111525",
      "model": "astra",
      "label": "GPT-6 Astra",
      "effort": "max",
@@ -5119,6 +5157,7 @@
      ]
     },
     "qwen": {
+     "id": "qwen3-gkd-v1-qwen3.8-flash-max-1440m-20261013-020414",
      "model": "qwen",
      "label": "Qwen 3.8 Flash",
      "effort": "max",
@@ -5246,6 +5285,7 @@
      ]
     },
     "deepseek": {
+     "id": "qwen3-gkd-v1-deepseek-v4.1-flash-max-1440m-20261013-015849",
      "model": "deepseek",
      "label": "DeepSeek V4.1 Flash",
      "effort": "max",
@@ -5408,6 +5448,7 @@
      ]
     },
     "glm": {
+     "id": "qwen3-gkd-v1-zhipu-glm-5.3-flash-max-1440m-20261014-021127",
      "model": "glm",
      "label": "GLM 5.3 Flash",
      "effort": "max",
@@ -5502,6 +5543,7 @@
    },
    "runs": {
     "qwen": {
+     "id": "agent--kernel-v3--qwen3-8-flash-da666201--max--12h--20261009-084555--131b80",
      "model": "qwen",
      "label": "Qwen 3.8 Flash",
      "effort": "max",
@@ -5684,6 +5726,7 @@
      ]
     },
     "sol": {
+     "id": "agent--kernel-v3--gpt-6-1-sol-dedfefd5--max--12h--20261007-211040--e7040a",
      "model": "sol",
      "label": "GPT-6.1 Sol",
      "effort": "max",
@@ -5786,6 +5829,7 @@
      ]
     },
     "glm": {
+     "id": "agent--kernel-v3--zhipu-glm-5-3-flash-26f6afdb--max--12h--20261007-211040--ba6001",
      "model": "glm",
      "label": "GLM 5.3 Flash",
      "effort": "max",
@@ -5913,6 +5957,7 @@
      ]
     },
     "deepseek": {
+     "id": "agent--kernel-v3--deepseek-v4-1-flash-eb1394ac--max--12h--20261007-211040--c3a67b",
      "model": "deepseek",
      "label": "DeepSeek V4.1 Flash",
      "effort": "max",
@@ -6035,6 +6080,7 @@
      ]
     },
     "claude": {
+     "id": "agent--kernel-v3--claude-opus-5-5--max--12h--20261007-211040--23fef2",
      "model": "claude",
      "label": "Claude Opus 5.5",
      "effort": "max",
@@ -6247,6 +6293,7 @@
      ]
     },
     "astra": {
+     "id": "agent--kernel-v3--gpt-6-astra--max--12h--20261019-101708--66e29c",
      "model": "astra",
      "label": "GPT-6 Astra（max）",
      "effort": "max",
@@ -6381,6 +6428,7 @@
    },
    "runs": {
     "qwen": {
+     "id": "agent--kgrouped-wgrad-v2--qwen3-8-flash-da666201--max--12h--20261009-084555--612026",
      "model": "qwen",
      "label": "Qwen 3.8 Flash",
      "effort": "max",
@@ -6458,6 +6506,7 @@
      ]
     },
     "sol": {
+     "id": "agent--kgrouped-wgrad-v2--gpt-6-1-sol-dedfefd5--max--12h--20261007-211040--f835a9",
      "model": "sol",
      "label": "GPT-6.1 Sol",
      "effort": "max",
@@ -6530,6 +6579,7 @@
      ]
     },
     "glm": {
+     "id": "agent--kgrouped-wgrad-v2--zhipu-glm-5-3-flash-26f6afdb--max--12h--20261007-211040--1ab7e0",
      "model": "glm",
      "label": "GLM 5.3 Flash",
      "effort": "max",
@@ -6602,6 +6652,7 @@
      ]
     },
     "deepseek": {
+     "id": "agent--kgrouped-wgrad-v2--deepseek-v4-1-flash-eb1394ac--max--12h--20261007-211040--abc8b2",
      "model": "deepseek",
      "label": "DeepSeek V4.1 Flash",
      "effort": "max",
@@ -6674,6 +6725,7 @@
      ]
     },
     "claude": {
+     "id": "agent--kgrouped-wgrad-v2--claude-opus-5-5--max--12h--20261007-211040--f6f972",
      "model": "claude",
      "label": "Claude Opus 5.5",
      "effort": "max",
@@ -6776,6 +6828,7 @@
      ]
     },
     "astra": {
+     "id": "agent--kgrouped-wgrad-v2--gpt-6-astra--max--12h--20261019-101708--1990e7",
      "model": "astra",
      "label": "GPT-6 Astra（max）",
      "effort": "max",
@@ -6900,6 +6953,7 @@
    },
    "runs": {
     "astra": {
+     "id": "kvpress-astra-max-24h-20261019-095150",
      "model": "astra",
      "label": "GPT-6 Astra",
      "effort": "max",
@@ -7047,6 +7101,7 @@
      ]
     },
     "sol": {
+     "id": "kvpress-sol61-max-24h-20261013-124623",
      "model": "sol",
      "label": "GPT-6.1 Sol",
      "effort": "max",
@@ -7169,6 +7224,7 @@
      ]
     },
     "claude": {
+     "id": "kvpress-opus55-max-24h-20261014-012900",
      "model": "claude",
      "label": "Claude Opus 5.5",
      "effort": "max",
@@ -7251,6 +7307,7 @@
      ]
     },
     "qwen": {
+     "id": "kvpress-qwen38-max-24h-20261014-121304",
      "model": "qwen",
      "label": "Qwen 3.8 Flash",
      "effort": "max",
@@ -7308,6 +7365,7 @@
      ]
     },
     "deepseek": {
+     "id": "kvpress-deepseek41-max-24h-20261015-034847",
      "model": "deepseek",
      "label": "DeepSeek V4.1 Flash",
      "effort": "max",
@@ -7390,6 +7448,7 @@
      ]
     },
     "glm": {
+     "id": "kvpress-glm53-max-24h-20261014-133250",
      "model": "glm",
      "label": "GLM 5.3 Flash",
      "effort": "max",
@@ -7499,6 +7558,7 @@
    },
    "runs": {
     "astra": {
+     "id": "kvzip-astra-max-24h-20261019-172516",
      "model": "astra",
      "label": "GPT-6 Astra",
      "effort": "max",
@@ -7651,6 +7711,7 @@
      ]
     },
     "sol": {
+     "id": "kvzip-sol61-max-24h-20261015-125005",
      "model": "sol",
      "label": "GPT-6.1 Sol",
      "effort": "max",
@@ -7858,6 +7919,7 @@
      ]
     },
     "claude": {
+     "id": "kvzip-opus55-max-24h-20261015-205421",
      "model": "claude",
      "label": "Claude Opus 5.5",
      "effort": "max",
@@ -7980,6 +8042,7 @@
      ]
     },
     "qwen": {
+     "id": "kvzip-qwen38-max-24h-20261015-205428",
      "model": "qwen",
      "label": "Qwen 3.8 Flash",
      "effort": "max",
@@ -8057,6 +8120,7 @@
      ]
     },
     "glm": {
+     "id": "kvzip-glm53-max-24h-20261016-053638",
      "model": "glm",
      "label": "GLM 5.3 Flash",
      "effort": "max",
@@ -8144,6 +8208,7 @@
      ]
     },
     "deepseek": {
+     "id": "kvzip-deepseek41-max-24h-20261016-213036",
      "model": "deepseek",
      "label": "DeepSeek V4.1 Flash",
      "effort": "max",
@@ -8303,6 +8368,7 @@
    },
    "runs": {
     "astra": {
+     "id": "llada-astra-max-24h-20261018-111820",
      "model": "astra",
      "label": "GPT-6 Astra",
      "effort": "max",
@@ -8605,6 +8671,7 @@
      ]
     },
     "claude": {
+     "id": "llada-opus55-max-24h-20261013-115039",
      "model": "claude",
      "label": "Claude Opus 5.5",
      "effort": "max",
@@ -8857,6 +8924,7 @@
      ]
     },
     "sol": {
+     "id": "llada-sol61-max-24h-20261013-115002",
      "model": "sol",
      "label": "GPT-6.1 Sol",
      "effort": "max",
@@ -9069,6 +9137,7 @@
      ]
     },
     "deepseek": {
+     "id": "llada-deepseek41-max-24h-20261014-102042",
      "model": "deepseek",
      "label": "DeepSeek V4.1 Flash（重跑）",
      "effort": "max",
@@ -9251,6 +9320,7 @@
      ]
     },
     "glm": {
+     "id": "llada-glm53-max-24h-20261013-115153",
      "model": "glm",
      "label": "GLM 5.3 Flash",
      "effort": "max",
@@ -9448,6 +9518,7 @@
      ]
     },
     "qwen": {
+     "id": "llada-qwen38-max-24h-20261013-115116",
      "model": "qwen",
      "label": "Qwen 3.8 Flash",
      "effort": "max",
@@ -9567,6 +9638,7 @@
    },
    "runs": {
     "astra": {
+     "id": "lmcache-astra-max-12h-20261018-111410",
      "model": "astra",
      "label": "GPT-6 Astra",
      "effort": "max",
@@ -9679,6 +9751,7 @@
      ]
     },
     "claude": {
+     "id": "lmcache-opus55-max-12h-20261013-211006",
      "model": "claude",
      "label": "Claude Opus 5.5",
      "effort": "max",
@@ -9801,6 +9874,7 @@
      ]
     },
     "sol": {
+     "id": "lmcache-sol61-max-12h-20261013-211004",
      "model": "sol",
      "label": "GPT-6.1 Sol",
      "effort": "max",
@@ -9893,6 +9967,7 @@
      ]
     },
     "qwen": {
+     "id": "lmcache-qwen38-max-12h-20261013-211008",
      "model": "qwen",
      "label": "Qwen 3.8 Flash",
      "effort": "max",
@@ -9970,6 +10045,7 @@
      ]
     },
     "deepseek": {
+     "id": "lmcache-deepseek41-max-12h-20261013-211014",
      "model": "deepseek",
      "label": "DeepSeek V4.1 Flash",
      "effort": "max",
@@ -10087,6 +10163,7 @@
      ]
     },
     "glm": {
+     "id": "lmcache-glm53-max-12h-20261013-211011",
      "model": "glm",
      "label": "GLM 5.3 Flash",
      "effort": "max",
@@ -10206,6 +10283,7 @@
    },
    "runs": {
     "astra": {
+     "id": "alfworld-astra-max-24h-20261018-101938",
      "model": "astra",
      "label": "GPT-6 Astra",
      "effort": "max",
@@ -10283,6 +10361,7 @@
      ]
     },
     "sol": {
+     "id": "alfworld-sol61-max-24h-20261012-100033",
      "model": "sol",
      "label": "GPT-6.1 Sol",
      "effort": "max",
@@ -10355,6 +10434,7 @@
      ]
     },
     "claude": {
+     "id": "alfworld-opus55-max-24h-20261012-100023",
      "model": "claude",
      "label": "Claude Opus 5.5",
      "effort": "max",
@@ -10412,6 +10492,7 @@
      ]
     },
     "qwen": {
+     "id": "alfworld-qwen38-max-24h-20261012-094808",
      "model": "qwen",
      "label": "Qwen 3.8 Flash",
      "effort": "max",
@@ -10454,6 +10535,7 @@
      ]
     },
     "deepseek": {
+     "id": "alfworld-deepseek41-max-24h-20261012-101007",
      "model": "deepseek",
      "label": "DeepSeek V4.1 Flash",
      "effort": "max",
@@ -10526,6 +10608,7 @@
      ]
     },
     "glm": {
+     "id": "alfworld-glm53-max-24h-20261012-100028",
      "model": "glm",
      "label": "GLM 5.3 Flash",
      "effort": "max",
@@ -10590,6 +10673,7 @@
    },
    "runs": {
     "astra": {
+     "id": "opcd-astra-max-24h-20261018-103920",
      "model": "astra",
      "label": "GPT-6 Astra",
      "effort": "max",
@@ -10712,6 +10796,7 @@
      ]
     },
     "sol": {
+     "id": "opcd-sol61-max-24h-20261011-071419",
      "model": "sol",
      "label": "GPT-6.1 Sol",
      "effort": "max",
@@ -10849,6 +10934,7 @@
      ]
     },
     "claude": {
+     "id": "opcd-opus55-max-24h-20261011-083742",
      "model": "claude",
      "label": "Claude Opus 5.5",
      "effort": "max",
@@ -10936,6 +11022,7 @@
      ]
     },
     "qwen": {
+     "id": "opcd-qwen38-max-24h-20261011-071415",
      "model": "qwen",
      "label": "Qwen 3.8 Flash",
      "effort": "max",
@@ -11008,6 +11095,7 @@
      ]
     },
     "deepseek": {
+     "id": "opcd-deepseek41-max-24h-20261011-071411",
      "model": "deepseek",
      "label": "DeepSeek V4.1 Flash",
      "effort": "max",
@@ -11140,6 +11228,7 @@
      ]
     },
     "glm": {
+     "id": "opcd-glm53-max-24h-20261011-071414",
      "model": "glm",
      "label": "GLM 5.3 Flash",
      "effort": "max",
@@ -11221,7 +11310,7 @@
   "opd": {
    "dash": "miles-opd-v2",
    "cohort": "h100sxm-release-24h-20261021",
-   "generated_at": "2026-10-22T17:59:44.091991+00:00",
+   "generated_at": "2026-10-25T09:46:04.480906+00:00",
    "metric": {
     "name": "score",
     "unit": "score",
@@ -11229,6 +11318,7 @@
    },
    "runs": {
     "claude": {
+     "id": "opd-opus55-max-24h-20261021-105444",
      "model": "claude",
      "label": "Claude Opus 5.5",
      "effort": "max",
@@ -11301,6 +11391,7 @@
      ]
     },
     "qwen": {
+     "id": "opd-qwen38-max-24h-20261021-113000",
      "model": "qwen",
      "label": "Qwen 3.8 Flash",
      "effort": "max",
@@ -11383,6 +11474,7 @@
      ]
     },
     "glm": {
+     "id": "opd-glm53-max-24h-20261021-112000",
      "model": "glm",
      "label": "GLM 5.3 Flash",
      "effort": "max",
@@ -11485,6 +11577,7 @@
      ]
     },
     "sol": {
+     "id": "opd-sol61-max-24h-20261021-111456",
      "model": "sol",
      "label": "GPT-6.1 Sol",
      "effort": "max",
@@ -11562,6 +11655,7 @@
      ]
     },
     "deepseek": {
+     "id": "opd-deepseek41-max-24h-20261021-112500",
      "model": "deepseek",
      "label": "DeepSeek V4.1 Flash",
      "effort": "max",
@@ -11699,6 +11793,7 @@
      ]
     },
     "astra": {
+     "id": "opd-astra-max-24h-20261018-102917",
      "model": "astra",
      "label": "GPT-6 Astra",
      "effort": "max",
@@ -11773,11 +11868,9 @@
        13.330155310794302,
        "valid"
       ]
-     ],
-     "cohort": "h100sxm-five-models-24h-20261011"
+     ]
     }
-   },
-   "supplement_source": "dashboard-task-results-20261024-083014.zip"
+   }
   },
   "sd35": {
    "dash": "miles-sd35m-v2",
@@ -11790,6 +11883,7 @@
    },
    "runs": {
     "astra": {
+     "id": "sd35m-astra-max-24h-20261018-101913",
      "model": "astra",
      "label": "GPT-6 Astra",
      "effort": "max",
@@ -11867,6 +11961,7 @@
      ]
     },
     "sol": {
+     "id": "sd35m-sol61-max-24h-20261012-094808",
      "model": "sol",
      "label": "GPT-6.1 Sol",
      "effort": "max",
@@ -11949,6 +12044,7 @@
      ]
     },
     "claude": {
+     "id": "sd35m-opus55-max-24h-20261011-212754",
      "model": "claude",
      "label": "Claude Opus 5.5",
      "effort": "max",
@@ -12031,6 +12127,7 @@
      ]
     },
     "qwen": {
+     "id": "sd35m-qwen38-max-24h-20261012-094808",
      "model": "qwen",
      "label": "Qwen 3.8 Flash",
      "effort": "max",
@@ -12088,6 +12185,7 @@
      ]
     },
     "deepseek": {
+     "id": "sd35m-deepseek41-max-24h-20261012-094808",
      "model": "deepseek",
      "label": "DeepSeek V4.1 Flash",
      "effort": "max",
@@ -12145,6 +12243,7 @@
      ]
     },
     "glm": {
+     "id": "sd35m-glm53-max-24h-20261012-101012",
      "model": "glm",
      "label": "GLM 5.3 Flash",
      "effort": "max",
@@ -12184,6 +12283,7 @@
    },
    "runs": {
     "astra": {
+     "id": "wan22-astra-max-24h-20261018-104923",
      "model": "astra",
      "label": "GPT-6 Astra",
      "effort": "max",
@@ -12321,6 +12421,7 @@
      ]
     },
     "sol": {
+     "id": "wan22-sol61-max-24h-20261011-071420",
      "model": "sol",
      "label": "GPT-6.1 Sol",
      "effort": "max",
@@ -12428,6 +12529,7 @@
      ]
     },
     "claude": {
+     "id": "wan22-opus55-max-24h-20261011-212745",
      "model": "claude",
      "label": "Claude Opus 5.5",
      "effort": "max",
@@ -12505,6 +12607,7 @@
      ]
     },
     "qwen": {
+     "id": "wan22-qwen38-max-24h-20261011-071415",
      "model": "qwen",
      "label": "Qwen 3.8 Flash",
      "effort": "max",
@@ -12567,6 +12670,7 @@
      ]
     },
     "deepseek": {
+     "id": "wan22-deepseek41-max-24h-20261011-071430",
      "model": "deepseek",
      "label": "DeepSeek V4.1 Flash",
      "effort": "max",
@@ -12609,6 +12713,7 @@
      ]
     },
     "glm": {
+     "id": "wan22-glm53-max-24h-20261011-071414",
      "model": "glm",
      "label": "GLM 5.3 Flash",
      "effort": "max",
@@ -12634,7 +12739,7 @@
   "minference": {
    "dash": "minference-v3",
    "cohort": "five-models-12h-20261008",
-   "generated_at": "2026-10-23T11:06:01.358446+00:00",
+   "generated_at": "2026-10-25T10:02:02.041981+00:00",
    "metric": {
     "name": "raw_primary_tflops",
     "unit": "TFLOPS",
@@ -12642,6 +12747,7 @@
    },
    "runs": {
     "qwen": {
+     "id": "agent--minference-v3--qwen3-8-flash-da666201--max--12h--20261009-084555--991fbb",
      "model": "qwen",
      "label": "Qwen 3.8 Flash",
      "effort": "max",
@@ -12709,6 +12815,7 @@
      ]
     },
     "sol": {
+     "id": "agent--minference-v3--gpt-6-1-sol-dedfefd5--max--12h--20261009-084555--033d1e",
      "model": "sol",
      "label": "GPT-6.1 Sol",
      "effort": "max",
@@ -12766,6 +12873,7 @@
      ]
     },
     "glm": {
+     "id": "agent--minference-v3--zhipu-glm-5-3-flash-26f6afdb--max--12h--20261009-084555--f23cf0",
      "model": "glm",
      "label": "GLM 5.3 Flash",
      "effort": "max",
@@ -12828,6 +12936,7 @@
      ]
     },
     "deepseek": {
+     "id": "agent--minference-v3--deepseek-v4-1-flash-eb1394ac--max--12h--20261009-084555--a59b83",
      "model": "deepseek",
      "label": "DeepSeek V4.1 Flash",
      "effort": "max",
@@ -12865,6 +12974,7 @@
      ]
     },
     "claude": {
+     "id": "agent--minference-v3--claude-opus-5-5--max--12h--20261009-205420--67429a",
      "model": "claude",
      "label": "Claude Opus 5.5",
      "effort": "max",
@@ -12957,6 +13067,7 @@
      ]
     },
     "astra": {
+     "id": "agent--minference-v3--gpt-6-astra--xhigh--12h--20261016-230829--4202e0",
      "model": "astra",
      "label": "GPT-6 Astra（max）",
      "effort": "max",
@@ -13061,6 +13172,7 @@
    },
    "runs": {
     "claude": {
+     "id": "standalone-paged-gqa-v2-single-cuda-sm80-32g-claude-opus-5-5-max-720m-20261019-093018",
      "model": "claude",
      "label": "Claude Opus 5.5",
      "effort": "max",
@@ -13183,6 +13295,7 @@
      ]
     },
     "astra": {
+     "id": "standalone-paged-gqa-v2-single-cuda-sm80-32g-gpt-6-astra-max-720m-20261019-111526",
      "model": "astra",
      "label": "GPT-6 Astra",
      "effort": "max",
@@ -13300,6 +13413,7 @@
      ]
     },
     "qwen": {
+     "id": "standalone-paged-gqa-v2-single-cuda-sm80-32g-qwen3.8-flash-max-720m-20261018-014220",
      "model": "qwen",
      "label": "Qwen 3.8 Flash",
      "effort": "max",
@@ -13367,6 +13481,7 @@
      ]
     },
     "deepseek": {
+     "id": "standalone-paged-gqa-v2-single-cuda-sm80-32g-deepseek-v4.1-flash-max-720m-20261018-100306",
      "model": "deepseek",
      "label": "DeepSeek V4.1 Flash",
      "effort": "max",
@@ -13419,6 +13534,7 @@
      ]
     },
     "glm": {
+     "id": "standalone-paged-gqa-v2-single-cuda-sm80-32g-zhipu-glm-5.3-flash-max-720m-20261019-035958",
      "model": "glm",
      "label": "GLM 5.3 Flash",
      "effort": "max",
@@ -13556,6 +13672,7 @@
      ]
     },
     "sol": {
+     "id": "standalone-paged-gqa-v2-single-cuda-sm80-32g-gpt-6.1-sol-max-720m-20261019-092717",
      "model": "sol",
      "label": "GPT-6.1 Sol",
      "effort": "max",
@@ -13700,6 +13817,7 @@
    },
    "runs": {
     "sol": {
+     "id": "qvg-v4-gpt-6.1-sol-max-24h-20261010-232342",
      "model": "sol",
      "label": "GPT-6.1 Sol",
      "effort": "max",
@@ -13827,6 +13945,7 @@
      ]
     },
     "qwen": {
+     "id": "qvg-v4-qwen3.8-flash-max-24h-20261014-185108",
      "model": "qwen",
      "label": "Qwen 3.8 Flash",
      "effort": "max",
@@ -13924,6 +14043,7 @@
      ]
     },
     "deepseek": {
+     "id": "qvg-v4-deepseek-v4.1-flash-max-24h-20261015-203713",
      "model": "deepseek",
      "label": "DeepSeek V4.1 Flash",
      "effort": "max",
@@ -14046,6 +14166,7 @@
      ]
     },
     "claude": {
+     "id": "qvg-v4-claude-opus-5-5-max-24h-20261016-221803",
      "model": "claude",
      "label": "Claude Opus 5.5",
      "effort": "max",
@@ -14178,6 +14299,7 @@
      ]
     },
     "astra": {
+     "id": "qvg-v4-gpt-6-astra-max-24h-20261020-173917",
      "model": "astra",
      "label": "GPT-6 Astra",
      "effort": "max",
@@ -14310,6 +14432,7 @@
      ]
     },
     "glm": {
+     "id": "agent--qvg-v4--zhipu-glm-5-3-flash-26f6afdb--max--24h--20261016-115413--8f8d39",
      "model": "glm",
      "label": "GLM 5.3 Flash · PyroMind",
      "effort": "max",
@@ -14376,7 +14499,7 @@
   "orpo": {
    "dash": "qwen3-orpo-v4",
    "cohort": "h100sxm-five-models-24h-20261010",
-   "generated_at": "2026-10-18T11:15:30.542663+00:00",
+   "generated_at": "2026-10-25T10:02:02.095639+00:00",
    "metric": {
     "name": "score（相对 seed 的训练速度 ×100）",
     "unit": "score",
@@ -14384,6 +14507,7 @@
    },
    "runs": {
     "astra": {
+     "id": "qwen3-orpo-v4-astra-xhigh-24h-20261017-102126-360m-20261017-102127",
      "model": "astra",
      "label": "GPT-6 Astra（max）",
      "effort": "max",
@@ -14616,6 +14740,7 @@
      ]
     },
     "sol": {
+     "id": "qwen3-orpo-v4-sol61-max-24h-20261010-011612-360m-20261010-011612",
      "model": "sol",
      "label": "GPT-6.1 Sol",
      "effort": "max",
@@ -14833,6 +14958,7 @@
      ]
     },
     "claude": {
+     "id": "qwen3-orpo-v4-opus55-max-24h-20261010-194944-360m-20261010-194944",
      "model": "claude",
      "label": "Claude Opus 5.5",
      "effort": "max",
@@ -15150,6 +15276,7 @@
      ]
     },
     "qwen": {
+     "id": "qwen3-orpo-v4-qwen38-max-24h-20261010-011612-360m-20261010-011612",
      "model": "qwen",
      "label": "Qwen 3.8 Flash",
      "effort": "max",
@@ -15282,6 +15409,7 @@
      ]
     },
     "deepseek": {
+     "id": "qwen3-orpo-v4-deepseek41-max-24h-20261010-011612-360m-20261010-011612",
      "model": "deepseek",
      "label": "DeepSeek V4.1 Flash",
      "effort": "max",
@@ -15649,6 +15777,7 @@
      ]
     },
     "glm": {
+     "id": "qwen3-orpo-v4-glm53-max-24h-20261010-011453-360m-20261010-011454",
      "model": "glm",
      "label": "GLM 5.3 Flash",
      "effort": "max",
@@ -15818,6 +15947,7 @@
    },
    "runs": {
     "astra": {
+     "id": "sage-astra-max-12h-20261018-111405",
      "model": "astra",
      "label": "GPT-6 Astra",
      "effort": "max",
@@ -15950,6 +16080,7 @@
      ]
     },
     "claude": {
+     "id": "sage-opus55-max-12h-20261013-120257",
      "model": "claude",
      "label": "Claude Opus 5.5",
      "effort": "max",
@@ -16072,6 +16203,7 @@
      ]
     },
     "sol": {
+     "id": "sage-sol61-max-12h-20261013-120240",
      "model": "sol",
      "label": "GPT-6.1 Sol",
      "effort": "max",
@@ -16164,6 +16296,7 @@
      ]
     },
     "deepseek": {
+     "id": "sage-deepseek41-max-12h-20261013-120350",
      "model": "deepseek",
      "label": "DeepSeek V4.1 Flash",
      "effort": "max",
@@ -16246,6 +16379,7 @@
      ]
     },
     "glm": {
+     "id": "sage-glm53-max-12h-20261013-120332",
      "model": "glm",
      "label": "GLM 5.3 Flash",
      "effort": "max",
@@ -16348,6 +16482,7 @@
      ]
     },
     "qwen": {
+     "id": "sage-qwen38-max-12h-20261013-120315",
      "model": "qwen",
      "label": "Qwen 3.8 Flash",
      "effort": "max",
@@ -16414,7 +16549,7 @@
   "sdv2": {
    "dash": "sdv2-v2",
    "cohort": "h100sxm-five-models-24h-20261010",
-   "generated_at": "2026-10-18T11:15:30.599544+00:00",
+   "generated_at": "2026-10-25T10:02:02.150073+00:00",
    "metric": {
     "name": "latency-weighted FPS",
     "unit": "FPS",
@@ -16422,6 +16557,7 @@
    },
    "runs": {
     "astra": {
+     "id": "streamdiffusionv2-pipeline-v2-astra-xhigh-24h-20261017-102126-86400s-20261017-102127",
      "model": "astra",
      "label": "GPT-6 Astra（max）",
      "effort": "max",
@@ -16649,6 +16785,7 @@
      ]
     },
     "sol": {
+     "id": "streamdiffusionv2-pipeline-v2-sol61-max-24h-20261010-011613-86400s-20261010-011613",
      "model": "sol",
      "label": "GPT-6.1 Sol",
      "effort": "max",
@@ -16851,6 +16988,7 @@
      ]
     },
     "claude": {
+     "id": "streamdiffusionv2-pipeline-v2-opus55-max-24h-20261010-053708-86400s-20261010-053708",
      "model": "claude",
      "label": "Claude Opus 5.5",
      "effort": "max",
@@ -16953,6 +17091,7 @@
      ]
     },
     "qwen": {
+     "id": "streamdiffusionv2-pipeline-v2-qwen38-max-24h-20261010-011613-86400s-20261010-011614",
      "model": "qwen",
      "label": "Qwen 3.8 Flash",
      "effort": "max",
@@ -17015,6 +17154,7 @@
      ]
     },
     "deepseek": {
+     "id": "streamdiffusionv2-pipeline-v2-deepseek41-max-24h-20261010-011613-86400s-20261010-011614",
      "model": "deepseek",
      "label": "DeepSeek V4.1 Flash",
      "effort": "max",
@@ -17077,6 +17217,7 @@
      ]
     },
     "glm": {
+     "id": "streamdiffusionv2-pipeline-v2-glm53-max-24h-20261010-201733-86400s-20261010-201734",
      "model": "glm",
      "label": "GLM 5.3 Flash",
      "effort": "max",
@@ -17271,6 +17412,7 @@
    },
    "runs": {
     "qwen": {
+     "id": "agent--sparse-mla-v2--qwen3-8-flash-da666201--max--12h--20261007-211040--e7eaa3",
      "model": "qwen",
      "label": "Qwen 3.8 Flash",
      "effort": "max",
@@ -17333,6 +17475,7 @@
      ]
     },
     "sol": {
+     "id": "agent--sparse-mla-v2--gpt-6-1-sol-dedfefd5--max--12h--20261007-211040--a31b91",
      "model": "sol",
      "label": "GPT-6.1 Sol",
      "effort": "max",
@@ -17415,6 +17558,7 @@
      ]
     },
     "glm": {
+     "id": "agent--sparse-mla-v2--zhipu-glm-5-3-flash-26f6afdb--max--12h--20261017-175838--25f6ba",
      "model": "glm",
      "label": "GLM 5.3 Flash",
      "effort": "max",
@@ -17532,6 +17676,7 @@
      ]
     },
     "deepseek": {
+     "id": "agent--sparse-mla-v2--deepseek-v4-1-flash-eb1394ac--max--12h--20261017-175838--2776a6",
      "model": "deepseek",
      "label": "DeepSeek V4.1 Flash",
      "effort": "max",
@@ -17654,6 +17799,7 @@
      ]
     },
     "claude": {
+     "id": "agent--sparse-mla-v2--claude-opus-5-5--max--12h--20261009-194614--fc6e5c",
      "model": "claude",
      "label": "Claude Opus 5.5",
      "effort": "max",
@@ -17761,6 +17907,7 @@
      ]
     },
     "astra": {
+     "id": "agent--sparse-mla-v2--gpt-6-astra--max--12h--20261019-101708--a44ead",
      "model": "astra",
      "label": "GPT-6 Astra（max）",
      "effort": "max",
@@ -17857,7 +18004,7 @@
   "mamba2": {
    "dash": "tilelang-mamba2-v2",
    "cohort": "five-models-12h-20261008",
-   "generated_at": "2026-10-23T11:06:01.447559+00:00",
+   "generated_at": "2026-10-25T09:57:19.524528+00:00",
    "metric": {
     "name": "score_tflops",
     "unit": "TFLOPS",
@@ -17865,6 +18012,7 @@
    },
    "runs": {
     "qwen": {
+     "id": "agent--tilelang-mamba2-v2--qwen3-8-flash-da666201--max--12h--20261009-210008--1f6a00",
      "model": "qwen",
      "label": "Qwen 3.8 Flash",
      "effort": "max",
@@ -17937,6 +18085,7 @@
      ]
     },
     "sol": {
+     "id": "agent--tilelang-mamba2-v2--gpt-6-1-sol-dedfefd5--max--12h--20261018-223704--db7ca1",
      "model": "sol",
      "label": "GPT-6.1 Sol",
      "effort": "max",
@@ -18034,6 +18183,7 @@
      ]
     },
     "glm": {
+     "id": "agent--tilelang-mamba2-v2--zhipu-glm-5-3-flash-26f6afdb--max--12h--20261009-212157--728db3",
      "model": "glm",
      "label": "GLM 5.3 Flash",
      "effort": "max",
@@ -18136,6 +18286,7 @@
      ]
     },
     "deepseek": {
+     "id": "agent--tilelang-mamba2-v2--deepseek-v4-1-flash-eb1394ac--max--12h--20261009-212244--ca9e16",
      "model": "deepseek",
      "label": "DeepSeek V4.1 Flash",
      "effort": "max",
@@ -18203,6 +18354,7 @@
      ]
     },
     "claude": {
+     "id": "agent--tilelang-mamba2-v2--claude-opus-5-5--max--12h--20261009-213158--3d7fa7",
      "model": "claude",
      "label": "Claude Opus 5.5",
      "effort": "max",
@@ -18300,6 +18452,7 @@
      ]
     },
     "astra": {
+     "id": "tilelang-mamba2-ssd-v2-single-cuda-sm80-73g-gpt-6-astra-max-720m-20261019-221331",
      "model": "astra",
      "label": "GPT-6 Astra（max）· 本机 NVL",
      "effort": "max",

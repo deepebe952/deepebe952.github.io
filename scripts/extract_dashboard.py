@@ -70,6 +70,7 @@ def slim_run(run: dict, model_key: str) -> dict:
     points.sort(key=lambda x: x[0])
     final = run.get("final") or {}
     return {
+        "id": run.get("id"),
         "model": model_key,
         "label": run.get("model_label"),
         "effort": run.get("effort"),
@@ -100,7 +101,13 @@ def main() -> int:
     for task_dir, cohort, html in iter_pages(args.source):
         cohorts.setdefault(task_dir, []).append((cohort, html))
 
-    out = {"source": args.source.name, "tasks": {}}
+    # Selected exports carry their own snapshot date and one chosen page per task.
+    snapshot = None
+    if args.source.is_file():
+        with zipfile.ZipFile(args.source) as z:
+            if "dashboard/manifest.json" in z.namelist():
+                snapshot = json.loads(z.read("dashboard/manifest.json")).get("date")
+    out = {"source": args.source.name, "snapshot": snapshot, "tasks": {}}
     for task_dir, items in sorted(cohorts.items()):
         if task_dir not in task_by_dash:
             print(f"skip unknown task folder {task_dir}", file=sys.stderr)

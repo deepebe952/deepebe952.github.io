@@ -39,7 +39,9 @@
   ],
   "flag_legend": {
     "H": "Run on different hardware from the rest of the cohort",
-    "†": "Agent edited the submission-hook state during the run"
+    "†": "Agent edited the submission-hook state during the run",
+    "n": "No submission during the run; performance is zero under the paper’s no-valid-result convention",
+    "e": "Different deployment and review settings"
   },
   "tasks": [
     {
@@ -192,7 +194,9 @@
       "gpus": "2×H100 (NVLink)",
       "target": "Video rewards, policy updates and publication",
       "summary": "Implement DanceGRPO for Wan2.2-TI2V-5B text-to-video with full-parameter training: the Dance-SDE transition, shared-noise seed groups and the official HPSv3 video reward. Score is fixed replay workloads completed per hour, behind a video-quality gate.",
-      "flags": {}
+      "flags": {
+        "glm": "n"
+      }
     },
     {
       "key": "grouped-fp8",
@@ -364,7 +368,9 @@
       "gpus": "1×H100 + Judge",
       "target": "Persistent KV cache encoding and decoding",
       "summary": "Design a persistent KV-cache codec for autoregressive video generators that works unchanged across two hidden workloads, preserving generation quality while storing as few GPU bytes as possible. Score is the compression ratio, geometric mean over both models.",
-      "flags": {}
+      "flags": {
+        "glm": "e"
+      }
     },
     {
       "key": "eagle3",
@@ -427,26 +433,5 @@
       "summary": "192 concurrent multi-turn coding agents work on SWE-bench Lite against one vLLM server hosting Qwen3.6-27B. The agent builds an OpenAI-compatible scheduling gateway in front of the server and must raise valid executable agent steps per minute.",
       "flags": {}
     }
-  ],
-  "paper": {
-    "ranked_tasks": [
-      "attn-qat",
-      "wgrad",
-      "flux-moe",
-      "orpo",
-      "opcd",
-      "alfworld",
-      "sd35",
-      "grouped-fp8",
-      "sageattention",
-      "lmcache",
-      "flash-kmeans",
-      "kvpress",
-      "kvzip",
-      "qvg",
-      "eagle3",
-      "sdv2",
-      "serving"
-    ]
-  }
+  ]
 }

@@ -8,14 +8,13 @@ Inputs (all under ``data/``):
 
 Output: ``site/data/infrathon.js``, which sets ``window.INFRATHON``.
 
-Ranking uses the rank-score method of the paper (Eq. 6) applied to each run's best valid
+Ranking uses the rank-score method of the paper (Eq. 5) applied to each run's best valid
 score during the run. On a task, every configuration with a run is ranked by that score
 (rank 1 = best, exact ties share the average rank; a run with no valid scored submission
 ranks last) and earns 100 (n - rank) / (n - 1), where n is the number of configurations
 that ran the task. A model's rank score is the mean over the tasks it ran.
 
-``paper_figures`` recomputes the paper's own final-artifact numbers (Figure 3, Table 13)
-from the same sources; the tests use it to check the extraction against the paper.
+The tests compare all 150 best-so-far results against Table 4 of the current paper.
 """
 from __future__ import annotations
 
@@ -89,7 +88,7 @@ def run_summary(task_key: str, run: dict) -> dict:
     for s in subs:
         counts[s[2]] = counts.get(s[2], 0) + 1
     return {
-        "best": None if best is None else round(best, 4),
+        "best": 0 if best is None else round(best, 4),
         "best_at_h": traj[-1][0] if traj else None,
         "first_valid_h": round(valid[0][0], 3) if valid else None,
         "elapsed_h": round(run["elapsed_h"], 3) if run["elapsed_h"] is not None else None,
@@ -173,27 +172,6 @@ def view_summary(tasks: list[dict], models: list[str]) -> dict:
     }
 
 
-def paper_figures(registry, raw) -> dict:
-    """The paper's final-artifact numbers on its 17-task common subset (Figure 3, Table 13)."""
-    models = [m["key"] for m in registry["models"]]
-    ranked = set(registry["paper"]["ranked_tasks"])
-    tasks = []
-    for t in registry["tasks"]:
-        if t["key"] not in ranked:
-            continue
-        finals = {m: to_score(t["key"], r["final_score"]) for m, r in raw["tasks"][t["key"]]["runs"].items()}
-        assert set(finals) == set(models) and None not in finals.values(), t["key"]
-        tasks.append({"key": t["key"], "stage": t["stage"], "level": t["level"], "finals": finals, "contrib": contributions(average_ranks(finals))})
-    groups = {}
-    for stage in ("training", "inference"):
-        for level in ("operator", "module", "system"):
-            sel = [t for t in tasks if t["stage"] == stage and t["level"] == level]
-            groups[f"{stage}/{level}"] = {"n": len(sel), "rank_score": rank_score([t["contrib"] for t in sel], models)}
-    rel = {m: statistics.mean(t["finals"][m] / max(t["finals"].values()) for t in tasks) for m in models}
-    wins = {m: sum(1 for t in tasks if t["finals"][m] == max(t["finals"].values())) for m in models}
-    return {"n": len(tasks), "groups": groups, "mean_relative": rel, "wins": wins}
-
-
 def compute(registry, raw, tokens) -> dict:
     models = [m["key"] for m in registry["models"]]
     tasks_out = []
@@ -225,7 +203,7 @@ def compute(registry, raw, tokens) -> dict:
     status_totals = {m: {k: sum(t["results"][m]["counts"][k] for t in tasks_out if m in t["results"]) for k in STATUS_CODE} for m in models}
 
     return {
-        "snapshot": "2026-10-23",
+        "snapshot": raw.get("snapshot") or "2026-10-23",
         "source": raw["source"],
         "models": registry["models"],
         "flag_legend": registry["flag_legend"],

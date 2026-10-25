@@ -6,10 +6,10 @@ window.IX = (() => {
   const MODELS = D.models.map((m) => m.key);
   const MODEL = Object.fromEntries(D.models.map((m) => [m.key, m]));
   const PROVIDER = { sol: "OpenAI", claude: "Anthropic", qwen: "Alibaba", deepseek: "DeepSeek", glm: "Zhipu AI", astra: "OpenAI" };
-  // Mirrors the --m-* tokens in site.css (SVG presentation attributes cannot read CSS variables).
-  const COLOR = { sol: "#3987e5", claude: "#d95926", qwen: "#199e70", deepseek: "#c98500", glm: "#d55181", astra: "#9085e9" };
+  // SVG presentation attributes inherit CSS variables, so charts switch instantly too.
+  const COLOR = Object.fromEntries(MODELS.map((m) => [m, `var(--m-${m})`]));
   const SHAPE = { sol: "circle", claude: "square", qwen: "triangle", deepseek: "diamond", glm: "tridown", astra: "plus" };
-  const C = { ink: "#ededef", ink2: "#a3a8b1", ink3: "#777d88", hair: "rgba(255,255,255,0.07)", hair2: "rgba(255,255,255,0.13)", panel: "#0c0e11", bg: "#060709", crit: "#d03b3b" };
+  const C = { ink: "var(--ink)", ink2: "var(--ink-2)", ink3: "var(--ink-3)", hair: "var(--hair)", hair2: "var(--hair-2)", panel: "var(--panel)", bg: "var(--bg)", crit: "var(--crit)" };
   const TASK = Object.fromEntries(D.tasks.map((t) => [t.key, t]));
   const STAGES = ["training", "inference"];
   const LEVELS = ["operator", "module", "system"];
@@ -336,14 +336,15 @@ window.IX = (() => {
     const nav = h("header", { class: "nav" }, h("div", { class: "wrap" },
       h("a", { class: "brand", href: "index.html", "aria-label": "Infrathon home" }, logo, "Infrathon", h("span", { class: "v", text: "v1" })),
       h("nav", { class: "nav-links", "aria-label": "Pages" }, PAGES.map(([href, label]) => h("a", { href, "aria-current": href.startsWith(page) ? "page" : null, text: label }))),
-      h("div", { class: "nav-right" }, h("span", { class: "pill" }, h("span", { class: "dot" }), "Paper under review"))));
+      h("div", { class: "nav-right" }, h("button", { id: "theme-toggle", class: "pill theme-toggle", type: "button", onclick: () => window.InfrathonTheme.toggle(), "aria-label": "Switch to dark theme", "aria-pressed": "false", text: "☾ Dark" }))));
     document.body.prepend(nav);
+    window.InfrathonTheme.sync();
     const foot = h("footer", { class: "site" }, h("div", { class: "wrap" },
       h("div", {}, h("div", { class: "brand" }, logo.cloneNode(true), "Infrathon"),
         h("p", { text: `Long-horizon AI infrastructure benchmark. Results from the ${D.snapshot.replace(/-/g, "/")} export: ${D.summary.n_runs} runs, ${D.summary.n_submissions.toLocaleString("en-US")} judged submissions.` })),
       h("div", {}, h("h4", { class: "label", text: "Explore" }), h("ul", {}, PAGES.map(([href, label]) => h("li", {}, h("a", { href, text: label }))))),
       h("div", {}, h("h4", { class: "label", text: "Paper" }), h("ul", {},
-        h("li", { text: "Infrathon: Can Frontier Models Solve Long-Horizon AI Infrastructure Tasks?" }),
+        h("li", { text: "Infrathon: 10,000 GPU-Hours Later, Can Frontier Models Solve Real-World Long-Horizon AI Infra Tasks?" }),
         h("li", {}, h("a", { href: "method.html#cite", text: "Citation" })),
         h("li", { class: "muted", text: "Under review" })))));
     document.body.append(foot);

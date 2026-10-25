@@ -85,43 +85,40 @@
     }
   })();
 
-  /* ---------- efficiency ---------- */
+  /* ---------- interaction statistics, paper Figures 5–7 ---------- */
   (function renderEfficiency() {
     const TK = D.tokens, M = TK.models;
-    const order = [...MODELS].sort((a, b) => M[a].hours - M[b].hours);
+    const order = [...MODELS].sort((a, b) => D.summary.first_valid[a].median_h - D.summary.first_valid[b].median_h);
     const charts = [
-      ["Hours to first valid score", "median wall-clock hours", (m) => M[m].hours, (v) => `${fmt(v, 2)} h`],
-      ["Tool calls to first valid score", "median agent tool calls", (m) => M[m].tool_calls, (v) => fmt(v, 0)],
-      ["Tokens to first valid score", "median, runs with per-request usage logs", (m) => M[m].tokens_m, (v) => `${fmt(v, 1)}M`],
-      ["Tokens per run", "median over the full 12–24 h budget", (m) => M[m].tokens_per_run_m, (v) => `${fmt(v, 0)}M`],
+      ["Time to first valid score", "median hours · selected scored runs", (m) => D.summary.first_valid[m].median_h, (v) => `${fmt(v, 2)} h`],
+      ["Visible output", "total over 25 tasks · paper Figure 7", (m) => M[m].visible_output_m, (v) => `${fmt(v, 2)}M`],
+      ["Agent actions", "total text blocks and tool invocations · Figure 7", (m) => M[m].actions_k, (v) => `${fmt(v, 1)}k`],
     ];
     const box = $("#eff");
     for (const [title, sub, get, f] of charts) {
-      const max = Math.max(...order.map((m) => get(m) ?? 0));
-      const bars = h("div", { class: "bars" });
+      const max = Math.max(...order.map(get)), bars = h("div", { class: "bars" });
       for (const m of order) {
-        const v = get(m), est = title === "Tokens per run" && M[m].tokens_per_run_estimated;
-        const label = v == null ? "no per-request log" : `${est ? "≈" : ""}${f(v)}${est ? " est." : ""}`;
-        bars.append(h("div", { class: "bar-row" }, X.who(m, MODEL[m].short), X.hbar(COLOR[m], v == null ? 0 : v / max, label, { max: 74, dashed: est, muted: v == null })));
+        const v = get(m);
+        bars.append(h("div", { class: "bar-row" }, X.who(m, MODEL[m].short), X.hbar(COLOR[m], v / max, f(v), { max: 70 })));
       }
       box.append(h("div", { class: "card" }, h("div", { class: "card-head" }, h("div", {}, h("h3", { text: title }), h("p", { text: sub }))), h("div", { class: "card-body" }, bars)));
     }
+    box.append(h("div", { class: "card stat-tiles" },
+      h("div", {}, h("b", {}, "131", h("small", { text: "/ 143" })), h("p", { text: "Full-budget runs with a midpoint score that improve in the second half." })),
+      h("div", {}, h("b", {}, "3.21", h("small", { text: "%" })), h("p", { text: "Median second-half gain across 142 runs with a positive midpoint score." })),
+      h("div", {}, h("b", {}, "36.39", h("small", { text: "M" })), h("p", { text: "Visible output tokens across all 150 selected trajectories." })),
+      h("div", {}, h("b", { text: "203,266" }), h("p", { text: "Agent actions over the complete task suite. Paper Figures 6–7." }))));
     const tbl = $("#eff-table");
-    tbl.append(h("thead", {}, h("tr", {}, ["Configuration", "Hours to first valid", "Tool calls", "Tokens to first valid", "Tokens per run", "First submission valid"].map((x, i) => h("th", { scope: "col", class: i ? "n" : null, text: x })))));
+    tbl.append(h("thead", {}, h("tr", {}, ["Configuration", "Median hours to first score", "Scored runs", "Visible output · 25 tasks", "Actions · 25 tasks"].map((x, i) => h("th", { scope: "col", class: i ? "n" : null, text: x })))));
     const tb = h("tbody");
-    for (const m of order) {
-      const r = M[m];
-      tb.append(h("tr", {}, h("td", {}, X.who(m)),
-        h("td", { class: "n", text: fmt(r.hours, 2) }), h("td", { class: "n", text: fmt(r.tool_calls, 0) }),
-        h("td", { class: "n", text: r.tokens_m == null ? "not logged" : `${fmt(r.tokens_m, 1)}M (n=${r.tokens_n})` }),
-        h("td", { class: "n", text: `${r.tokens_per_run_estimated ? "≈" : ""}${fmt(r.tokens_per_run_m, 0)}M${r.tokens_per_run_estimated ? " est." : ""}` }),
-        h("td", { class: "n", text: `${r.first_try_valid[0]} / ${r.first_try_valid[1]}` })));
-    }
+    for (const m of order) tb.append(h("tr", {}, h("td", {}, X.who(m)),
+      h("td", { class: "n", text: fmt(D.summary.first_valid[m].median_h, 2) }),
+      h("td", { class: "n", text: `${D.summary.first_valid[m].n} / 25` }),
+      h("td", { class: "n", text: `${fmt(M[m].visible_output_m, 2)}M` }),
+      h("td", { class: "n", text: `${fmt(M[m].actions_k, 1)}k` })));
     tbl.append(tb);
     const ul = h("ul");
     for (const [k, v] of Object.entries(TK.definitions)) ul.append(h("li", {}, h("b", { text: `${cap(k.replace(/_/g, " "))}: ` }), v));
-    for (const m of order) ul.append(h("li", {}, h("b", { text: `${MODEL[m].name}: ` }), TK.provenance[m]));
-    ul.append(h("li", { text: `Claude spends a median ${TK.highlights.claude_tokens_between_submissions_m}M tokens between consecutive submissions. Miles tasks take longest to reach a first valid score: on ALFWorld, Qwen and DeepSeek needed about ${TK.highlights.alfworld_tool_calls_to_first_valid.qwen.toLocaleString("en-US")} and ${TK.highlights.alfworld_tool_calls_to_first_valid.deepseek.toLocaleString("en-US")} tool calls.` }));
     $("#eff-notes").append(h("p", { style: "margin:10px 0 0", text: `${TK.scope} ${TK.source}` }), ul);
   })();
 

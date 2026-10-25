@@ -7,7 +7,8 @@
 <meta name="description" content="Infrathon analysis: ranking by stage and level, ranking stability, optimization trajectories, token efficiency and agent behaviour.">
 <meta property="og:title" content="Infrathon">
 <meta property="og:description" content="Can frontier models solve long-horizon AI infrastructure tasks? 25 tasks, 6 configurations, 150 runs on H100s.">
-<meta name="theme-color" content="#060709">
+<meta name="theme-color" content="#fafbfd">
+<script src="assets/js/theme.js"></script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23060709'/%3E%3Cpath d='M7 22h4v-8h4v5h4V9h4v10h3' fill='none' stroke='%23ededef' stroke-width='2.4'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -43,64 +44,56 @@
     <div class="sec-title"><div><h2>Optimization trajectories</h2><p>Best valid score so far for every run, from its first valid scored submission to the end of the run. Pick a configuration to isolate it; click a panel for the task page.</p></div></div>
     <div class="tabs" role="tablist" aria-label="Trajectory view">
       <button type="button" role="tab" aria-selected="true" aria-controls="traj-live" id="tab-traj-live">All 25 tasks</button>
-      <button type="button" role="tab" aria-selected="false" aria-controls="traj-paper" id="tab-traj-paper">Paper figure 4</button>
+      <button type="button" role="tab" aria-selected="false" aria-controls="traj-paper" id="tab-traj-paper">Paper figure 3</button>
     </div>
     <div id="traj-live" role="tabpanel" aria-labelledby="tab-traj-live"><div class="legend" id="traj-legend" style="margin-bottom:14px"></div><div class="multiples" id="multiples"></div></div>
     <div id="traj-paper" role="tabpanel" aria-labelledby="tab-traj-paper" hidden>
-      <figure><div class="paper-fig"><img src="assets/img/fig4-trajectories.webp" width="1577" height="1700" loading="lazy" alt="Paper Figure 4: best-so-far interaction performance on 12 selected tasks."></div>
-      <figcaption>Figure 4 from the paper: best-so-far interaction performance on 12 selected tasks. Flash-KMeans is shown as latency there and as equivalent throughput on this site.</figcaption></figure>
+      <figure><div class="paper-fig"><img src="assets/img/fig3-trajectories.png" width="1416" height="1569" loading="lazy" alt="Paper Figure 3: best-so-far performance on 12 selected tasks."></div>
+      <figcaption>Figure 3 from the current paper: best-so-far performance on 12 selected tasks. Flash-KMeans uses equivalent throughput; all metrics are higher-is-better.</figcaption></figure>
     </div>
   </div></section>
 
   <section class="sec" id="efficiency"><div class="wrap">
-    <div class="sec-title"><div><h2>Time, turns and tokens to the first valid score</h2><p>How long an agent works before the judge accepts and scores something, and how many tokens a run consumes over its whole budget. Per-model medians across 25 tasks (152 runs).</p></div></div>
+    <div class="sec-title"><div><h2>Interaction cost and continued progress</h2><p>Time to the first valid score comes from the selected run histories. Visible output and action totals cover the same 150 runs in the paper; later gains show what the second half of the budget adds.</p></div></div>
     <div class="eff" id="eff"></div>
     <div class="card" style="margin-top:12px"><div class="scroll-x"><table class="data" id="eff-table" style="min-width:720px"></table></div>
       <div class="card-foot"><details class="notes" id="eff-notes"><summary>How these numbers were measured</summary></details></div></div>
+    <figure style="margin-top:20px"><div class="paper-fig"><img src="assets/img/fig5-first-score.png" width="1416" height="696" loading="lazy" alt="Paper Figure 5: elapsed time, visible output tokens, and agent actions before the first scored submission for 149 runs."></div><figcaption>Figure 5. Dots show runs, large markers show medians, and bars show interquartile ranges. All axes are logarithmic. Agent actions count emitted text blocks and tool invocations.</figcaption></figure>
   </div></section>
 
   <section class="sec" id="behavior"><div class="wrap">
-    <div class="sec-title"><div><h2>Where long-horizon agents break down</h2><p>We read archived code changes, tool executions and judge feedback and asked four questions. This audit covers the original five model families.</p></div></div>
+    <div class="sec-title"><div><h2>Where long-horizon agents break down</h2><p>The paper examines all six configurations through three questions: task compliance, experimental validation, and continued improvement.</p></div></div>
     <div class="find-grid">
       <article class="card find">
-        <span class="label">Do agents keep searching?</span>
-        <div class="big">5.8% → 28.1%<small>Share of submissions that repeat an earlier candidate's exact contents, first half versus second half of the budget (96 complete-budget runs).</small></div>
+        <span class="label">01 · Do agents follow task requirements?</span>
+        <div class="big" id="rej-big">Rejected before scoring<small>Integrity checks return rule feedback when a candidate skips required work.</small></div>
         <ul>
-          <li>Agents declare completion early. After the stop hook blocks it, GLM gains <b>+24.8%</b> on SageAttention and <b>+6.4%</b> on ORPO, and DeepSeek gains <b>+14.0%</b> on SD3.5.</li>
-          <li>Qwen's repeats on grouped FP8 GEMM go from 0 of 2 in the first half to 26 of 30 in the second.</li>
-          <li>Useful search reaches beyond kernels: copy-engine staging on LMCache, and a Ray serialization fix on SD3.5 (146.58 → 8.45 ms).</li>
+          <li>DeepSeek’s Wan2.2 candidate emits <code>log_complete</code> before the required background fsync finishes.</li>
+          <li>Qwen’s OPD candidate reuses stale KV state even after recognizing that it is inconsistent with updated weights.</li>
+          <li>Fast local tests can miss changes to the required computation or state invariants.</li>
         </ul>
       </article>
       <article class="card find">
-        <span class="label">Can they manage their own experiments?</span>
-        <div class="big">14 cases · 11 tasks<small>Documented failures where the agent corrupted its own evidence: wrong state records, faulty diagnostics, interfering processes, incomplete edits.</small></div>
+        <span class="label">02 · Do agents test their optimizations correctly?</span>
+        <div class="big">Check what actually ran<small>A benchmark result is only useful when code, configuration, and workload match the claim.</small></div>
         <ul>
-          <li>GLM credits a deeper tile change to Wgrad v022. Its contents are identical to v011.</li>
-          <li>Qwen's Mamba-2 sweep reuses a cached plan, so every "new" configuration runs the same kernel.</li>
-          <li>Claude leaves an OPCD profiling service holding GPU memory; the next training run fails to allocate an NCCL buffer.</li>
+          <li>Qwen’s Mamba-2 sweep reuses a cached plan, so nominally different configurations run the same kernel.</li>
+          <li>Correcting the source constants changes the apparent speedup in the paper’s public-runner experiment.</li>
+          <li>Flash-KMeans testing shows why balanced labels alone do not represent assignment-produced workloads.</li>
         </ul>
       </article>
       <article class="card find">
-        <span class="label">Do optimizations keep the semantics?</span>
-        <div class="big">9 driver stalls · 154 runs<small>Node-wide GPU faults in a historical audit. None came from GPT (35 runs) or Claude (22 runs).</small></div>
+        <span class="label">03 · Do agents keep improving?</span>
+        <div class="big">4.8% → 19.9%<small>Repeated-content submission share, first versus second half, across 141 full-budget runs.</small></div>
         <ul>
-          <li>GLM's OPD trainer runs with zero loss and zero gradients while reporting normal steps.</li>
-          <li>Sol's SD3.5 candidate passes forward checks but has gradient cosine <b>0.581</b>; after repair it reaches 0.990.</li>
-          <li>Batching breaks sample identity: shuffled ALFWorld games get the wrong advantages.</li>
-        </ul>
-      </article>
-      <article class="card find">
-        <span class="label">Do they take shortcuts?</span>
-        <div class="big" id="rej-big">Rejected before scoring<small>The integrity review blocks submissions that skip required work and returns the rule instead of a score.</small></div>
-        <ul>
-          <li>Qwen notes that old KV state mixed with new OPD weights is inconsistent, then submits exactly that.</li>
-          <li>DeepSeek signals completion on Wan2.2 before the log is fsynced.</li>
-          <li>Historical KVzip runs downloaded and quantized official gating weights instead of writing a scorer; two results were invalidated.</li>
+          <li>After completion claims, further code changes produce gains: GLM/SageAttention <b>+24.8%</b>, Claude/GKD <b>+3.1%</b>, and DeepSeek/SD3.5 <b>+14.0%</b>.</li>
+          <li>377 of 2,941 identifiable submissions revisit earlier content in the same run, spanning 54 runs and 21 tasks.</li>
+          <li>131 of 143 full-budget runs with a midpoint score still improve later.</li>
         </ul>
       </article>
     </div>
-    <figure style="margin-top:16px"><div class="paper-fig"><img src="assets/img/fig5-behavior.webp" width="1567" height="641" loading="lazy" alt="Paper Figure 5: verified gains after a completion claim, and repeat submissions in the first versus second half of the budget."></div>
-      <figcaption>Figure 5 from the paper. (a) Score gains after the stop hook blocks a completion claim. (b) Content-identical repeat submissions as a share of identifiable submissions, first versus second half, pooled per configuration.</figcaption></figure>
+    <figure style="margin-top:16px"><div class="paper-fig"><img src="assets/img/fig11-behavior.png" width="1416" height="642" loading="lazy" alt="Paper Figure 11: gains after completion statements and repeated-content submissions."></div>
+      <figcaption>Figure 11 from the current paper. (a) Three completion–continuation sequences with code changes and higher valid scores. (b) Repeated-content submission fractions in both halves of the same 141 runs.</figcaption></figure>
   </div></section>
 </main>
 <script src="data/infrathon.js"></script>

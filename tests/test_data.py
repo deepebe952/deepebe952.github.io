@@ -1,7 +1,6 @@
 """Regression tests for the data pipeline.
 
-The extraction is checked against the paper's published final-artifact numbers (Figure 3,
-Table 13); the site itself ranks each run's best valid score during the run.
+The extraction is checked against all 150 best-so-far results in the current paper's Table 4.
 """
 import json
 import sys
@@ -15,40 +14,19 @@ import build_data  # noqa: E402
 
 REGISTRY, RAW, TOKENS = build_data.load()
 DATA = build_data.compute(REGISTRY, RAW, TOKENS)
-PAPER = build_data.paper_figures(REGISTRY, RAW)
-
-# Paper, Figure 3: mean rank score per stage x level (Sol, Claude, Qwen, DeepSeek, GLM, Astra).
-FIGURE_3 = {
-    "training/operator": (33.3, 93.3, 53.3, 33.3, 0.0, 86.7),
-    "training/module": (80.0, 0.0, 60.0, 40.0, 20.0, 100.0),
-    "training/system": (73.3, 86.7, 40.0, 13.3, 6.7, 80.0),
-    "inference/operator": (45.0, 95.0, 45.0, 45.0, 10.0, 60.0),
-    "inference/module": (53.3, 80.0, 33.3, 40.0, 6.7, 86.7),
-    "inference/system": (40.0, 93.3, 60.0, 13.3, 20.0, 73.3),
-}
-FIGURE_3_N = {"training/operator": 3, "training/module": 1, "training/system": 3,
-              "inference/operator": 4, "inference/module": 3, "inference/system": 3}
-# Paper, Table 13: mean relative score and task wins on the 17-task common subset.
-TABLE_13_REL = (0.797, 0.966, 0.735, 0.655, 0.530, 0.872)
-TABLE_13_WINS = (1, 10, 0, 0, 0, 6)
-MODELS = ("sol", "claude", "qwen", "deepseek", "glm", "astra")
+PAPER_TABLE = json.loads((ROOT / "tests/paper_table4.json").read_text())
 
 
 class PaperNumbers(unittest.TestCase):
-    """The extracted runs reproduce the paper's final-artifact results."""
+    def test_all_table_4_scores(self):
+        for task in DATA["tasks"]:
+            for model, expected in PAPER_TABLE[task["key"]].items():
+                self.assertAlmostEqual(task["results"][model]["best"], expected, delta=0.0051,
+                                       msg=f"{task['key']} {model}")
 
-    def test_figure_3(self):
-        self.assertEqual(PAPER["n"], 17)
-        for group, expected in FIGURE_3.items():
-            got = PAPER["groups"][group]
-            self.assertEqual(got["n"], FIGURE_3_N[group], group)
-            for m, v in zip(MODELS, expected):
-                self.assertAlmostEqual(got["rank_score"][m], v, delta=0.05, msg=f"{group} {m}")
-
-    def test_table_13_aggregate(self):
-        for m, rel, wins in zip(MODELS, TABLE_13_REL, TABLE_13_WINS):
-            self.assertAlmostEqual(PAPER["mean_relative"][m], rel, delta=0.0005, msg=m)
-            self.assertEqual(PAPER["wins"][m], wins, m)
+    def test_table_4_wins(self):
+        self.assertEqual(DATA["ranking"]["wins"],
+                         {"sol": 1, "claude": 17, "qwen": 1, "deepseek": 0, "glm": 0, "astra": 6})
 
 
 class SiteData(unittest.TestCase):
@@ -70,31 +48,31 @@ class SiteData(unittest.TestCase):
         self.assertAlmostEqual(t["kvzip"]["results"]["sol"]["best_at_h"], 5.757, places=3)
         # A run without a valid scored submission ranks last on its task.
         wan = t["wan22"]
-        self.assertIsNone(wan["results"]["glm"]["best"])
+        self.assertEqual(wan["results"]["glm"]["best"], 0)
         self.assertEqual(wan["ranks"]["glm"], 6)
 
-    def test_rank_score_is_eq6(self):
+    def test_rank_score_is_eq5(self):
         for t in DATA["tasks"]:
             n = len(t["ranks"])
             for m, r in t["ranks"].items():
                 self.assertAlmostEqual(t["contrib"][m], 100 * (n - r) / (n - 1), places=3)
 
-    def test_serving_matches_personal_export(self):
+    def test_serving_restores_agent_22(self):
         serving = next(t for t in DATA["tasks"] if t["key"] == "serving")
         qwen = serving["results"]["qwen"]
-        self.assertEqual(qwen["n_sub"], 21)
-        self.assertEqual(qwen["counts"]["valid"], 18)
-        self.assertEqual(qwen["best"], 149.9)
-        self.assertEqual(qwen["subs"][-1], [22.295, 144.7333, "v"])
-        self.assertEqual(serving["winner"], "claude")
-        self.assertEqual(serving["ranks"]["qwen"], 2)
+        self.assertEqual(qwen["n_sub"], 22)
+        self.assertEqual(qwen["counts"]["valid"], 19)
+        self.assertEqual(qwen["best"], 154.3333)
+        self.assertEqual(qwen["subs"][-1], [23.318, 154.3333, "v"])
+        self.assertEqual(serving["winner"], "qwen")
+        self.assertEqual(serving["ranks"]["qwen"], 1)
 
     def test_opd_includes_earlier_astra_run(self):
         opd = next(t for t in DATA["tasks"] if t["key"] == "opd")
         self.assertEqual(opd["results"]["astra"]["best"], 15.1678)
         self.assertEqual(opd["results"]["astra"]["n_sub"], 11)
         self.assertEqual(opd["results"]["astra"]["elapsed_h"], 24)
-        self.assertEqual(RAW["tasks"]["opd"]["runs"]["astra"]["cohort"], "h100sxm-five-models-24h-20261011")
+        self.assertEqual(RAW["tasks"]["opd"]["runs"]["astra"]["id"], "opd-astra-max-24h-20261018-102917")
 
     def test_no_final_artifact_fields(self):
         bundle = (ROOT / "site/data/infrathon.js").read_text()

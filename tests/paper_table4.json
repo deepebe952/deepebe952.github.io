@@ -1,0 +1,202 @@
+{
+  "attn-qat": {
+    "sol": 321.63,
+    "claude": 370.45,
+    "qwen": 254.94,
+    "deepseek": 282.7,
+    "glm": 110.3,
+    "astra": 345.24
+  },
+  "wgrad": {
+    "sol": 290.45,
+    "claude": 331.52,
+    "qwen": 295.57,
+    "deepseek": 283.18,
+    "glm": 118.15,
+    "astra": 321.7
+  },
+  "flux-moe": {
+    "sol": 285.47,
+    "claude": 345.94,
+    "qwen": 321.62,
+    "deepseek": 267.04,
+    "glm": 242.29,
+    "astra": 361.43
+  },
+  "orpo": {
+    "sol": 151.56,
+    "claude": 155.61,
+    "qwen": 145.92,
+    "deepseek": 137.07,
+    "glm": 138.34,
+    "astra": 173.16
+  },
+  "gkd": {
+    "sol": 177.09,
+    "claude": 194.84,
+    "qwen": 174.76,
+    "deepseek": 172.91,
+    "glm": 167.78,
+    "astra": 188.13
+  },
+  "opcd": {
+    "sol": 263.61,
+    "claude": 343.02,
+    "qwen": 231.93,
+    "deepseek": 157.34,
+    "glm": 83.99,
+    "astra": 302.39
+  },
+  "opd": {
+    "sol": 13.0,
+    "claude": 21.73,
+    "qwen": 15.94,
+    "deepseek": 16.14,
+    "glm": 15.24,
+    "astra": 15.17
+  },
+  "alfworld": {
+    "sol": 149.33,
+    "claude": 251.86,
+    "qwen": 134.94,
+    "deepseek": 108.87,
+    "glm": 78.63,
+    "astra": 193.98
+  },
+  "sd35": {
+    "sol": 100.1,
+    "claude": 152.77,
+    "qwen": 84.24,
+    "deepseek": 46.53,
+    "glm": 16.65,
+    "astra": 121.76
+  },
+  "wan22": {
+    "sol": 67.35,
+    "claude": 63.14,
+    "qwen": 53.7,
+    "deepseek": 41.91,
+    "glm": 0.0,
+    "astra": 89.8
+  },
+  "grouped-fp8": {
+    "sol": 167.52,
+    "claude": 196.78,
+    "qwen": 170.53,
+    "deepseek": 181.13,
+    "glm": 132.2,
+    "astra": 180.17
+  },
+  "sparse-mla": {
+    "sol": 305.7,
+    "claude": 317.78,
+    "qwen": 238.02,
+    "deepseek": 238.4,
+    "glm": 142.73,
+    "astra": 271.04
+  },
+  "paged-gqa": {
+    "sol": 56.54,
+    "claude": 59.88,
+    "qwen": 54.79,
+    "deepseek": 50.12,
+    "glm": 44.85,
+    "astra": 56.51
+  },
+  "sageattention": {
+    "sol": 712.13,
+    "claude": 823.55,
+    "qwen": 365.78,
+    "deepseek": 540.8,
+    "glm": 542.28,
+    "astra": 401.13
+  },
+  "minference": {
+    "sol": 1009.07,
+    "claude": 3078.19,
+    "qwen": 953.07,
+    "deepseek": 700.36,
+    "glm": 287.62,
+    "astra": 2609.11
+  },
+  "lmcache": {
+    "sol": 297.33,
+    "claude": 296.69,
+    "qwen": 290.57,
+    "deepseek": 287.96,
+    "glm": 276.57,
+    "astra": 302.16
+  },
+  "flash-kmeans": {
+    "sol": 160.43,
+    "claude": 208.83,
+    "qwen": 195.19,
+    "deepseek": 160.95,
+    "glm": 95.91,
+    "astra": 189.78
+  },
+  "mamba2": {
+    "sol": 156.38,
+    "claude": 170.6,
+    "qwen": 125.8,
+    "deepseek": 122.77,
+    "glm": 59.57,
+    "astra": 165.91
+  },
+  "kvpress": {
+    "sol": 89.8,
+    "claude": 88.64,
+    "qwen": 87.41,
+    "deepseek": 88.42,
+    "glm": 82.05,
+    "astra": 89.66
+  },
+  "kvzip": {
+    "sol": 94.39,
+    "claude": 95.95,
+    "qwen": 56.78,
+    "deepseek": 66.83,
+    "glm": 42.17,
+    "astra": 97.81
+  },
+  "qvg": {
+    "sol": 4.24,
+    "claude": 19.62,
+    "qwen": 8.34,
+    "deepseek": 7.62,
+    "glm": 4.66,
+    "astra": 8.73
+  },
+  "eagle3": {
+    "sol": 640.49,
+    "claude": 845.98,
+    "qwen": 631.98,
+    "deepseek": 436.56,
+    "glm": 245.76,
+    "astra": 749.15
+  },
+  "llada": {
+    "sol": 248.84,
+    "claude": 653.41,
+    "qwen": 73.05,
+    "deepseek": 291.72,
+    "glm": 108.09,
+    "astra": 340.07
+  },
+  "sdv2": {
+    "sol": 60.01,
+    "claude": 60.18,
+    "qwen": 44.93,
+    "deepseek": 44.7,
+    "glm": 40.32,
+    "astra": 70.21
+  },
+  "serving": {
+    "sol": 136.8,
+    "claude": 151.17,
+    "qwen": 154.33,
+    "deepseek": 120.33,
+    "glm": 146.37,
+    "astra": 138.1
+  }
+}
