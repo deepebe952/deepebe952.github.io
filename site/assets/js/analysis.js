@@ -83,6 +83,94 @@
         box.append(h("a", { class: "card mult", href: X.taskHref(t.key) }, h("div", { class: "h" }, h("b", { text: t.name }), h("span", { text: unitOf(t) || "score" })), X.trajChart(t, { W: 300, H: 165 })));
       }
     }
+    const featured = $("#featured-trajectories");
+    const groups = [
+      ["training", ["attn-qat", "orpo", "opcd", "flux-moe", "gkd", "alfworld"]],
+      ["inference", ["sageattention", "kvzip", "eagle3", "flash-kmeans", "qvg", "llada"]],
+    ];
+    let letter = 0;
+    for (const [stage, keys] of groups) {
+      featured.append(h("div", { class: "grp-label", text: `${cap(stage)} · operators / modules / systems` }));
+      for (const key of keys) {
+        const t = TASK[key];
+        featured.append(h("a", { class: "card mult", href: X.taskHref(key) },
+          h("div", { class: "featured-meta" }, h("span", { text: `${String.fromCharCode(97 + letter++)} · ${cap(t.level)}` }), h("span", { text: `${t.budget_h} h budget` })),
+          h("div", { class: "h" }, h("b", { text: t.name })),
+          h("div", { class: "chart-unit", text: `${unitOf(t) || "score"} ↑${key === "flash-kmeans" ? " · log scale" : ""}` }),
+          X.trajChart(t, { W: 340, H: 190, logY: key === "flash-kmeans" })));
+      }
+    }
+  })();
+
+  /* Figure 5: raw elapsed times, and digitized paper token/action distributions. */
+  (function renderFirstScore() {
+    const box = $("#first-score-chart"), paper = D.tokens.first_score_distributions.metrics;
+    const specs = {
+      elapsed: { label: "Elapsed time", unit: "Hours to first valid score", ticks: [.01, .1, 1, 10], format: (v) => `${fmt(v, 2)} h`, description: "Selected run histories · hover or focus a dot for its task; open it to inspect the run." },
+      tokens: { label: "Visible output", unit: "Visible output tokens (thousands)", ticks: [1, 10, 100], format: (v) => `≈${fmt(v, 1)}k`, description: "Before the first matched scored feedback · approximate values reconstructed from paper Figure 5." },
+      actions: { label: "Agent actions", unit: "Text blocks + tool invocations", ticks: [10, 100, 1000], format: (v) => `≈${fmt(v, 0)}`, description: "Before the first matched scored feedback · approximate values reconstructed from paper Figure 5." },
+    };
+    const quantile = (xs, q) => { const p = (xs.length - 1) * q, lo = Math.floor(p); return xs[lo] + (xs[Math.ceil(p)] - xs[lo]) * (p - lo); };
+    const elapsed = Object.fromEntries(MODELS.map((m) => {
+      const points = D.tasks.filter((t) => t.results[m]?.first_valid_h != null).map((t) => ({ value: t.results[m].first_valid_h, task: t })).sort((a, b) => a.value - b.value);
+      const values = points.map((p) => p.value);
+      return [m, { points, q1: quantile(values, .25), median: quantile(values, .5), q3: quantile(values, .75) }];
+    }));
+    let metric = "elapsed", lastWidth = 0;
+    const bindTip = (el, title, rows, note) => {
+      const show = (e) => { const b = el.getBoundingClientRect(); X.showTip(e.clientX ?? b.right, e.clientY ?? b.top, title, rows, note); };
+      el.addEventListener("pointermove", show); el.addEventListener("focus", show);
+      el.addEventListener("pointerleave", X.hideTip); el.addEventListener("blur", X.hideTip);
+      el.addEventListener("keydown", (e) => { if (e.key === "Escape") X.hideTip(); });
+    };
+    function draw() {
+      X.hideTip();
+      const spec = specs[metric], raw = metric === "elapsed";
+      const rows = raw ? elapsed : Object.fromEntries(MODELS.map((m) => [m, { ...paper[metric][m], points: paper[metric][m].points.map((value) => ({ value })) }]));
+      const W = Math.max(280, Math.round(box.getBoundingClientRect().width)), H = 356, L = 82, R = W - 64, top = 30, rowH = 46;
+      lastWidth = W;
+      const all = MODELS.flatMap((m) => rows[m].points.map((p) => p.value));
+      const lo = Math.min(...all) / 1.3, hi = Math.max(...all) * 1.3;
+      const xs = (v) => L + Math.log(v / lo) / Math.log(hi / lo) * (R - L);
+      const svg = s("svg", { viewBox: `0 0 ${W} ${H}`, role: "group", "aria-label": `${spec.label} before first score, by configuration. Dots are runs, markers are medians, bars are interquartile ranges.` });
+      st(svg, W - 2, 15, "Median", { fill: C.ink3, "font-size": 10, "text-anchor": "end" });
+      for (const v of spec.ticks.filter((v) => v >= lo && v <= hi)) {
+        s("line", { x1: xs(v), x2: xs(v), y1: top - 6, y2: top + rowH * 6, stroke: C.hair }, svg);
+        st(svg, xs(v), H - 26, String(v), { fill: C.ink3, "font-size": 11, "text-anchor": "middle" });
+      }
+      MODELS.forEach((m, i) => {
+        const row = rows[m], y = top + rowH * i + rowH / 2;
+        st(svg, 0, y - 2, MODEL[m].short, { fill: C.ink2, "font-size": 12 });
+        st(svg, 0, y + 13, `${row.points.length} runs`, { fill: C.ink3, "font-size": 9.5 });
+        s("line", { x1: L, x2: R, y1: y, y2: y, stroke: C.hair }, svg);
+        s("line", { x1: xs(row.q1), x2: xs(row.q3), y1: y, y2: y, stroke: COLOR[m], "stroke-width": 5, "stroke-opacity": .24, "stroke-linecap": "round" }, svg);
+        for (const q of [row.q1, row.q3]) s("line", { x1: xs(q), x2: xs(q), y1: y - 5, y2: y + 5, stroke: COLOR[m], "stroke-opacity": .6 }, svg);
+        const placed = [];
+        row.points.forEach((point) => {
+          const x = xs(point.value), lanes = [-12, -6, 0, 6, 12];
+          const clearance = (dy) => placed.length ? Math.min(...placed.map(([px, py]) => Math.hypot(x - px, dy - py))) : Infinity;
+          const dy = lanes.reduce((best, next) => clearance(next) > clearance(best) ? next : best, lanes[0]);
+          placed.push([x, dy]);
+          const title = raw ? `${point.task.name} · ${MODEL[m].short}` : `${MODEL[m].name} · plotted run`;
+          const dot = s(raw ? "a" : "g", { ...(raw ? { href: X.runHref(point.task.key, m) } : {}), tabindex: 0, class: "distribution-point", "aria-label": `${title}: ${spec.format(point.value)}` }, svg);
+          s("circle", { cx: x, cy: y + dy, r: 5, fill: COLOR[m], "fill-opacity": .65, stroke: C.panel, "stroke-width": 1 }, dot);
+          bindTip(dot, title, [{ color: COLOR[m], value: spec.format(point.value), label: spec.label }], raw ? "Open the run’s submission history" : "Approximate value from Figure 5; task identity is unavailable.");
+        });
+        const median = s("g", { tabindex: 0, class: "distribution-median", "aria-label": `${MODEL[m].short}: median ${spec.format(row.median)}, middle 50% ${spec.format(row.q1)} to ${spec.format(row.q3)}` }, svg);
+        X.marker(median, m, xs(row.median), y, 6.5);
+        st(median, W - 2, y + 4, spec.format(row.median), { fill: C.ink, "font-size": 11, "text-anchor": "end" });
+        bindTip(median, `${MODEL[m].name} · ${row.points.length} runs`, [
+          { color: COLOR[m], value: spec.format(row.median), label: "Median" },
+          { color: COLOR[m], value: `${spec.format(row.q1)} – ${spec.format(row.q3)}`, label: "Middle 50%" },
+        ], raw ? "Selected run histories" : "Approximate values from paper Figure 5");
+      });
+      st(svg, (L + R) / 2, H - 5, `${spec.unit} · log scale`, { fill: C.ink3, "font-size": 10, "text-anchor": "middle" });
+      box.replaceChildren(svg);
+      $("#first-score-description").textContent = spec.description;
+    }
+    X.seg($("#first-score-controls"), Object.entries(specs).map(([key, spec]) => [key, spec.label]), metric, (value) => { metric = value; draw(); });
+    draw();
+    new ResizeObserver(() => { if (Math.max(280, Math.round(box.getBoundingClientRect().width)) !== lastWidth) draw(); }).observe(box);
   })();
 
   /* ---------- interaction statistics, paper Figures 5–7 ---------- */
@@ -120,6 +208,40 @@
     const ul = h("ul");
     for (const [k, v] of Object.entries(TK.definitions)) ul.append(h("li", {}, h("b", { text: `${cap(k.replace(/_/g, " "))}: ` }), v));
     $("#eff-notes").append(h("p", { style: "margin:10px 0 0", text: `${TK.scope} ${TK.source}` }), ul);
+  })();
+
+  /* Figure 11: case-level score changes and run-level repetition categories. */
+  (function renderBehavior() {
+    const data = D.tokens.behavior, gainBox = $("#completion-gains");
+    for (const example of data.completion) {
+      const { model: m, task: key, before, after } = example, t = TASK[key];
+      const gain = (after / before - 1) * 100;
+      gainBox.append(h("a", { class: "gain-example", href: X.taskHref(key), style: `--case-color:${COLOR[m]}` },
+        h("div", { class: "gain-heading" }, h("div", {}, h("b", { text: { sageattention: "SageAttention", gkd: "GKD", sd35: "SD3.5" }[key] }), h("span", { text: `${MODEL[m].short} · ${cap(t.level)}` })), h("strong", { text: `+${fmt(gain, 1)}%` })),
+        h("div", { class: "gain-track", "aria-hidden": "true" }, h("span", { style: `width:${gain / 30 * 100}%` })),
+        h("div", { class: "gain-scores" }, h("span", {}, h("small", { text: "At completion" }), h("b", { text: fmt(before, 2) })), h("span", { class: "gain-arrow", "aria-hidden": "true", text: "→" }), h("span", {}, h("small", { text: "After code changes" }), h("b", { text: `${fmt(after, 2)} ${unitOf(t) || ""}` })))));
+    }
+    gainBox.append(h("p", { class: "chart-note", text: "Bar length shows relative gain on a shared 0–30% scale." }));
+    const repeatBox = $("#repeat-comparison");
+    repeatBox.append(h("div", { class: "repeat-kpi" }, h("div", {}, h("span", { class: "label", text: "Pooled repeat share" }), h("strong", { text: `${data.pooled_pct[0]}% → ${data.pooled_pct[1]}%` })), h("span", { class: "chart-badge", text: "of submissions" })));
+    const categories = ["No repeats", "Some repeats (≤50%)", "Mostly repeats (>50%)"];
+    data.halves.forEach((half) => {
+      const row = h("div", { class: "repeat-half" }, h("div", { class: "repeat-heading" }, h("b", { text: half.label }), h("span", { text: `${data.n_runs} runs` })));
+      const bar = h("div", { class: "repeat-stack", role: "group", "aria-label": `${half.label}: repeated-content share within each run` });
+      half.counts.forEach((n, i) => {
+        const label = `${categories[i]}: ${n} of ${data.n_runs} runs (${pct(n / data.n_runs, 1)})`;
+        const segment = h("button", { type: "button", class: `repeat-segment repeat-${i}`, style: `flex:${n}`, "aria-label": label, text: n >= 10 ? String(n) : "" });
+        const show = (e) => { const b = segment.getBoundingClientRect(); X.showTip(e.clientX ?? b.left, e.clientY ?? b.top, half.label, [{ color: getComputedStyle(segment).backgroundColor, value: `${n} runs · ${pct(n / data.n_runs, 1)}`, label: categories[i] }], "Fraction of each run’s submissions that repeat earlier content"); };
+        segment.addEventListener("pointermove", show); segment.addEventListener("focus", show); segment.addEventListener("click", show);
+        segment.addEventListener("pointerleave", X.hideTip); segment.addEventListener("blur", X.hideTip);
+        segment.addEventListener("keydown", (e) => { if (e.key === "Escape") X.hideTip(); });
+        bar.append(segment);
+      });
+      row.append(bar, h("div", { class: "repeat-counts" }, half.counts.map((n, i) => h("span", { class: `repeat-count repeat-${i}` }, h("i", { "aria-hidden": "true" }), `${n} ${["none", "some", "mostly"][i]}`))));
+      repeatBox.append(row);
+    });
+    repeatBox.append(h("div", { class: "repeat-legend" }, categories.map((label, i) => h("span", { class: `repeat-count repeat-${i}` }, h("i", { "aria-hidden": "true" }), label))),
+      h("p", { class: "repeat-takeaway" }, h("b", { text: "2 → 18 runs" }), " have a majority of repeated submissions in the second half."));
   })();
 
   const rej = MODELS.reduce((a, m) => a + D.summary.status_totals[m].rejected, 0);

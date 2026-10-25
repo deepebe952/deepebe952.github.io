@@ -87,5 +87,36 @@ class SiteData(unittest.TestCase):
         self.assertIn(body, bundle, "site/data/infrathon.js is stale; run scripts/build_data.py")
 
 
+class PaperDistributions(unittest.TestCase):
+    def test_digitized_times_match_independent_run_histories(self):
+        recovered = TOKENS["first_score_distributions"]["metrics"]["elapsed"]
+        for model, row in recovered.items():
+            actual = sorted(t["results"][model]["first_valid_h"] for t in DATA["tasks"]
+                            if t["results"][model]["first_valid_h"] is not None)
+            self.assertEqual(len(actual), len(row["points"]))
+            for a, b in zip(actual, row["points"]):
+                self.assertAlmostEqual(a, b, delta=.001, msg=model)
+
+    def test_figure5_counts_and_summaries(self):
+        for metric, models in TOKENS["first_score_distributions"]["metrics"].items():
+            self.assertEqual(sum(len(row["points"]) for row in models.values()), 149)
+            for model, row in models.items():
+                self.assertEqual(len(row["points"]), 24 if model == "glm" else 25)
+                self.assertTrue(all(v > 0 for v in row["points"]))
+                for key, q in (("q1", .25), ("median", .5), ("q3", .75)):
+                    expected = build_data.percentile(row["points"], q)
+                    self.assertAlmostEqual(row[key], expected, delta=max(.001, expected * .0001))
+                if metric == "actions":
+                    for v in row["points"]:
+                        self.assertAlmostEqual(v, round(v), delta=.01)
+
+    def test_figure11_uses_matching_denominators(self):
+        behavior = TOKENS["behavior"]
+        for half in behavior["halves"]:
+            self.assertEqual(sum(half["counts"]), behavior["n_runs"])
+        for case, gain in zip(behavior["completion"], [24.8, 3.1, 14.0]):
+            self.assertAlmostEqual((case["after"] / case["before"] - 1) * 100, gain, delta=.05)
+
+
 if __name__ == "__main__":
     unittest.main()

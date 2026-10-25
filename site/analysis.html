@@ -44,21 +44,35 @@
     <div class="sec-title"><div><h2>Optimization trajectories</h2><p>Best valid score so far for every run, from its first valid scored submission to the end of the run. Pick a configuration to isolate it; click a panel for the task page.</p></div></div>
     <div class="tabs" role="tablist" aria-label="Trajectory view">
       <button type="button" role="tab" aria-selected="true" aria-controls="traj-live" id="tab-traj-live">All 25 tasks</button>
-      <button type="button" role="tab" aria-selected="false" aria-controls="traj-paper" id="tab-traj-paper">Paper figure 3</button>
+      <button type="button" role="tab" aria-selected="false" aria-controls="traj-paper" id="tab-traj-paper">12 featured tasks</button>
     </div>
-    <div id="traj-live" role="tabpanel" aria-labelledby="tab-traj-live"><div class="legend" id="traj-legend" style="margin-bottom:14px"></div><div class="multiples" id="multiples"></div></div>
+    <div class="legend" id="traj-legend" style="margin-bottom:14px"></div>
+    <div id="traj-live" role="tabpanel" aria-labelledby="tab-traj-live"><div class="multiples" id="multiples"></div></div>
     <div id="traj-paper" role="tabpanel" aria-labelledby="tab-traj-paper" hidden>
-      <figure><div class="paper-fig"><img src="assets/img/fig3-trajectories.png" width="1416" height="1569" loading="lazy" alt="Paper Figure 3: best-so-far performance on 12 selected tasks."></div>
-      <figcaption>Figure 3 from the current paper: best-so-far performance on 12 selected tasks. Flash-KMeans uses equivalent throughput; all metrics are higher-is-better.</figcaption></figure>
+      <p class="chart-note">The 12 tasks in Figure 3, grouped by training and inference. Each row spans operators, modules, and systems. Hover to inspect scores; open a card to explore its run history.</p>
+      <div class="featured-trajectories" id="featured-trajectories"></div>
+      <p class="chart-note">Higher is better. Flash-KMeans shows equivalent throughput on a logarithmic scale. The best observed score carries forward to the full 12- or 24-hour budget.</p>
     </div>
   </div></section>
 
   <section class="sec" id="efficiency"><div class="wrap">
     <div class="sec-title"><div><h2>Interaction cost and continued progress</h2><p>Time to the first valid score comes from the selected run histories. Visible output and action totals cover the same 150 runs in the paper; later gains show what the second half of the budget adds.</p></div></div>
+    <div class="card distribution-card">
+      <div class="card-head"><div><span class="label">First scored submission · Figure 5</span><h3>What does it take to get a first score?</h3><p>One dot per run. Large markers show medians; horizontal bars span the middle 50%.</p></div><span class="chart-badge">149 scored runs</span></div>
+      <div class="card-body">
+        <div class="seg distribution-controls" id="first-score-controls" role="group" aria-label="First-score metric"></div>
+        <p class="chart-note" id="first-score-description" aria-live="polite"></p>
+        <div id="first-score-chart"></div>
+      </div>
+      <div class="card-foot"><details class="notes"><summary>Data sources and reading the chart</summary>
+        <p>All three axes are logarithmic. Elapsed times come from the selected run histories; their dots link to individual runs. GLM has 24 scored runs; the other configurations each have 25.</p>
+        <p>Token and action distributions are reconstructed from the vector coordinates in paper Figure 5. Their values are approximate, and the figure does not identify individual tasks. Tokens count visible output through the first matched scored feedback; actions count emitted text blocks and tool invocations.</p>
+        <p>Figure 5 plots Qwen’s median at approximately 248 actions, while Section 4.4 states 253. This chart follows the plotted distribution.</p>
+      </details></div>
+    </div>
     <div class="eff" id="eff"></div>
     <div class="card" style="margin-top:12px"><div class="scroll-x"><table class="data" id="eff-table" style="min-width:720px"></table></div>
       <div class="card-foot"><details class="notes" id="eff-notes"><summary>How these numbers were measured</summary></details></div></div>
-    <figure style="margin-top:20px"><div class="paper-fig"><img src="assets/img/fig5-first-score.png" width="1416" height="696" loading="lazy" alt="Paper Figure 5: elapsed time, visible output tokens, and agent actions before the first scored submission for 149 runs."></div><figcaption>Figure 5. Dots show runs, large markers show medians, and bars show interquartile ranges. All axes are logarithmic. Agent actions count emitted text blocks and tool invocations.</figcaption></figure>
   </div></section>
 
   <section class="sec" id="behavior"><div class="wrap">
@@ -92,8 +106,18 @@
         </ul>
       </article>
     </div>
-    <figure style="margin-top:16px"><div class="paper-fig"><img src="assets/img/fig11-behavior.png" width="1416" height="642" loading="lazy" alt="Paper Figure 11: gains after completion statements and repeated-content submissions."></div>
-      <figcaption>Figure 11 from the current paper. (a) Three completion–continuation sequences with code changes and higher valid scores. (b) Repeated-content submission fractions in both halves of the same 141 runs.</figcaption></figure>
+    <div class="behavior-charts">
+      <article class="card">
+        <div class="card-head"><div><span class="label">Completion → continuation · Figure 11a</span><h3>“Done” still leaves room to improve</h3><p>Each agent declared completion, then changed its code and achieved a higher valid score.</p></div></div>
+        <div class="card-body" id="completion-gains"></div>
+        <div class="card-foot">Gains compare the score at the completion statement with the later valid score. Open a task to explore its trajectory.</div>
+      </article>
+      <article class="card">
+        <div class="card-head"><div><span class="label">Repeated submissions · Figure 11b</span><h3>More activity, less new content</h3><p>The same 141 full-budget runs, compared across both halves.</p></div></div>
+        <div class="card-body" id="repeat-comparison"></div>
+        <div class="card-foot">A repeat matches an earlier candidate’s content identity within the same run. All submission statuses are included. Bar segments count runs; the pooled share counts submissions.</div>
+      </article>
+    </div>
   </div></section>
 </main>
 <script src="data/infrathon.js"></script>

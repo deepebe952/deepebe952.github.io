@@ -174,10 +174,12 @@ window.IX = (() => {
     if (!vals.length) { st(svg, o.W / 2, o.H / 2, "no valid scores", { fill: C.ink3, "font-size": 11, "text-anchor": "middle" }); return svg; }
     const vmin = Math.min(...vals), vmax = Math.max(...vals);
     const padV = (vmax - vmin) * 0.08 || Math.abs(vmax) * 0.05 || 1;
-    const ticks = niceTicks(vmin >= 0 ? Math.max(0, vmin - padV) : vmin - padV, vmax + padV, o.compact ? 3 : 4);
-    const lo = ticks[0], hi = ticks[ticks.length - 1];
+    const logY = o.logY && vmin > 0;
+    const ticks = logY ? Array.from({ length: Math.ceil(Math.log10(vmax * 1.15)) - Math.floor(Math.log10(vmin * 0.85)) + 1 }, (_, i) => 10 ** (Math.floor(Math.log10(vmin * 0.85)) + i)).flatMap((v) => [v, 2 * v, 5 * v]).filter((v) => v >= vmin * 0.85 && v <= vmax * 1.15)
+      : niceTicks(vmin >= 0 ? Math.max(0, vmin - padV) : vmin - padV, vmax + padV, o.compact ? 3 : 4);
+    const lo = logY ? vmin * 0.85 : ticks[0], hi = logY ? vmax * 1.15 : ticks[ticks.length - 1];
     const T = t.budget_h, X0 = pad.l, X1 = o.W - pad.r, Y0 = o.H - pad.b, Y1 = pad.t;
-    const xs = (x) => X0 + (Math.min(x, T) / T) * (X1 - X0), ys = (v) => Y0 - ((v - lo) / (hi - lo)) * (Y0 - Y1);
+    const xs = (x) => X0 + (Math.min(x, T) / T) * (X1 - X0), ys = (v) => Y0 - (logY ? Math.log(v / lo) / Math.log(hi / lo) : (v - lo) / (hi - lo)) * (Y0 - Y1);
     const fs = o.compact ? 10.5 : 11;
     for (const v of ticks) {
       s("line", { x1: X0, x2: X1, y1: ys(v), y2: ys(v), stroke: C.hair, "stroke-width": 1 }, svg);
@@ -351,9 +353,18 @@ window.IX = (() => {
   }
 
   function wireTabs(btnA, btnB, panelA, panelB) {
-    const set = (on) => { $(btnA).setAttribute("aria-selected", String(on)); $(btnB).setAttribute("aria-selected", String(!on)); $(panelA).hidden = !on; $(panelB).hidden = on; };
-    $(btnA).addEventListener("click", () => set(true));
-    $(btnB).addEventListener("click", () => set(false));
+    const buttons = [$(btnA), $(btnB)], panels = [$(panelA), $(panelB)];
+    const set = (index) => buttons.forEach((b, i) => { b.setAttribute("aria-selected", String(i === index)); b.tabIndex = i === index ? 0 : -1; panels[i].hidden = i !== index; });
+    buttons.forEach((b, i) => {
+      b.addEventListener("click", () => set(i));
+      b.addEventListener("keydown", (e) => {
+        if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
+        e.preventDefault();
+        const index = e.key === "Home" ? 0 : e.key === "End" ? 1 : 1 - i;
+        set(index); buttons[index].focus();
+      });
+    });
+    set(buttons[1].getAttribute("aria-selected") === "true" ? 1 : 0);
   }
   function seg(el, options, value, onChange) {
     el.replaceChildren();
