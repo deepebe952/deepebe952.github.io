@@ -11697,8 +11697,87 @@
        "valid"
       ]
      ]
+    },
+    "astra": {
+     "model": "astra",
+     "label": "GPT-6 Astra",
+     "effort": "max",
+     "budget_h": 24.0,
+     "elapsed_h": 24.0,
+     "complete_budget": true,
+     "started_at": "2026-10-18T10:29:27.468479+00:00",
+     "final_score": 13.83909547682966,
+     "final_valid": true,
+     "final_suite": null,
+     "best_score": 15.167823280125853,
+     "counts": {
+      "submissions": 11,
+      "valid": 11,
+      "invalid": 0,
+      "infrastructure": 0,
+      "waiting": 0
+     },
+     "points": [
+      [
+       0.8058,
+       10.831984048255203,
+       "valid"
+      ],
+      [
+       3.4144,
+       9.375984353696959,
+       "valid"
+      ],
+      [
+       5.6357,
+       12.650943805773787,
+       "valid"
+      ],
+      [
+       8.2838,
+       15.167823280125853,
+       "valid"
+      ],
+      [
+       9.9013,
+       11.188347707794152,
+       "valid"
+      ],
+      [
+       11.6016,
+       9.120537756124376,
+       "valid"
+      ],
+      [
+       14.5368,
+       11.685759851405512,
+       "valid"
+      ],
+      [
+       16.0727,
+       14.036323397874312,
+       "valid"
+      ],
+      [
+       17.6374,
+       12.526556182441613,
+       "valid"
+      ],
+      [
+       19.8299,
+       10.727624131787218,
+       "valid"
+      ],
+      [
+       22.9117,
+       13.330155310794302,
+       "valid"
+      ]
+     ],
+     "cohort": "h100sxm-five-models-24h-20261011"
     }
-   }
+   },
+   "supplement_source": "dashboard-task-results-20261024-083014.zip"
   },
   "sd35": {
    "dash": "miles-sd35m-v2",

@@ -6,7 +6,7 @@
 <title>Infrathon Method</title>
 <meta name="description" content="How Infrathon runs work: task specification, the Work, Controller and Judge environments, scoring and the rank-score method.">
 <meta property="og:title" content="Infrathon">
-<meta property="og:description" content="Can frontier models solve long-horizon AI infrastructure tasks? 25 tasks, 6 configurations, 149 runs on H100s.">
+<meta property="og:description" content="Can frontier models solve long-horizon AI infrastructure tasks? 25 tasks, 6 configurations, 150 runs on H100s.">
 <meta name="theme-color" content="#060709">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23060709'/%3E%3Cpath d='M7 22h4v-8h4v5h4V9h4v10h3' fill='none' stroke='%23ededef' stroke-width='2.4'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -94,7 +94,7 @@
       </div>
       <div class="card card-body">
         <div class="label" style="margin-bottom:10px">Coverage</div>
-        <p style="color:var(--ink-2);margin:0 0 10px;font-size:14px"><b style="color:var(--ink);font-weight:500">All 25 tasks count equally.</b> Every configuration that ran a task is ranked on it. A run that never produced a valid scored submission ranks last there; a configuration with no run in the cohort is left out of that task instead of being counted as zero. GPT-6 Astra has no run on Miles OPD, so its rank score averages 24 tasks.</p>
+        <p style="color:var(--ink-2);margin:0 0 10px;font-size:14px"><b style="color:var(--ink);font-weight:500">All 25 tasks count equally.</b> Every configuration that ran a task is ranked on it. A run that never produced a valid scored submission ranks last there; a configuration with no run in the cohort is left out of that task instead of being counted as zero. All six configurations are ranked on 25 tasks; Miles OPD includes Astra’s earlier run.</p>
         <p style="color:var(--ink-2);margin:0;font-size:14px"><b style="color:var(--ink);font-weight:500">Uncertainty.</b> The leaderboard's 95% intervals and P(#1) come from resampling the task set with replacement. The Analysis page shows the full distribution of positions and what happens when single tasks are dropped.</p>
       </div>
     </div>
@@ -105,7 +105,7 @@
   <section class="sec" id="configs"><div class="wrap">
     <div class="sec-title"><div><h2>Configurations and data</h2><p>Six deployed model configurations, each run once per task. The comparison is between deployed configurations, not model weights alone.</p></div></div>
     <div class="card"><div class="scroll-x"><table class="data" id="cfg-table" style="min-width:720px"></table></div>
-      <div class="card-foot">Reasoning effort is max for all configurations. Astra was evaluated later than most of the other runs, under different service conditions. Results come from the October 23, 2026 export, using the latest cohort of each task. Token and turn counts come from a separate analysis of 152 runs; they are exact where per-request usage was logged and estimated otherwise.</div></div>
+      <div class="card-foot">Reasoning effort is max for all configurations. Astra was evaluated later than most of the other runs, under different service conditions. Results come from the October 23, 2026 export, using the latest cohort of each task, supplemented with Astra’s earlier Miles OPD run. Token and turn counts come from a separate analysis of 152 runs; they are exact where per-request usage was logged and estimated otherwise.</div></div>
   </div></section>
 
   <section class="sec" id="cite"><div class="wrap">

@@ -131,7 +131,7 @@
     const scope = [state.stage !== "all" ? state.stage : null, state.level !== "all" ? `${state.level}-level` : null].filter(Boolean).join(" ");
     $("#lb-sub").textContent = `Rank score over ${ts.length} ${scope ? scope + " " : ""}task${ts.length === 1 ? "" : "s"}, from each run's best valid score. 100 = first on every task.`;
   }
-  $("#lb-foot").textContent = "Each task ranks every configuration that ran it by its best valid score during the run; a run that never produced a valid score ranks last on that task. GPT-6 Astra has no run on Miles OPD, so it is ranked on 24 tasks. Whiskers and P(#1): 3,000 bootstrap resamples of tasks. Mean rel.: best score ÷ top score on the task, averaged. Time and tokens: per-model medians from the trajectory analysis (152 runs).";
+  $("#lb-foot").textContent = "Each task ranks every configuration that ran it by its best valid score during the run; a run that never produced a valid score ranks last on that task. All six configurations are ranked on 25 tasks; Miles OPD includes Astra’s earlier run. Whiskers and P(#1): 3,000 bootstrap resamples of tasks. Mean rel.: best score ÷ top score on the task, averaged. Time and tokens: per-model medians from the trajectory analysis (152 runs).";
   drawSegs();
   render();
 

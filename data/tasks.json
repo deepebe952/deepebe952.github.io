@@ -147,7 +147,7 @@
       "target": "Online distillation integration and execution",
       "summary": "Re-implement sampled-token on-policy distillation in a Miles checkout where it was removed: a Qwen3-1.7B student samples, a frozen Qwen3-4B teacher scores the same tokens, and the student trains toward the teacher. Score is accuracy points gained per training hour, zero below a 1.6-point gain.",
       "flags": {},
-      "note": "GPT-6 Astra has no run in the latest cohort. Claude Opus 5.5 used an earlier checkout and images than the other four configurations."
+      "note": "GPT-6 Astra uses its earlier 24-hour run from cohort h100sxm-five-models-24h-20261011 (started October 18); it was not rerun in the October 21 release cohort. Claude Opus 5.5 used an earlier checkout and images than the other four configurations."
     },
     {
       "key": "alfworld",

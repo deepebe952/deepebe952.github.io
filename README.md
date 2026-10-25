@@ -9,7 +9,7 @@ site/                    what gets published
   tasks.html             all 25 tasks, filterable
   task.html#<key>        one task: details, final scores, trajectories, run trace
   analysis.html          stage x level, ranking stability, final vs best, trajectories, efficiency, behaviour
-  runs.html#<task>/<m>   per-run submission logs and a sortable table of all 149 runs
+  runs.html#<task>/<m>   per-run submission logs and a sortable table of all 150 runs
   method.html            protocol, rank score, configurations, citation
   assets/css/site.css    design tokens and layout
   assets/js/core.js      shared data access, rank math, charts, nav/footer
@@ -35,7 +35,7 @@ python3 scripts/build_data.py
 python3 -m unittest discover -s tests -v
 ```
 
-`extract_dashboard.py` keeps the latest cohort folder of each task (by the trailing date) and applies the paper's run selection.
+`extract_dashboard.py` keeps the latest cohort folder of each task (by the trailing date) and applies the paper's run selection. For Miles OPD, it supplements the latest cohort with Astra's latest earlier run when Astra is absent from the release rerun.
 The selection drops Gemini, the voided LLaDA DeepSeek attempt, and Sol's local Mamba-2 rerun.
 Flags, exclusions and task text live in `data/tasks.json`.
 The serving records currently follow `concurrent-v24-personal.zip`, which omits Qwen's agent-22 submission; its best displayed score is 149.9. A full dashboard re-extraction replaces this task-specific update.
@@ -45,7 +45,7 @@ Preview locally with `python3 -m http.server -d site 8000`.
 
 ## Ranking
 
-The site ranks each run's best valid score during the run, using the rank-score method of the paper (Eq. 6). On each task, every configuration that ran it is ranked by that score; exact ties share the average rank, and a run that never produced a valid score ranks last. Configuration m earns 100 · (n − rank) / (n − 1), where n is the number of configurations that ran the task, and its rank score is the mean over the tasks it ran (GPT-6 Astra has no Miles OPD run, so it averages 24).
+The site ranks each run's best valid score during the run, using the rank-score method of the paper (Eq. 6). On each task, every configuration that ran it is ranked by that score; exact ties share the average rank, and a run that never produced a valid score ranks last. Configuration m earns 100 · (n − rank) / (n − 1), where n is the number of configurations that ran the task, and its rank score is the mean over the tasks it ran (all six configurations now cover 25 tasks).
 
 The leaderboard recomputes the score in the browser for any stage or level filter. The 95% intervals and P(#1) come from bootstrap resampling of tasks.
 

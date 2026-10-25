@@ -119,6 +119,15 @@ def main() -> int:
                 raise SystemExit(f"{task_dir}/{cohort}: two runs for {key}")
             runs[key] = slim_run(run, key)
             metric = metric or run.get("metric")
+        # OPD's release rerun omitted Astra; retain its latest earlier result.
+        if task_dir == "miles-opd-v2" and "astra" not in runs:
+            for older_cohort, older_html in sorted(items, key=lambda it: DATE_RE.search(it[0]).group(1), reverse=True):
+                older_data = json.loads(DATA_RE.search(older_html).group(1))
+                astra = next((r for r in older_data["runs"] if r.get("model") == "gpt-6-astra" and keep_run(task_dir, r)), None)
+                if astra is not None:
+                    runs["astra"] = slim_run(astra, "astra")
+                    runs["astra"]["cohort"] = older_cohort
+                    break
         out["tasks"][task_by_dash[task_dir]] = {
             "dash": task_dir,
             "cohort": cohort,

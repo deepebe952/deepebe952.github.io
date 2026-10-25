@@ -54,14 +54,14 @@ class PaperNumbers(unittest.TestCase):
 class SiteData(unittest.TestCase):
     def test_coverage(self):
         self.assertEqual(len(DATA["tasks"]), 25)
-        self.assertEqual(DATA["summary"]["n_runs"], 149)
+        self.assertEqual(DATA["summary"]["n_runs"], 150)
         levels = {}
         for t in DATA["tasks"]:
             levels[(t["stage"], t["level"])] = levels.get((t["stage"], t["level"]), 0) + 1
         self.assertEqual(levels, {("training", "operator"): 3, ("training", "module"): 2, ("training", "system"): 5,
                                   ("inference", "operator"): 8, ("inference", "module"): 3, ("inference", "system"): 4})
-        # Astra has no run on Miles OPD; everyone else ran all 25 tasks.
-        self.assertEqual(DATA["ranking"]["coverage"], {"sol": 25, "claude": 25, "qwen": 25, "deepseek": 25, "glm": 25, "astra": 24})
+        # All six configurations cover all 25 tasks, including Astra’s earlier OPD run.
+        self.assertEqual(DATA["ranking"]["coverage"], {"sol": 25, "claude": 25, "qwen": 25, "deepseek": 25, "glm": 25, "astra": 25})
         self.assertEqual(sum(DATA["ranking"]["wins"].values()), 25)
 
     def test_best_during_run(self):
@@ -88,6 +88,13 @@ class SiteData(unittest.TestCase):
         self.assertEqual(qwen["subs"][-1], [22.295, 144.7333, "v"])
         self.assertEqual(serving["winner"], "claude")
         self.assertEqual(serving["ranks"]["qwen"], 2)
+
+    def test_opd_includes_earlier_astra_run(self):
+        opd = next(t for t in DATA["tasks"] if t["key"] == "opd")
+        self.assertEqual(opd["results"]["astra"]["best"], 15.1678)
+        self.assertEqual(opd["results"]["astra"]["n_sub"], 11)
+        self.assertEqual(opd["results"]["astra"]["elapsed_h"], 24)
+        self.assertEqual(RAW["tasks"]["opd"]["runs"]["astra"]["cohort"], "h100sxm-five-models-24h-20261011")
 
     def test_no_final_artifact_fields(self):
         bundle = (ROOT / "site/data/infrathon.js").read_text()
