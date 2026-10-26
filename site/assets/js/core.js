@@ -129,7 +129,9 @@ window.IX = (() => {
     return Object.fromEntries(MODELS.map((m) => [m, { lo: q(sm[m], 0.025), hi: q(sm[m], 0.975), p1: first[m] / B }]));
   }
   function standings(ts) {
-    const rs = rankScores(ts), bs = bootstrap(ts);
+    const rs = rankScores(ts);
+    const fullSuite = ts.length === D.tasks.length && D.tasks.every((t) => ts.includes(t));
+    const bs = fullSuite ? Object.fromEntries(MODELS.map((m) => [m, { lo: D.ranking.bootstrap[m].lo, hi: D.ranking.bootstrap[m].hi, p1: D.ranking.bootstrap[m].p_pos[0] }])) : bootstrap(ts);
     return MODELS.map((m) => {
       const cov = ts.filter((t) => m in t.ranks);
       const rel = cov.length ? cov.reduce((a, t) => a + (t.results[m].best || 0) / Math.max(...Object.keys(t.ranks).map((o) => t.results[o].best || 0)), 0) / cov.length : null;
@@ -336,19 +338,14 @@ window.IX = (() => {
     s("rect", { x: 1, y: 1, width: 30, height: 30, rx: 8, fill: "none", stroke: C.hair2 }, logo);
     s("path", { d: "M7 22h4v-8h4v5h4V9h4v10h3", fill: "none", stroke: C.ink, "stroke-width": 2.2, "stroke-linejoin": "round" }, logo);
     const nav = h("header", { class: "nav" }, h("div", { class: "wrap" },
-      h("a", { class: "brand", href: "index.html", "aria-label": "Infrathon home" }, logo, "Infrathon", h("span", { class: "v", text: "v1" })),
+      h("a", { class: "brand", href: "index.html", "aria-label": "Infrathon home" }, logo, "Infrathon"),
       h("nav", { class: "nav-links", "aria-label": "Pages" }, PAGES.map(([href, label]) => h("a", { href, "aria-current": href.startsWith(page) ? "page" : null, text: label }))),
       h("div", { class: "nav-right" }, h("button", { id: "theme-toggle", class: "pill theme-toggle", type: "button", onclick: () => window.InfrathonTheme.toggle(), "aria-label": "Switch to dark theme", "aria-pressed": "false", text: "☾ Dark" }))));
     document.body.prepend(nav);
     window.InfrathonTheme.sync();
     const foot = h("footer", { class: "site" }, h("div", { class: "wrap" },
-      h("div", {}, h("div", { class: "brand" }, logo.cloneNode(true), "Infrathon"),
-        h("p", { text: `Long-horizon AI infrastructure benchmark. Results from the ${D.snapshot.replace(/-/g, "/")} export: ${D.summary.n_runs} runs, ${D.summary.n_submissions.toLocaleString("en-US")} judged submissions.` })),
-      h("div", {}, h("h4", { class: "label", text: "Explore" }), h("ul", {}, PAGES.map(([href, label]) => h("li", {}, h("a", { href, text: label }))))),
-      h("div", {}, h("h4", { class: "label", text: "Paper" }), h("ul", {},
-        h("li", { text: "Infrathon: 10,000 GPU-Hours Later, Can Frontier Models Solve Real-World Long-Horizon AI Infra Tasks?" }),
-        h("li", {}, h("a", { href: "method.html#cite", text: "Citation" })),
-        h("li", { class: "muted", text: "Under review" })))));
+      h("a", { class: "brand", href: "index.html" }, logo.cloneNode(true), "Infrathon"),
+      h("nav", { "aria-label": "Footer" }, h("a", { href: "method.html#cite", text: "Citation" }), h("a", { href: "method.html", text: "Method" }))));
     document.body.append(foot);
   }
 

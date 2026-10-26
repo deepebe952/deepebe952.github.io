@@ -25,7 +25,9 @@ jobs:
         with:
           node-version: "22"
       - name: Rebuild the data bundle
-        run: python scripts/build_data.py
+        run: |
+          python scripts/build_data.py
+          python scripts/extract_behavior_figures.py
       - name: Committed bundle matches the sources
         run: git diff --exit-code -- site/data
       - name: Numbers reproduce the paper

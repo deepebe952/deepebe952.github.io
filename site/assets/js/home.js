@@ -1,20 +1,15 @@
-/* Home: leaderboard, task map, results matrix, highlights, headline facts. */
+/* Home: leaderboard, task map, and trajectories grouped by stage and level. */
 (() => {
   "use strict";
   const X = window.IX;
   if (!X) return;
-  const { D, MODELS, MODEL, COLOR, C, TASK, STAGES, LEVELS, s, st, h, $, fmt, withUnit, unitOf, cap, pct } = X;
-  const R = D.ranking;
-  const leader = [...MODELS].sort((a, b) => R.rank_score[b] - R.rank_score[a])[0];
-
-  $("#stat-runs").textContent = D.summary.n_runs;
-  $("#stat-subs").textContent = D.summary.n_submissions.toLocaleString("en-US");
+  const { D, MODELS, MODEL, COLOR, C, STAGES, LEVELS, s, st, h, $, fmt, withUnit, unitOf, cap } = X;
 
   /* ---------------- leaderboard ---------------- */
   const state = { stage: "all", level: "all" };
   const TK = D.tokens.models;
   function drawSegs() {
-    X.seg($("#seg-stage"), [["all", "All", 25], ...STAGES.map((g) => [g, cap(g), X.filterTasks(D.tasks, g, state.level).length])], state.stage, (v) => { state.stage = v; drawSegs(); render(); });
+    X.seg($("#seg-stage"), [["all", "All", X.filterTasks(D.tasks, "all", state.level).length], ...STAGES.map((g) => [g, cap(g), X.filterTasks(D.tasks, g, state.level).length])], state.stage, (v) => { state.stage = v; drawSegs(); render(); });
     X.seg($("#seg-level"), [["all", "All"], ...LEVELS.map((l) => [l, cap(l), X.filterTasks(D.tasks, state.stage, l).length])], state.level, (v) => { state.level = v; drawSegs(); render(); });
   }
   function scoreBar(m, v, ci) {
@@ -37,22 +32,24 @@
     tb.replaceChildren();
     rows.forEach((r) => {
       const pos = 1 + rows.filter((o) => (o.score ?? -1) > (r.score ?? -1)).length;
-      const tk = TK[r.m];
+      const fullSuite = ts.length === D.tasks.length;
+      const first = ts.map((t) => t.results[r.m]?.first_valid_h).filter((v) => v != null).sort((a, b) => a - b);
+      const mid = (first.length - 1) / 2;
+      const firstMedian = first.length ? (first[Math.floor(mid)] + first[Math.ceil(mid)]) / 2 : null;
+      const tokenK = ts.reduce((sum, t) => sum + D.tokens.per_task[t.key][r.m].visible_output_k, 0);
+      const tokens = fullSuite ? `${fmt(TK[r.m].visible_output_m, 2)}M` : tokenK >= 1000 ? `≈${fmt(tokenK / 1000, 2)}M` : `≈${fmt(tokenK, 0)}k`;
       tb.append(h("tr", {},
         h("td", { class: "rk", text: r.score == null ? "–" : String(pos) }),
         h("td", {}, h("div", { class: "model" }, h("span", { class: "badge" }, X.swatch(r.m, 14)), h("div", {}, h("b", { text: MODEL[r.m].name }), h("small", { text: `${X.PROVIDER[r.m]} · ${X.effortNote(r.m)}` })))),
         h("td", {}, h("div", { class: "score" }, r.score == null ? "—" : fmt(r.score, 1), h("small", { text: r.ci.lo == null ? "" : `${fmt(r.ci.lo, 1)}–${fmt(r.ci.hi, 1)}` }))),
         h("td", { class: "barcell" }, scoreBar(r.m, r.score ?? 0, r.ci)),
         h("td", { class: "n" }, `${r.wins}`, h("small", { text: `of ${r.cov}` })),
-        h("td", { class: "n", text: r.rel == null ? "—" : fmt(r.rel, 3) }),
-        h("td", { class: "n", text: pct(r.ci.p1) }),
-        h("td", { class: "n" }, `${fmt(D.summary.first_valid[r.m].median_h, 2)} h`, h("small", { text: "median · scored runs" })),
-        h("td", { class: "n" }, `${fmt(tk.visible_output_m, 2)}M`, h("small", { text: "total · 25 tasks" }))));
+        h("td", { class: "n first-time" }, firstMedian == null ? "—" : `${fmt(firstMedian, 2)} h`, h("small", { text: `median · ${first.length} runs` })),
+        h("td", { class: "n visible-tokens" }, tokens, h("small", { text: `total · ${ts.length} task${ts.length === 1 ? "" : "s"}` }))));
     });
     const scope = [state.stage !== "all" ? state.stage : null, state.level !== "all" ? `${state.level}-level` : null].filter(Boolean).join(" ");
-    $("#lb-sub").textContent = `Rank score over ${ts.length} ${scope ? scope + " " : ""}task${ts.length === 1 ? "" : "s"}, from each run's best valid score. 100 = first on every task.`;
+    $("#lb-sub").textContent = `Rank score across ${ts.length} ${scope ? scope + " " : ""}task${ts.length === 1 ? "" : "s"}.`;
   }
-  $("#lb-foot").textContent = "Each task ranks every configuration that ran it by its best valid score during the run; a run that never produced a valid score ranks last on that task. All six configurations are ranked on 25 tasks; Miles OPD includes Astra’s earlier run. Whiskers and P(#1): 3,000 bootstrap resamples of tasks. Mean rel.: best score ÷ top score on the task, averaged. First-score time: median over scored runs. Visible output: total recorded agent text and tool-call tokens across 25 tasks (paper Figure 7), excluding tool responses and reasoning traces.";
   drawSegs();
   render();
 
@@ -118,76 +115,27 @@
     const leg = $("#die-legend");
     MODELS.filter((m) => counts[m]).sort((a, b) => counts[b] - counts[a]).forEach((m) => leg.append(h("span", { class: "who" }, X.swatch(m, 10), `${MODEL[m].short} · ${counts[m]} task${counts[m] > 1 ? "s" : ""}`)));
 
-    const tbl = $("#cat-leaders");
-    tbl.append(h("thead", {}, h("tr", {}, ["Category", "Leader", "Rank score", "Runner-up"].map((x, i) => h("th", { scope: "col", class: i === 2 ? "n" : null, text: x })))));
-    const tb = h("tbody");
-    for (const stg of STAGES) for (const lv of LEVELS) {
-      const ts = X.filterTasks(D.tasks, stg, lv), rs = X.rankScores(ts);
-      const order = MODELS.filter((m) => rs[m] != null).sort((a, b) => rs[b] - rs[a]);
-      tb.append(h("tr", {}, h("td", { class: "muted", text: `${cap(stg)} · ${lv} (${ts.length})` }), h("td", {}, X.who(order[0], MODEL[order[0]].short)),
-        h("td", { class: "n", text: fmt(rs[order[0]], 1) }), h("td", {}, X.who(order[1], `${MODEL[order[1]].short} · ${fmt(rs[order[1]], 1)}`))));
-    }
-    tbl.append(tb);
   })();
 
-  /* ---------------- results matrix ---------------- */
-  (function renderMatrix() {
-    const tbl = $("#matrix");
-    tbl.append(h("thead", {}, h("tr", {}, h("th", { scope: "col", text: "Task" }), MODELS.map((m) => h("th", { scope: "col", class: "mcol" }, h("span", { class: "who" }, X.swatch(m, 10), MODEL[m].short))), h("th", { scope: "col", text: "Unit" }))));
-    const tb = h("tbody");
-    for (const stg of STAGES) for (const lv of LEVELS) {
-      const ts = D.tasks.filter((t) => t.stage === stg && t.level === lv);
-      tb.append(h("tr", { class: "grp" }, h("td", { colspan: MODELS.length + 2 }, `${cap(stg)} · ${cap(lv)}`, h("span", { text: `${ts.length} task${ts.length > 1 ? "s" : ""} · ${lv === "operator" ? 12 : 24} h` }))));
-      for (const t of ts) {
-        const max = Math.max(...Object.keys(t.results).map((m) => t.results[m].best || 0));
-        const tr = h("tr", { class: "row", tabindex: 0, onclick: () => { location.href = X.taskHref(t.key); }, onkeydown: (e) => { if (e.key === "Enter") location.href = X.taskHref(t.key); } },
-          h("td", { class: "task" }, h("b", { text: t.name }), h("small", { text: `${t.start} · ${t.target}` })));
-        for (const m of MODELS) {
-          const r = t.results[m];
-          if (!r || r.best == null) {
-            tr.append(h("td", {}, h("div", { class: "cell none", title: !r ? "No run in this cohort" : "No valid scored submission during the run" }, !r ? "no run" : "no valid")));
-            continue;
-          }
-          const win = t.winner === m;
-          tr.append(h("td", {}, h("div", { class: `cell${win ? " win" : ""}`, style: win ? `--wc:${COLOR[m]}` : null, title: `${MODEL[m].name} (effort ${r.effort}): ${withUnit(t, r.best)}${r.flag ? ` [${r.flag}] ${D.flag_legend[r.flag]}` : ""}` },
-            h("i", { style: `width:${max > 0 ? (r.best / max) * 100 : 0}%` }), h("span", { text: fmt(r.best) }), r.flag ? h("span", { class: "flag", text: r.flag }) : null)));
-        }
-        tr.append(h("td", { class: "unit", text: unitOf(t) || "score" }));
-        tb.append(tr);
+  /* ---------------- six task categories ---------------- */
+  X.makeLegend($("#results-legend"));
+  const results = $("#task-results");
+  for (const stage of STAGES) {
+    const block = h("section", { class: "results-stage", "aria-labelledby": `results-${stage}` },
+      h("h3", { id: `results-${stage}`, class: "results-stage-title", text: cap(stage) }));
+    const grid = h("div", { class: "results-grid" });
+    for (const level of LEVELS) {
+      const tasks = X.filterTasks(D.tasks, stage, level);
+      const group = h("section", { class: "result-category", "data-stage": stage, "data-level": level, "aria-labelledby": `results-${stage}-${level}` },
+        h("div", { class: "result-category-head" }, h("h4", { id: `results-${stage}-${level}`, text: cap(level) + "s" }), h("span", { text: `${tasks.length} tasks · ${level === "operator" ? 12 : 24} h` })));
+      for (const task of tasks) {
+        group.append(h("a", { class: "card mult result-task", href: X.taskHref(task.key), "data-task": task.key },
+          h("h5", { text: task.name }),
+          h("div", { class: "chart-unit", text: `${unitOf(task) || "score"} ↑${task.key === "flash-kmeans" ? " · log scale" : ""}` }),
+          X.trajChart(task, { W: 340, H: 180, logY: task.key === "flash-kmeans" })));
       }
+      grid.append(group);
     }
-    tbl.append(tb);
-    $("#matrix-foot").textContent = Object.entries(D.flag_legend).map(([f, text]) => `${f} ${text}`).join(" · ") + ". Flash-KMeans is scored on latency and shown here as equivalent throughput.";
-  })();
-
-  /* ---------------- highlights ---------------- */
-  (function renderHighlights() {
-    const items = [
-      ["eagle3", "Claude climbs to 846 tok/s, 97 tok/s ahead of the next configuration; GLM stays below 250."],
-      ["flash-kmeans", "Claude's best equivalent throughput rises from 107 to 209 TFLOP/s within the 12-hour run."],
-      ["qvg", "Qwen's first valid score arrives at 10.2 h. Claude reaches 19.6× compression, more than twice the next best."],
-      ["kvzip", "Sol reaches 94.39 at 5.8 h; none of its next 29 submissions beats it. Astra reaches 97.81."],
-    ];
-    const box = $("#hl");
-    for (const [key, text] of items) {
-      const t = TASK[key];
-      box.append(h("a", { class: "card hl", href: X.taskHref(key) },
-        h("div", { class: "meta" }, h("span", { class: "label", text: `${cap(t.stage)} · ${t.level}` }), h("span", { class: "label", text: unitOf(t) || "score" })),
-        h("h3", { text: t.name }), X.trajChart(t, { W: 300, H: 150, ring: C.bg }), h("p", { text })));
-    }
-  })();
-
-  /* ---------------- headline facts ---------------- */
-  (function renderFacts() {
-    const tk = D.tokens.models;
-    const rej = MODELS.reduce((a, m) => a + D.summary.status_totals[m].rejected, 0);
-    const facts = [
-      [pct(R.bootstrap[leader].p_pos[0]), "", `of task resamples put ${MODEL[leader].name} first. Removing any one task never changes the leader.`, "analysis.html#stability"],
-      [`${rej}`, "", `submissions blocked by the integrity review before scoring, for skipping or bending required work.`, "runs.html"],
-      ["4.8 → 19.9%", "", "share of submissions that repeat earlier candidate content, first versus second half of 141 full-budget runs.", "analysis.html#behavior"],
-      ["131 / 143", "", "full-budget runs with a midpoint score improve again in the second half of the budget.", "analysis.html#efficiency"],
-    ];
-    const box = $("#facts");
-    for (const [v, small, text, href] of facts) box.append(h("a", { href }, h("b", {}, v, small ? h("small", { text: small }) : null), h("p", { text })));
-  })();
+    block.append(grid); results.append(block);
+  }
 })();

@@ -1,0 +1,142 @@
+[
+  {
+    "key": "uw",
+    "filename": "paper-uw.svg",
+    "width": 70.70646,
+    "height": 17.04436,
+    "source": {
+      "document": "_AI_Infra____New_Template_Version___Zhengyu_Hu.pdf",
+      "sha256": "94201e9962a18a7b359713149c5b0e9b46d75341a6bc551f345557918433c4dd",
+      "page": 1,
+      "method": "Original PDF vector group and referenced clipping paths, preserving path geometry and colors.",
+      "pdf_bbox": [
+        22.69993,
+        24.89964,
+        93.40638,
+        41.944
+      ]
+    }
+  },
+  {
+    "key": "ut",
+    "filename": "paper-ut.svg",
+    "width": 69.32166,
+    "height": 19.43151,
+    "source": {
+      "document": "_AI_Infra____New_Template_Version___Zhengyu_Hu.pdf",
+      "sha256": "94201e9962a18a7b359713149c5b0e9b46d75341a6bc551f345557918433c4dd",
+      "page": 1,
+      "method": "Original PDF vector group and referenced clipping paths, preserving path geometry and colors.",
+      "pdf_bbox": [
+        104.732,
+        23.70631,
+        174.05366,
+        43.13783
+      ]
+    }
+  },
+  {
+    "key": "ai2",
+    "filename": "paper-ai2.svg",
+    "width": 52.12652,
+    "height": 16.96634,
+    "source": {
+      "document": "_AI_Infra____New_Template_Version___Zhengyu_Hu.pdf",
+      "sha256": "94201e9962a18a7b359713149c5b0e9b46d75341a6bc551f345557918433c4dd",
+      "page": 1,
+      "method": "Original PDF vector group and referenced clipping paths, preserving path geometry and colors.",
+      "pdf_bbox": [
+        185.32,
+        24.93826,
+        237.44651,
+        41.90461
+      ]
+    }
+  },
+  {
+    "key": "penn",
+    "filename": "paper-penn.svg",
+    "width": 62.314,
+    "height": 20.44755,
+    "source": {
+      "document": "_AI_Infra____New_Template_Version___Zhengyu_Hu.pdf",
+      "sha256": "94201e9962a18a7b359713149c5b0e9b46d75341a6bc551f345557918433c4dd",
+      "page": 1,
+      "method": "Original PDF vector group and referenced clipping paths, preserving path geometry and colors.",
+      "pdf_bbox": [
+        248.70093,
+        23.19745,
+        311.01493,
+        43.645
+      ]
+    }
+  },
+  {
+    "key": "pyromind",
+    "filename": "paper-pyromind.png",
+    "width": 1280,
+    "height": 1237,
+    "source": {
+      "document": "_AI_Infra____New_Template_Version___Zhengyu_Hu.pdf",
+      "sha256": "94201e9962a18a7b359713149c5b0e9b46d75341a6bc551f345557918433c4dd",
+      "page": 1,
+      "method": "Original embedded PNG pixels with original soft-mask transparency; no resizing or recoloring.",
+      "image_xref": 1142,
+      "mask_xref": 1143
+    }
+  },
+  {
+    "key": "stanford",
+    "filename": "paper-stanford.svg",
+    "width": 62.73965,
+    "height": 20.44973,
+    "source": {
+      "document": "_AI_Infra____New_Template_Version___Zhengyu_Hu.pdf",
+      "sha256": "94201e9962a18a7b359713149c5b0e9b46d75341a6bc551f345557918433c4dd",
+      "page": 1,
+      "method": "Original PDF vector group and referenced clipping paths, preserving path geometry and colors.",
+      "pdf_bbox": [
+        351.21129,
+        23.19527,
+        413.95094,
+        43.645
+      ]
+    }
+  },
+  {
+    "key": "radixark",
+    "filename": "paper-radixark.svg",
+    "width": 65.63662,
+    "height": 13.81608,
+    "source": {
+      "document": "_AI_Infra____New_Template_Version___Zhengyu_Hu.pdf",
+      "sha256": "94201e9962a18a7b359713149c5b0e9b46d75341a6bc551f345557918433c4dd",
+      "page": 1,
+      "method": "Original PDF vector group and referenced clipping paths, preserving path geometry and colors.",
+      "pdf_bbox": [
+        425.21099,
+        26.51474,
+        490.84761,
+        40.33083
+      ]
+    }
+  },
+  {
+    "key": "northwestern",
+    "filename": "paper-northwestern.svg",
+    "width": 87.20724,
+    "height": 21.12977,
+    "source": {
+      "document": "_AI_Infra____New_Template_Version___Zhengyu_Hu.pdf",
+      "sha256": "94201e9962a18a7b359713149c5b0e9b46d75341a6bc551f345557918433c4dd",
+      "page": 1,
+      "method": "Original PDF vector group and referenced clipping paths, preserving path geometry and colors.",
+      "pdf_bbox": [
+        502.13698,
+        22.85624,
+        589.34422,
+        43.986
+      ]
+    }
+  }
+]

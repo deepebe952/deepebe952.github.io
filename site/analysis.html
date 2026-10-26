@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Infrathon Analysis</title>
-<meta name="description" content="Infrathon analysis: ranking by stage and level, ranking stability, optimization trajectories, token efficiency and agent behaviour.">
+<title>Agent Behavior Analysis · Infrathon</title>
+<meta name="description" content="Agent behavior across task requirements, experimental validation, and continued improvement.">
 <meta property="og:title" content="Infrathon">
 <meta property="og:description" content="Can frontier models solve long-horizon AI infrastructure tasks? 25 tasks, 6 configurations, 150 runs on H100s.">
 <meta name="theme-color" content="#fafbfd">
@@ -14,113 +14,75 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="assets/css/site.css">
+<link rel="stylesheet" href="assets/css/analysis.css">
 </head>
 <body data-page="analysis">
 <main>
   <header class="page-head"><div class="wrap">
     <div class="crumbs"><a href="index.html">Infrathon</a><span>/</span><span>Analysis</span></div>
-    <h1>Analysis</h1>
-    <p class="lede">How stable the ranking is, how scores evolve over a run, how long agents take to land a first valid score, and what goes wrong over 12 to 24 hours of autonomous engineering.</p>
+    <h1>Agent Behavior Analysis</h1>
+    <p class="lede">Can frontier models solve real-world long-horizon AI infra tasks?</p>
   </div></header>
-  <nav class="subnav" aria-label="Analysis sections"><div class="wrap">
-    <a href="#ranking">Stage × level</a><a href="#stability">Stability</a><a href="#trajectories">Trajectories</a><a href="#efficiency">Efficiency</a><a href="#behavior">Behavior</a>
+  <nav class="subnav" aria-label="Analysis questions"><div class="wrap">
+    <a href="#requirements">Q1 · Task requirements</a><a href="#validation">Q2 · Experimental validation</a><a href="#improvement">Q3 · Continued improvement</a>
   </div></nav>
 
-  <section class="sec" id="ranking"><div class="wrap">
-    <div class="sec-title"><div><h2>Rank score by stage and level</h2><p>The rank score within each of the six categories, from each run's best valid score. Hover a row for the per-task ranks behind it.</p></div></div>
-    <div class="cat-grid" id="cat-grid"></div>
-  </div></section>
-
-  <section class="sec" id="stability"><div class="wrap">
-    <div class="sec-title"><div><h2>How much can the ranking move?</h2><p>We resample the 25 tasks with replacement 10,000 times, recompute every rank score, and count where each configuration lands. We also drop one task at a time.</p></div></div>
-    <div class="two">
-      <div class="card"><div class="card-head"><div><h3>Probability of each leaderboard position</h3><p>Share of resamples in which the configuration finishes 1st to 6th. Ties share a position.</p></div></div>
-        <div class="card-body scroll-x"><table class="pmat" id="pmat"></table></div></div>
-      <div class="card stat-tiles" id="stab-tiles"></div>
+  <section class="sec" id="requirements"><div class="wrap">
+    <div class="sec-title"><div><span class="label">Q1</span><h2>Do Agents Follow Task Requirements?</h2><p>Not consistently. Local checks can pass even when an optimization changes the required computation.</p></div></div>
+    <div class="behavior-pair">
+      <figure class="card behavior-figure" id="figure-8a">
+        <div class="card-head"><div><span class="label">Figure 8a · Claude / ALFWorld</span><h3>Token-wise checks reveal disagreement</h3></div></div>
+        <div class="card-body"><div id="logprob-chart"></div></div>
+        <figcaption>Generated-token log-probabilities versus plain-engine recomputation at fixed weights. First 48 saved episodes of round 2; 19,935–20,979 tokens per setting. Shading marks breadth one; CD2 means two continuous decode steps.</figcaption>
+      </figure>
+      <figure class="card behavior-figure" id="figure-8b">
+        <div class="card-head"><div><span class="label">Figure 8b · Attn-QAT</span><h3>Tolerance passes miss a contract change</h3></div></div>
+        <div class="card-body"><div class="behavior-legend" id="fixture-legend"></div><div class="behavior-plot" id="fixture-chart"></div><p class="figure-finding">Both pass 11/11 local fixtures. Both are rejected before timing.</p></div>
+        <figcaption>Claude and DeepSeek use the same forbidden denominator substitution. Points show the worst reported error relative to each fixture’s tolerance.</figcaption>
+      </figure>
     </div>
   </div></section>
 
-  <section class="sec" id="trajectories"><div class="wrap">
-    <div class="sec-title"><div><h2>Optimization trajectories</h2><p>Best valid score so far for every run, from its first valid scored submission to the end of the run. Pick a configuration to isolate it; click a panel for the task page.</p></div></div>
-    <div class="tabs" role="tablist" aria-label="Trajectory view">
-      <button type="button" role="tab" aria-selected="true" aria-controls="traj-live" id="tab-traj-live">All 25 tasks</button>
-      <button type="button" role="tab" aria-selected="false" aria-controls="traj-paper" id="tab-traj-paper">12 featured tasks</button>
+  <section class="sec" id="validation"><div class="wrap">
+    <div class="sec-title"><div><span class="label">Q2</span><h2>Do Agents Correctly Test Their Own Optimizations?</h2><p>Not consistently. Agents can measure the wrong code path or choose an optimization using an unrepresentative workload.</p></div></div>
+    <div class="behavior-pair">
+      <figure class="card behavior-figure" id="figure-9a">
+        <div class="card-head"><div><span class="label">Figure 9a · GLM / Attn-QAT</span><h3>Source and microbenchmark disagree</h3></div></div>
+        <div class="card-body"><div class="behavior-legend repair-legend"></div><div class="behavior-plot" id="latency-chart"></div></div>
+        <figcaption>Public-runner latency on the same input before and after correcting source tile constants. Open circles show a second pre-repair measurement.</figcaption>
+      </figure>
+      <figure class="card behavior-figure" id="figure-9b">
+        <div class="card-head"><div><span class="label">Figure 9b · DeepSeek / LLaDA</span><h3>A fast path silently falls back</h3></div></div>
+        <div class="card-body"><div class="behavior-legend repair-legend"></div><div class="behavior-plot" id="launches-chart"></div></div>
+        <figcaption>GPU launches for the same decoding case before and after repairing cache-key normalization. Numerical checks pass in both states.</figcaption>
+      </figure>
     </div>
-    <div class="legend" id="traj-legend" style="margin-bottom:14px"></div>
-    <div id="traj-live" role="tabpanel" aria-labelledby="tab-traj-live"><div class="multiples" id="multiples"></div></div>
-    <div id="traj-paper" role="tabpanel" aria-labelledby="tab-traj-paper" hidden>
-      <p class="chart-note">The 12 tasks in Figure 3, grouped by training and inference. Each row spans operators, modules, and systems. Hover to inspect scores; open a card to explore its run history.</p>
-      <div class="featured-trajectories" id="featured-trajectories"></div>
-      <p class="chart-note">Higher is better. Flash-KMeans shows equivalent throughput on a logarithmic scale. The best observed score carries forward to the full 12- or 24-hour budget.</p>
-    </div>
+    <figure class="card behavior-figure workload-figure" id="figure-10">
+      <div class="card-head"><div><span class="label">Figure 10 · DeepSeek / Flash-KMeans</span><h3>A proxy workload can reverse an optimization decision</h3></div><div class="behavior-legend" id="split-legend"></div></div>
+      <div class="card-body workload-panels" id="workload-panels"></div>
+      <figcaption>Update-kernel latency under balanced and assignment-produced labels. Dots summarize two fresh-process medians, shown as short ticks; variants run in rotating order. B, N, K, D: batch size, points, clusters, feature dimension.</figcaption>
+    </figure>
   </div></section>
 
-  <section class="sec" id="efficiency"><div class="wrap">
-    <div class="sec-title"><div><h2>Interaction cost and continued progress</h2><p>Time to the first valid score comes from the selected run histories. Visible output and action totals cover the same 150 runs in the paper; later gains show what the second half of the budget adds.</p></div></div>
-    <div class="card distribution-card">
-      <div class="card-head"><div><span class="label">First scored submission · Figure 5</span><h3>What does it take to get a first score?</h3><p>One dot per run. Large markers show medians; horizontal bars span the middle 50%.</p></div><span class="chart-badge">149 scored runs</span></div>
-      <div class="card-body">
-        <div class="seg distribution-controls" id="first-score-controls" role="group" aria-label="First-score metric"></div>
-        <p class="chart-note" id="first-score-description" aria-live="polite"></p>
-        <div id="first-score-chart"></div>
-      </div>
-      <div class="card-foot"><details class="notes"><summary>Data sources and reading the chart</summary>
-        <p>All three axes are logarithmic. Elapsed times come from the selected run histories; their dots link to individual runs. GLM has 24 scored runs; the other configurations each have 25.</p>
-        <p>Token and action distributions are reconstructed from the vector coordinates in paper Figure 5. Their values are approximate, and the figure does not identify individual tasks. Tokens count visible output through the first matched scored feedback; actions count emitted text blocks and tool invocations.</p>
-        <p>Figure 5 plots Qwen’s median at approximately 248 actions, while Section 4.4 states 253. This chart follows the plotted distribution.</p>
-      </details></div>
-    </div>
-    <div class="eff" id="eff"></div>
-    <div class="card" style="margin-top:12px"><div class="scroll-x"><table class="data" id="eff-table" style="min-width:720px"></table></div>
-      <div class="card-foot"><details class="notes" id="eff-notes"><summary>How these numbers were measured</summary></details></div></div>
-  </div></section>
-
-  <section class="sec" id="behavior"><div class="wrap">
-    <div class="sec-title"><div><h2>Where long-horizon agents break down</h2><p>The paper examines all six configurations through three questions: task compliance, experimental validation, and continued improvement.</p></div></div>
-    <div class="find-grid">
-      <article class="card find">
-        <span class="label">01 · Do agents follow task requirements?</span>
-        <div class="big" id="rej-big">Rejected before scoring<small>Integrity checks return rule feedback when a candidate skips required work.</small></div>
-        <ul>
-          <li>DeepSeek’s Wan2.2 candidate emits <code>log_complete</code> before the required background fsync finishes.</li>
-          <li>Qwen’s OPD candidate reuses stale KV state even after recognizing that it is inconsistent with updated weights.</li>
-          <li>Fast local tests can miss changes to the required computation or state invariants.</li>
-        </ul>
-      </article>
-      <article class="card find">
-        <span class="label">02 · Do agents test their optimizations correctly?</span>
-        <div class="big">Check what actually ran<small>A benchmark result is only useful when code, configuration, and workload match the claim.</small></div>
-        <ul>
-          <li>Qwen’s Mamba-2 sweep reuses a cached plan, so nominally different configurations run the same kernel.</li>
-          <li>Correcting the source constants changes the apparent speedup in the paper’s public-runner experiment.</li>
-          <li>Flash-KMeans testing shows why balanced labels alone do not represent assignment-produced workloads.</li>
-        </ul>
-      </article>
-      <article class="card find">
-        <span class="label">03 · Do agents keep improving?</span>
-        <div class="big">4.8% → 19.9%<small>Repeated-content submission share, first versus second half, across 141 full-budget runs.</small></div>
-        <ul>
-          <li>After completion claims, further code changes produce gains: GLM/SageAttention <b>+24.8%</b>, Claude/GKD <b>+3.1%</b>, and DeepSeek/SD3.5 <b>+14.0%</b>.</li>
-          <li>377 of 2,941 identifiable submissions revisit earlier content in the same run, spanning 54 runs and 21 tasks.</li>
-          <li>131 of 143 full-budget runs with a midpoint score still improve later.</li>
-        </ul>
-      </article>
-    </div>
-    <div class="behavior-charts">
-      <article class="card">
-        <div class="card-head"><div><span class="label">Completion → continuation · Figure 11a</span><h3>“Done” still leaves room to improve</h3><p>Each agent declared completion, then changed its code and achieved a higher valid score.</p></div></div>
+  <section class="sec" id="improvement"><div class="wrap">
+    <div class="sec-title"><div><span class="label">Q3</span><h2>Do Agents Keep Improving over Long Horizons?</h2><p>Often, but unevenly. Further code changes can improve scores after a completion claim; repeated submissions can also increase without new implementation work.</p></div></div>
+    <div class="behavior-pair">
+      <figure class="card behavior-figure" id="figure-11a">
+        <div class="card-head"><div><span class="label">Figure 11a</span><h3>Gains follow a completion statement</h3></div></div>
         <div class="card-body" id="completion-gains"></div>
-        <div class="card-foot">Gains compare the score at the completion statement with the later valid score. Open a task to explore its trajectory.</div>
-      </article>
-      <article class="card">
-        <div class="card-head"><div><span class="label">Repeated submissions · Figure 11b</span><h3>More activity, less new content</h3><p>The same 141 full-budget runs, compared across both halves.</p></div></div>
+        <figcaption>Three completion–continuation sequences with code changes and higher valid scores. Bars share a 0–30% gain scale.</figcaption>
+      </figure>
+      <figure class="card behavior-figure" id="figure-11b">
+        <div class="card-head"><div><span class="label">Figure 11b</span><h3>Repetition grows in a subset of runs</h3></div></div>
         <div class="card-body" id="repeat-comparison"></div>
-        <div class="card-foot">A repeat matches an earlier candidate’s content identity within the same run. All submission statuses are included. Bar segments count runs; the pooled share counts submissions.</div>
-      </article>
+        <figcaption>The same 141 full-budget runs in both halves, including all submission statuses. A repeat matches earlier candidate content in the same run.</figcaption>
+      </figure>
     </div>
+    <details class="notes behavior-sources"><summary>Figure data</summary><p>Figures 8–11 follow Section 5 of the paper. Printed values are transcribed directly. Unlabeled points in Figure 8b, the open markers in Figure 9a, and Figure 10’s points and ticks are recovered from PDF vector coordinates and shown as approximate values.</p></details>
   </div></section>
 </main>
 <script src="data/infrathon.js"></script>
+<script src="data/behavior.js"></script>
 <script src="assets/js/core.js"></script>
 <script src="assets/js/analysis.js"></script>
 </body>
