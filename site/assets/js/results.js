@@ -1,4 +1,4 @@
-/* Home: leaderboard, task map, and trajectories grouped by stage and level. */
+/* Results: leaderboard, task map, and trajectories grouped by stage and level. */
 (() => {
   "use strict";
   const X = window.IX;
@@ -12,7 +12,7 @@
   }
   openLinkedNotes();
   window.addEventListener("hashchange", openLinkedNotes);
-  document.querySelector('footer.site a[href="index.html#cite"]').addEventListener("click", () => { $("#cite").open = true; });
+  document.querySelector('footer.site a[href="results.html#cite"]').addEventListener("click", () => { $("#cite").open = true; });
 
   /* ---------------- leaderboard ---------------- */
   const state = { stage: "all", level: "all" };

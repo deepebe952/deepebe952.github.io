@@ -1,4 +1,4 @@
-/* Runs: per-run submission log (runs.html#<task>/<model>) and a sortable table of all runs. */
+/* Trajectories: per-run submission log (trajectories.html#<task>/<model>) and a sortable table of all runs. */
 (() => {
   "use strict";
   const X = window.IX;

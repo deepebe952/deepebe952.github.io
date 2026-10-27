@@ -1,7 +1,7 @@
 /* Section 5: shared figure cards and responsive, native plots. */
-body[data-page="analysis"] .page-head { padding-bottom: 30px; }
-body[data-page="analysis"] .sec-title .label { display: block; margin-bottom: 9px; }
-body[data-page="analysis"] .sec-title h2 { font-size: clamp(21px, 2.4vw, 28px); }
+body[data-page="behavior"] .page-head { padding-bottom: 30px; }
+body[data-page="behavior"] .sec-title .label { display: block; margin-bottom: 9px; }
+body[data-page="behavior"] .sec-title h2 { font-size: clamp(21px, 2.4vw, 28px); }
 .behavior-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .behavior-figure { margin: 0; min-width: 0; display: flex; flex-direction: column; }
 .behavior-figure .card-head { flex-wrap: wrap; gap: 12px; }

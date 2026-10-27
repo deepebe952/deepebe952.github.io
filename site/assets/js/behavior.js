@@ -9,8 +9,15 @@
   const approx = (value, dp = 3) => `≈${fmt(value, dp)}`;
 
   // Preserve links to the previous analysis layout without adding extra sections.
-  const oldLinks = { trajectories: "index.html#results", ranking: "index.html#leaderboard", stability: "index.html#leaderboard", efficiency: "index.html#leaderboard", behavior: "#improvement" };
-  const redirect = () => { const target = oldLinks[location.hash.slice(1)]; if (target) location.replace(target); };
+  const oldLinks = { trajectories: "results.html#results", ranking: "results.html#leaderboard", stability: "results.html#leaderboard", efficiency: "results.html#leaderboard", behavior: "#improvement" };
+  const redirect = () => {
+    const target = oldLinks[location.hash.slice(1)];
+    if (target) {
+      const url = new URL(target, location.href);
+      url.search = location.search;
+      location.replace(url.href);
+    }
+  };
   redirect();
   window.addEventListener("hashchange", redirect);
 
