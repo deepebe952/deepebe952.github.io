@@ -56,7 +56,7 @@ Visible tokens follow the paper’s `o200k_base` definition: recorded agent text
 
 ## Paper layout and figures
 
-The homepage follows the paper title and author order, with 18 names, 16 verified homepage links, numbered affiliations, and eight unlinked logos. Seven logos preserve the PDF’s vector paths; Pyromind uses its original transparent image. `data/institution_logos.json` records the PDF hash and extraction positions. Paper, Code, Docker, and HuggingFace buttons are explicitly marked coming soon until public URLs are supplied.
+The homepage follows the paper title and author order, with 18 names, 16 verified homepage links, numbered affiliations, and eight unlinked logos. Affiliation numbers and logo order follow the latest author-supplied reference: Washington, Ai2, Penn, Pyromind, Stanford, RadixArk, UT Austin, Northwestern. Zheyuan Xiao is affiliated with Washington. Seven logos preserve the PDF’s vector paths; Pyromind uses its original transparent image. `data/institution_logos.json` records the original PDF hash and extraction positions, not the display order. Paper, Code, Docker, and HuggingFace buttons are explicitly marked coming soon until public URLs are supplied.
 
 The task map spans the page. Results show all 25 trajectories in a three-column layout (operators, modules, systems), with training and inference as the two groups. Flash-KMeans uses a logarithmic throughput axis. The best observed score carries forward to the complete task budget, including DeepSeek GQA at 12 hours.
 
