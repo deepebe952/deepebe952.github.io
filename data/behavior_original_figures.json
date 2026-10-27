@@ -1,0 +1,34 @@
+{
+  "source_archive": "_AI_Infra____New_Template_Version___Zhengyu_Hu.zip",
+  "conversion": "None: PDFs extracted byte-for-byte from the Overleaf archive.",
+  "figures": [
+    {
+      "figure": 9,
+      "section": "5.1",
+      "source_member": "images/behavior_task_fidelity.pdf",
+      "file": "assets/img/behavior_task_fidelity.pdf",
+      "sha256": "4a6a3c790b31972a1eb33cb8287e32c96bc1d8244326ac718b126dd6122bee22"
+    },
+    {
+      "figure": 10,
+      "section": "5.2",
+      "source_member": "images/behavior_execution_mismatch.pdf",
+      "file": "assets/img/behavior_execution_mismatch.pdf",
+      "sha256": "d7e0188be4c377b156bf681b3701ba156ebe2076d277f8af9e57ecdb4522a50b"
+    },
+    {
+      "figure": 11,
+      "section": "5.2",
+      "source_member": "images/behavior_workload_reversal.pdf",
+      "file": "assets/img/behavior_workload_reversal.pdf",
+      "sha256": "1a19c45719b876dccf26be6eb965b5ba1d582edd5cb06bf64dfdc010a244252b"
+    },
+    {
+      "figure": 12,
+      "section": "5.3",
+      "source_member": "images/behavior_search.pdf",
+      "file": "assets/img/behavior_search.pdf",
+      "sha256": "0f056421671b5e93c3ca3477c573bbabba5c809f07ac01741deea4fdde85eb26"
+    }
+  ]
+}

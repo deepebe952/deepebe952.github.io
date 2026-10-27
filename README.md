@@ -22,6 +22,7 @@ data/
   raw/runs.json              selected dashboard submissions
   tokens.json                paper cost totals and 150 per-task cost records
   behavior_figures.json      Section 5 measurements and source provenance
+  behavior_original_figures.json  original Overleaf figure PDFs and section mapping
   author_links.json          verified author homepage links; null when unconfirmed
   institution_logos.json     paper logo extraction provenance
   framework_figure.json      original Overleaf framework figure provenance
@@ -63,11 +64,11 @@ The retained first-score distributions come from the October 25, 41-page manuscr
 
 The homepage follows the paper title and author order, with 18 names in three desktop rows (5 / 7 / 6), 16 verified homepage links, numbered affiliations, and eight unlinked logos. Author rows wrap within their groups on narrow screens. Affiliation numbers and logo order follow the latest author-supplied reference: Washington, Ai2, Penn, Pyromind, Stanford, RadixArk, UT Austin, Northwestern. Zheyuan Xiao is affiliated with Washington. Seven logos preserve the PDF’s vector paths; Pyromind uses its original transparent image. `data/institution_logos.json` records the original PDF hash and extraction positions, not the display order. Paper, Code, Docker, and HuggingFace buttons are explicitly marked coming soon until public URLs are supplied.
 
-Navigation follows the paper: 3 · Infrathon, 4 · Results, 5 · Behavior, A · Tasks, C · Trajectories. Existing page URLs remain valid. `method.html` displays Figure 1 directly from the Overleaf archive as a faithful SVG conversion, with the unchanged original PDF linked for full-size viewing; `data/framework_figure.json` records its source. Task Definition and Task Execution follow Sections 3.1 and 3.2. The task table includes a red hint inviting readers to open a task's details.
+Navigation follows the paper's order with concise labels: Architecture, Results, Behavior, Tasks, Trajectories. Existing page URLs remain valid. `method.html` displays Figure 1 directly from the Overleaf archive as a faithful SVG conversion, with the unchanged original PDF linked for full-size viewing; `data/framework_figure.json` records its source. Task Definition and Task Execution follow Sections 3.1 and 3.2. The task table includes a red hint inviting readers to open a task's details.
 
 The task map spans the page. Results show all 25 trajectories in a three-column layout (operators, modules, systems), with training and inference as the two groups. Flash-KMeans uses a logarithmic throughput axis. The best observed score carries forward to the complete task budget, including DeepSeek GQA at 12 hours.
 
-Analysis follows Section 5 and current Figures 9–12. Printed values are transcribed directly; unlabeled points and process ticks are recovered from vector coordinates and labeled approximate. The optional PDF extraction path requires PyMuPDF; normal builds use committed JSON and only Python’s standard library. Tests check printed anchors, the workload ranking reversal, two-process summaries, and bundle freshness. Previous Analysis links redirect to the corresponding question or homepage section.
+Analysis follows Section 5 and current Figures 9–12: task requirements use Figure 9, testing optimizations uses Figures 10–11, and continued improvement uses Figure 12. Each section links to its unchanged original PDFs from the Overleaf archive for comparison with the interactive charts; hashes are recorded in `data/behavior_original_figures.json`. Printed values are transcribed directly; unlabeled points and process ticks are recovered from vector coordinates and labeled approximate. The optional PDF extraction path requires PyMuPDF; normal builds use committed JSON and only Python’s standard library. Tests check printed anchors, the workload ranking reversal, two-process summaries, and bundle freshness. Previous Analysis links redirect to the corresponding question or homepage section.
 
 The default theme is light, with a saved dark-theme preference and a navigation toggle. Charts use shared theme variables and responsive dimensions.
 

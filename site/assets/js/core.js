@@ -331,7 +331,7 @@ window.IX = (() => {
   }
 
   /* ---------- chrome ---------- */
-  const PAGES = [["method.html", "3 · Infrathon"], ["index.html", "4 · Results"], ["analysis.html", "5 · Behavior"], ["tasks.html", "A · Tasks"], ["runs.html", "C · Trajectories"]];
+  const PAGES = [["method.html", "Architecture"], ["index.html", "Results"], ["analysis.html", "Behavior"], ["tasks.html", "Tasks"], ["runs.html", "Trajectories"]];
   function chrome() {
     const page = document.body.dataset.page;
     const logo = s("svg", { width: 22, height: 22, viewBox: "0 0 32 32", "aria-hidden": "true" });
@@ -345,7 +345,7 @@ window.IX = (() => {
     window.InfrathonTheme.sync();
     const foot = h("footer", { class: "site" }, h("div", { class: "wrap" },
       h("a", { class: "brand", href: "index.html" }, logo.cloneNode(true), "Infrathon"),
-      h("nav", { "aria-label": "Footer" }, h("a", { href: "method.html#cite", text: "Citation" }), h("a", { href: "method.html", text: "3 · Infrathon" }))));
+      h("nav", { "aria-label": "Footer" }, h("a", { href: "method.html#cite", text: "Citation" }), h("a", { href: "method.html", text: "Architecture" }))));
     document.body.append(foot);
   }
 
