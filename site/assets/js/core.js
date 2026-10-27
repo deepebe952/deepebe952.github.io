@@ -345,7 +345,7 @@ window.IX = (() => {
     window.InfrathonTheme.sync();
     const foot = h("footer", { class: "site" }, h("div", { class: "wrap" },
       h("a", { class: "brand", href: "index.html" }, logo.cloneNode(true), "Infrathon"),
-      h("nav", { "aria-label": "Footer" }, h("a", { href: "method.html#cite", text: "Citation" }), h("a", { href: "method.html", text: "Architecture" }))));
+      h("nav", { "aria-label": "Footer" }, h("a", { href: "index.html#cite", text: "Citation" }), h("a", { href: "method.html", text: "Architecture" }))));
     document.body.append(foot);
   }
 

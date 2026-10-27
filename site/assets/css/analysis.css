@@ -2,8 +2,6 @@
 body[data-page="analysis"] .page-head { padding-bottom: 30px; }
 body[data-page="analysis"] .sec-title .label { display: block; margin-bottom: 9px; }
 body[data-page="analysis"] .sec-title h2 { font-size: clamp(21px, 2.4vw, 28px); }
-.paper-figure-links { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 13px; }
-.paper-figure-links a { white-space: nowrap; }
 .behavior-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .behavior-figure { margin: 0; min-width: 0; display: flex; flex-direction: column; }
 .behavior-figure .card-head { flex-wrap: wrap; gap: 12px; }

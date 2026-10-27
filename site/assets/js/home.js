@@ -5,6 +5,15 @@
   if (!X) return;
   const { D, MODELS, MODEL, COLOR, C, STAGES, LEVELS, s, st, h, $, fmt, withUnit, unitOf, cap } = X;
 
+  // Open the compact notes when reached through a citation or a saved link.
+  function openLinkedNotes() {
+    const id = location.hash.slice(1);
+    if (id === "score-notes" || id === "cite") document.getElementById(id).open = true;
+  }
+  openLinkedNotes();
+  window.addEventListener("hashchange", openLinkedNotes);
+  document.querySelector('footer.site a[href="index.html#cite"]').addEventListener("click", () => { $("#cite").open = true; });
+
   /* ---------------- leaderboard ---------------- */
   const state = { stage: "all", level: "all" };
   const TK = D.tokens.models;

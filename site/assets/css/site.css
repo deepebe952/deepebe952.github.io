@@ -472,23 +472,12 @@ details.notes li { margin-bottom: 6px; }
 .framework-art { display: block; padding: clamp(10px, 2vw, 28px); background: #fff; border: 1px solid var(--hair-2); border-radius: 12px; }
 .framework-art img { display: block; width: 100%; height: auto; }
 .framework-art:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
-.framework-figure figcaption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; margin-top: 14px; color: var(--ink-2); font-size: 13px; }
-.framework-figure figcaption a { white-space: nowrap; }
-.execution-notes { display: grid; gap: 24px; }
-.execution-notes > div { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 12px 28px; }
-.execution-notes h3 { font-size: 17px; font-weight: 600; margin: 0; }
-.execution-notes p { margin: 0; color: var(--ink-2); max-width: 85ch; }
+.framework-figure figcaption { margin-top: 14px; color: var(--ink-2); font-size: 13px; }
+.architecture-summary { display: grid; gap: 28px; }
+.architecture-summary h2 { font-size: 20px; font-weight: 600; margin: 0 0 8px; }
+.architecture-summary p { margin: 0; color: var(--ink-2); max-width: 95ch; }
 .task-detail-hint { color: #bd3333; font-size: 14px; font-weight: 500; margin: 0 0 16px; }
 html[data-theme="dark"] .task-detail-hint { color: #ff8e8e; }
-@media (max-width: 600px) { .execution-notes > div { grid-template-columns: 1fr; gap: 6px; } }
-.spec { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); overflow: hidden; }
-.spec > div { padding: 18px; border-left: 1px solid var(--hair); }
-.spec > div:first-child { border-left: 0; }
-.spec b { display: block; font: 600 26px/1 var(--f-mono); margin-bottom: 10px; }
-.spec span { font-size: 13.5px; color: var(--ink-2); line-height: 1.5; display: block; }
-@media (max-width: 860px) { .spec { grid-template-columns: repeat(2, minmax(0, 1fr)); } .spec > div { border-top: 1px solid var(--hair); } .spec > div:nth-child(odd) { border-left: 0; } .spec > div:nth-child(-n+2) { border-top: 0; } }
-.formula { font: 400 14.5px/1.7 var(--f-mono); color: var(--ink); background: var(--bg); border: 1px solid var(--hair); border-radius: 8px; padding: 14px 16px; overflow-x: auto; }
-.formula sub { font-size: 0.72em; }
 .facts dd { min-width: 0; overflow-wrap: anywhere; }
 .card-head > * { min-width: 0; }
 .run-controls { min-width: 0; }
@@ -524,3 +513,6 @@ html[data-theme="dark"] .task-detail-hint { color: #ff8e8e; }
 .result-task svg { margin-top: 8px; }
 @media (max-width: 760px) { .results-grid { grid-template-columns: minmax(0, 1fr); gap: 24px; } .result-category { grid-template-columns: repeat(2, minmax(0, 1fr)); } .result-category-head { grid-column: 1 / -1; } }
 @media (max-width: 520px) { .result-category { grid-template-columns: minmax(0, 1fr); } }
+
+/* Visible return control on task detail pages. */
+.task-back { margin-bottom: 18px; cursor: pointer; }

@@ -5,6 +5,12 @@
   if (!X) return;
   const { D, MODELS, MODEL, COLOR, TASK, h, $, cap, fmt, withUnit, metricLabel, ordinal } = X;
 
+  $("#task-back").addEventListener("click", () => {
+    const cameFromSite = document.referrer && new URL(document.referrer).origin === location.origin;
+    if (cameFromSite && history.length > 1) history.back();
+    else location.assign("tasks.html");
+  });
+
   function render() {
     const key = decodeURIComponent(location.hash.slice(1)) || D.tasks[0].key;
     const t = TASK[key] || D.tasks[0];

@@ -9,7 +9,7 @@ site/
   task.html#<key>             task details, scores, trajectories, run trace
   analysis.html              Section 5: Q1 requirements, Q2 validation, Q3 improvement
   runs.html#<task>/<model>    submission logs and run table
-  method.html                protocol, scoring, token accounting, citation
+  method.html                framework figure and brief task definition/execution
   assets/css/site.css        shared layout and themes
   assets/css/analysis.css    behavior figure components
   assets/js/core.js          shared data access, rank math, charts, navigation
@@ -64,11 +64,13 @@ The retained first-score distributions come from the October 25, 41-page manuscr
 
 The homepage follows the paper title and author order, with 18 names in three desktop rows (5 / 7 / 6), 16 verified homepage links, numbered affiliations, and eight unlinked logos. Author rows wrap within their groups on narrow screens. Affiliation numbers and logo order follow the latest author-supplied reference: Washington, Ai2, Penn, Pyromind, Stanford, RadixArk, UT Austin, Northwestern. Zheyuan Xiao is affiliated with Washington. Seven logos preserve the PDF’s vector paths; Pyromind uses its original transparent image. `data/institution_logos.json` records the original PDF hash and extraction positions, not the display order. Paper, Code, Docker, and HuggingFace buttons are explicitly marked coming soon until public URLs are supplied.
 
-Navigation follows the paper's order with concise labels: Architecture, Results, Behavior, Tasks, Trajectories. Existing page URLs remain valid. `method.html` displays Figure 1 directly from the Overleaf archive as a faithful SVG conversion, with the unchanged original PDF linked for full-size viewing; `data/framework_figure.json` records its source. Task Definition and Task Execution follow Sections 3.1 and 3.2. The task table includes a red hint inviting readers to open a task's details.
+Navigation follows the paper's order with concise labels: Architecture, Results, Behavior, Tasks, Trajectories. `method.html` contains only the original Figure 1 and brief Task Definition and Task Execution paragraphs. The figure opens its unchanged original PDF for full-size viewing; `data/framework_figure.json` records its source. Scoring/token definitions and Citation are collapsed notes on the homepage. Saved method-page links to those notes redirect there. The task table includes a red hint inviting readers to open a task's details.
 
 The task map spans the page. Results show all 25 trajectories in a three-column layout (operators, modules, systems), with training and inference as the two groups. Flash-KMeans uses a logarithmic throughput axis. The best observed score carries forward to the complete task budget, including DeepSeek GQA at 12 hours.
 
-Analysis follows Section 5 and current Figures 9–12: task requirements use Figure 9, testing optimizations uses Figures 10–11, and continued improvement uses Figure 12. Each section links to its unchanged original PDFs from the Overleaf archive for comparison with the interactive charts; hashes are recorded in `data/behavior_original_figures.json`. Printed values are transcribed directly; unlabeled points and process ticks are recovered from vector coordinates and labeled approximate. The optional PDF extraction path requires PyMuPDF; normal builds use committed JSON and only Python’s standard library. Tests check printed anchors, the workload ranking reversal, two-process summaries, and bundle freshness. Previous Analysis links redirect to the corresponding question or homepage section.
+Task detail pages have a visible Back button. Visits from another site page return through browser history; direct or external arrivals go to Tasks. Task filters and search text are saved on their history entry so returning restores the list without applying old filters to a new visit.
+
+Analysis follows Section 5 and current Figures 9–12: task requirements use Figure 9, testing optimizations uses Figures 10–11, and continued improvement uses Figure 12. All panels are interactive UI components, without original-PDF links. Archived source PDFs and their hashes remain recorded in `data/behavior_original_figures.json`. Printed values are transcribed directly; unlabeled points and process ticks are recovered from vector coordinates and labeled approximate. The optional PDF extraction path requires PyMuPDF; normal builds use committed JSON and only Python’s standard library. Tests check printed anchors, the workload ranking reversal, two-process summaries, and bundle freshness. Previous Analysis links redirect to the corresponding question or homepage section.
 
 The default theme is light, with a saved dark-theme preference and a navigation toggle. Charts use shared theme variables and responsive dimensions.
 
