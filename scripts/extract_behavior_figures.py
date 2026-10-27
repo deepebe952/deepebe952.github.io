@@ -11,6 +11,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import re
 import sys
 from pathlib import Path
 
@@ -44,6 +45,16 @@ def extract(pdf_path):
     pdf = pymupdf.open(pdf_path)
     p8 = next(p for p in pdf if "Narrow validation can miss the required computation." in p.get_text())
     p9 = next(p for p in pdf if "Correct outputs can conceal an incorrectly executed experiment." in p.get_text())
+    p12 = next(p for p in pdf if "Completion judgments and activity counts are imperfect progress signals." in p.get_text())
+    captions = [
+        (p8, "Narrow validation can miss the required computation."),
+        (p9, "Correct outputs can conceal an incorrectly executed experiment."),
+        (p9, "A proxy workload can reverse an optimization decision."),
+        (p12, "Completion judgments and activity counts are imperfect progress signals."),
+    ]
+    figure_numbers = [int(re.search(r"Figure (\d+):\s*" + re.escape(caption), page.get_text()).group(1))
+                      for page, caption in captions]
+    assert figure_numbers == [9, 10, 11, 12], "Update the native figure labels for this paper revision"
     ds8, ds9 = p8.get_drawings(), p9.get_drawings()
     fig8_frame = next(d["rect"] for d in ds8 if d["type"] == "f" and hex_color(d["fill"]) == "#ffffff"
                       and d["rect"].x0 > 350 and 100 < d["rect"].y0 < 150 and d["rect"].height > 100)
@@ -58,7 +69,7 @@ def extract(pdf_path):
         errors[model] = [round(ratio(center(d)[1]), 5) for d in dots]
         assert all(0 < v < 1 for v in errors[model])
 
-    # Figure 9a's open circles show a second before-repair observation.
+    # Figure 10a's open circles show a second before-repair observation.
     frames9 = [d["rect"] for d in ds9 if d["type"] == "f" and hex_color(d["fill"]) == "#ffffff"
                and d["rect"].x0 < 280 and 100 < d["rect"].y0 < 150 and d["rect"].height > 90]
     assert len(frames9) == 1
@@ -72,7 +83,7 @@ def extract(pdf_path):
     assert len(open_dots) == 2
     repeat_before = [round((grid9[0] - center(d)[1]) / (grid9[0] - grid9[1]) * 20, 4) for d in open_dots]
 
-    # Figure 10 has three independent linear axes. Panel a plots splits 1 and 4;
+    # Figure 11 has three independent linear axes. Panel a plots splits 1 and 4;
     # panels b/c also plot split 2. Short ticks are separate process medians.
     frames10 = sorted((d["rect"] for d in ds9 if d["type"] == "f" and hex_color(d["fill"]) == "#ffffff"
                        and 350 < d["rect"].y0 < 450 and d["rect"].height > 90), key=lambda r: r.x0)
@@ -109,17 +120,31 @@ def extract(pdf_path):
                      "6 drafts, breadth 1 + CD2", "6 drafts, breadth 2", "8 drafts, breadth 3", "NGRAM defaults"]
     logprob_values = [2.55, 2.69, 12.94, 13.61, 17.87, 14.13, 2.66, 2.60, 2.36]
     assert all(f"{v:.2f}" in p8.get_text() for v in logprob_values)
+    assert all(value in p9.get_text() for value in ("74.23", "25.75", "25.52", "25.34", "10,458", "5,229", "5,312", "2,656"))
+    completion = [
+        {"model": "glm", "task": "sageattention", "before": 365.43, "after": 456.03},
+        {"model": "claude", "task": "gkd", "before": 177.02, "after": 182.46},
+        {"model": "deepseek", "task": "sd35", "before": 40.81, "after": 46.53},
+    ]
+    assert all(f"{row[key]:.2f}" in p12.get_text() for row in completion for key in ("before", "after"))
+    assert all(re.search(r"\b" + str(count) + r"\b", p12.get_text()) for count in (113, 26, 2, 96, 27, 18, 141))
+    body = "\n".join(page.get_text() for page in pdf)
+    assert "4.8% to 19.9%" in body
     return {
-        "source": "Infrathon paper, Section 5, Figures 8–11 (49-page revision)",
+        "source": f"Infrathon paper, Section 5, Figures 9–12 ({len(pdf)}-page revision)",
+        "figure_numbers": figure_numbers,
         "pdf_sha256": hashlib.sha256(Path(pdf_path).read_bytes()).hexdigest(),
         "digitization": "Unlabeled points and process ticks are recovered from PDF vector coordinates and axis ticks; values remain approximate. Printed numeric labels are transcribed directly.",
-        "fig8": {"page": p8.number + 1, "logprob": [{"label": name, "difference_millinats": value, "breadth_one": 2 <= i <= 5}
+        "fig9": {"page": p8.number + 1, "logprob": [{"label": name, "difference_millinats": value, "breadth_one": 2 <= i <= 5}
                                                     for i, (name, value) in enumerate(zip(logprob_names, logprob_values))],
                  "error_tolerance_ratio": errors},
-        "fig9": {"page": p9.number + 1, "latency_ms": [{"label": "Forward", "before": 74.23, "after": 25.75, "repeat_before": repeat_before[0]},
+        "fig10": {"page": p9.number + 1, "latency_ms": [{"label": "Forward", "before": 74.23, "after": 25.75, "repeat_before": repeat_before[0]},
                                                          {"label": "Backward", "before": 25.52, "after": 25.34, "repeat_before": repeat_before[1]}],
                  "launches": [{"label": "Residual + norm", "before": 10458, "after": 5229}, {"label": "SwiGLU", "before": 5312, "after": 2656}, {"label": "RoPE", "before": 5312, "after": 2656}]},
-        "fig10": {"page": p9.number + 1, "panels": panels},
+        "fig11": {"page": p9.number + 1, "panels": panels},
+        "fig12": {"page": p12.number + 1, "completion": completion, "n_runs": 141,
+                  "pooled_pct": [4.8, 19.9], "halves": [{"label": "First half", "counts": [113, 26, 2]},
+                                                         {"label": "Second half", "counts": [96, 27, 18]}]},
     }
 
 
@@ -135,4 +160,4 @@ if __name__ == "__main__":
     else:
         data = json.loads(source.read_text())
     (ROOT / "site/data/behavior.js").write_text(bundle(data))
-    print("Wrote native Figure 8–10 data; all vector extraction checks passed.")
+    print("Wrote native Figure 9–12 data; all vector extraction checks passed.")

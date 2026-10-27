@@ -21,14 +21,15 @@ data/
   tasks.json                 task and model registry
   raw/runs.json              selected dashboard submissions
   tokens.json                paper cost totals and 150 per-task cost records
-  behavior_figures.json      Figure 8–10 measurements and provenance
+  behavior_figures.json      Section 5 measurements and source provenance
   author_links.json          verified author homepage links; null when unconfirmed
   institution_logos.json     paper logo extraction provenance
+  framework_figure.json      original Overleaf framework figure provenance
 scripts/
   extract_dashboard.py      dashboard ZIP → selected runs
   build_data.py             results, ranks, summaries → infrathon.js
   extract_behavior_figures.py  figure JSON → behavior.js; optional PDF extraction
-  extract_paper_distributions.py  archived Figure 5 vector extraction
+  extract_paper_distributions.py  archived 41-page manuscript Figure 5 extraction
   check_site.py              local links, anchors, bundle structure, leaked local paths
 ```
 
@@ -48,19 +49,25 @@ Preview with `python3 -m http.server -d site 8000`.
 
 ## Scoring and interaction costs
 
-The site follows paper Eq. 5. Each model is ranked by its best valid score within each task; exact ties share the average rank. A run without a valid scored submission receives zero. Its rank score is the mean of `100 × (n − rank) / (n − 1)` over selected tasks. All six models cover all 25 tasks. Flash-KMeans latency is converted to equivalent throughput, preserving the ordering.
+The site follows paper Eq. 5. Each model is ranked by its best valid score within each task; exact ties share the average rank. A run without a valid scored submission receives zero. Its rank score is the mean of `100 × (K − rank) / (K − 1)` over selected tasks, with fixed `K = 6`. All six models cover all 25 tasks. Flash-KMeans latency is converted to equivalent throughput, preserving the ordering.
 
-All 150 values match Table 5 of the current 49-page manuscript (the unchanged regression fixture retains the filename `tests/paper_table4.json` from the previous edition). `tests/test_paper_audit.py` also checks the six category scores and exact-tie behavior. Full-suite confidence intervals use the generated 10,000 bootstrap resamples; filtered subsets use 3,000 resamples in the browser.
+All 150 values match Table 5 of the current 50-page manuscript (the unchanged regression fixture retains the filename `tests/paper_table4.json` from the previous edition). `tests/test_paper_audit.py` also checks the six category scores and exact-tie behavior. Full-suite confidence intervals use the generated 10,000 bootstrap resamples; filtered subsets use 3,000 resamples in the browser.
 
-Visible tokens follow the paper’s `o200k_base` definition: recorded agent text and tool-call content, excluding tool responses, repeated code-diff displays, and reasoning traces. Full-suite totals use Figure 7. Filtered totals sum Figure 14’s per-task values, which are rounded to thousands and displayed with `≈`. Summing these rounded cells does not reproduce the unrounded suite total exactly. Agent actions are integers and sum to 203,266. First-score medians are computed from the selected tasks’ scored runs. The ZIP does not contain the message trajectories needed to rerun tokenization; cost records are checked against the paper.
+Visible tokens follow Appendix B.4’s `o200k_base` definition: recorded agent text and tool-call content, excluding tool responses, repeated code-diff displays, and reasoning traces. Full-suite totals match current Figure 8. Filtered totals sum current Figure 15’s per-task values, which are rounded to thousands and displayed with `≈`. Summing these rounded cells does not reproduce the unrounded suite total exactly. Agent actions are integers and sum to 203,266. First-score medians are computed from the selected tasks’ scored runs. These statistics cover the 150 main-experiment runs and exclude the short-budget ablations.
+
+Cost values were originally transcribed from Figures 7 and 14 of earlier manuscript revisions. All model totals and all 300 per-task token/action cells were checked against Figures 8 and 15 of the current 50-page PDF and are unchanged. `data/tokens.json` preserves the original extraction reference and hash alongside the current reference and verification hash. The dashboard ZIP does not contain the message trajectories needed to rerun tokenization.
+
+The retained first-score distributions come from the October 25, 41-page manuscript’s Figure 5. That chart is now Figure 6, but its archived coordinates have not been re-extracted from the current PDF. `scripts/extract_paper_distributions.py` remains specific to the 41-page layout and rejects other page counts. Printed completion and repetition statistics retain their original Figure 11 provenance and have been checked against current Figure 12.
 
 ## Paper layout and figures
 
-The homepage follows the paper title and author order, with 18 names, 16 verified homepage links, numbered affiliations, and eight unlinked logos. Affiliation numbers and logo order follow the latest author-supplied reference: Washington, Ai2, Penn, Pyromind, Stanford, RadixArk, UT Austin, Northwestern. Zheyuan Xiao is affiliated with Washington. Seven logos preserve the PDF’s vector paths; Pyromind uses its original transparent image. `data/institution_logos.json` records the original PDF hash and extraction positions, not the display order. Paper, Code, Docker, and HuggingFace buttons are explicitly marked coming soon until public URLs are supplied.
+The homepage follows the paper title and author order, with 18 names in three desktop rows (5 / 7 / 6), 16 verified homepage links, numbered affiliations, and eight unlinked logos. Author rows wrap within their groups on narrow screens. Affiliation numbers and logo order follow the latest author-supplied reference: Washington, Ai2, Penn, Pyromind, Stanford, RadixArk, UT Austin, Northwestern. Zheyuan Xiao is affiliated with Washington. Seven logos preserve the PDF’s vector paths; Pyromind uses its original transparent image. `data/institution_logos.json` records the original PDF hash and extraction positions, not the display order. Paper, Code, Docker, and HuggingFace buttons are explicitly marked coming soon until public URLs are supplied.
+
+Navigation follows the paper: 3 · Infrathon, 4 · Results, 5 · Behavior, A · Tasks, C · Trajectories. Existing page URLs remain valid. `method.html` displays Figure 1 directly from the Overleaf archive as a faithful SVG conversion, with the unchanged original PDF linked for full-size viewing; `data/framework_figure.json` records its source. Task Definition and Task Execution follow Sections 3.1 and 3.2. The task table includes a red hint inviting readers to open a task's details.
 
 The task map spans the page. Results show all 25 trajectories in a three-column layout (operators, modules, systems), with training and inference as the two groups. Flash-KMeans uses a logarithmic throughput axis. The best observed score carries forward to the complete task budget, including DeepSeek GQA at 12 hours.
 
-Analysis follows Section 5 and Figures 8–11. Printed values are transcribed directly; unlabeled points and process ticks are recovered from vector coordinates and labeled approximate. The optional PDF extraction path requires PyMuPDF; normal builds use committed JSON and only Python’s standard library. Tests check printed anchors, the workload ranking reversal, two-process summaries, and bundle freshness. Previous Analysis links redirect to the corresponding question or homepage section.
+Analysis follows Section 5 and current Figures 9–12. Printed values are transcribed directly; unlabeled points and process ticks are recovered from vector coordinates and labeled approximate. The optional PDF extraction path requires PyMuPDF; normal builds use committed JSON and only Python’s standard library. Tests check printed anchors, the workload ranking reversal, two-process summaries, and bundle freshness. Previous Analysis links redirect to the corresponding question or homepage section.
 
 The default theme is light, with a saved dark-theme preference and a navigation toggle. Charts use shared theme variables and responsive dimensions.
 

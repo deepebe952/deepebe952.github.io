@@ -1,9 +1,9 @@
-/* Agent Behavior Analysis: paper Section 5, Figures 8–11. */
+/* Agent Behavior Analysis: paper Section 5, Figures 9–12. */
 (() => {
   "use strict";
   const X = window.IX, F = window.INFRATHON_BEHAVIOR;
   if (!X || !F) return;
-  const { D, MODEL, COLOR, C, TASK, s, st, h, $, fmt, pct, cap, unitOf } = X;
+  const { MODEL, COLOR, C, TASK, s, st, h, $, fmt, pct, cap, unitOf } = X;
   const beforeColor = COLOR.claude, afterColor = COLOR.qwen;
   const splitColors = { 1: COLOR.sol, 2: COLOR.deepseek, 4: COLOR.qwen };
   const approx = (value, dp = 3) => `≈${fmt(value, dp)}`;
@@ -49,10 +49,10 @@
     }
   }
 
-  /* Figure 8a: printed differences, in 10^-3 nats. */
+  /* Figure 9a: printed differences, in 10^-3 nats. */
   const logprobBox = $("#logprob-chart");
   logprobBox.append(h("div", { class: "logprob-axis", "aria-hidden": "true" }, h("span"), h("span", {}, h("span", { text: "0" }), h("span", { text: "20" })), h("span")));
-  for (const row of F.fig8.logprob) {
+  for (const row of F.fig9.logprob) {
     const color = row.breadth_one ? COLOR.claude : COLOR.qwen;
     const el = h("div", { class: `logprob-row${row.breadth_one ? " breadth-one" : ""}`, tabindex: 0, "aria-label": `${row.label}: ${row.difference_millinats} millinats` },
       h("span", { text: row.label }), h("span", { class: "logprob-line", "aria-hidden": "true" }, h("i", { style: `width:${row.difference_millinats / 20 * 100}%;--log-color:${color}` })), h("b", { text: fmt(row.difference_millinats, 2) }));
@@ -61,7 +61,7 @@
   }
   logprobBox.append(h("p", { class: "logprob-unit", text: "Mean absolute difference (10⁻³ nats)" }));
 
-  /* Figure 8b: 11 fixtures for each of two configurations. */
+  /* Figure 9b: 11 fixtures for each of two configurations. */
   $("#fixture-legend").append(X.who("claude", "Claude"), X.who("deepseek", "DeepSeek"));
   plot("#fixture-chart", (W) => {
     const H = 290, L = 38, R = W - 12, T = 30, B = H - 43;
@@ -73,14 +73,14 @@
     text(svg, (L + R) / 2, ys(1) - 9, "Numerical pass threshold", { "text-anchor": "middle" });
     for (let i = 0; i < 11; i++) text(svg, xs(i), B + 17, i + 1, { "text-anchor": "middle" });
     text(svg, (L + R) / 2, H - 6, "Disclosed edge fixture", { "text-anchor": "middle" });
-    for (const [m, values] of Object.entries(F.fig8.error_tolerance_ratio)) values.forEach((value, i) => {
-      const g = interactive(svg, `${MODEL[m].short} · fixture ${i + 1}`, [{ color: COLOR[m], value: approx(value), label: "Error / tolerance" }], "Figure 8b · approximate vector-derived value");
+    for (const [m, values] of Object.entries(F.fig9.error_tolerance_ratio)) values.forEach((value, i) => {
+      const g = interactive(svg, `${MODEL[m].short} · fixture ${i + 1}`, [{ color: COLOR[m], value: approx(value), label: "Error / tolerance" }], "Figure 9b · approximate vector-derived value");
       X.marker(g, m, xs(i) + (m === "claude" ? -2.5 : 2.5), ys(value), 4.1, { ringW: 1 });
     });
     return svg;
   });
 
-  /* Figure 9a: source tile constants change public forward latency. */
+  /* Figure 10a: source tile constants change public forward latency. */
   document.querySelectorAll(".repair-legend").forEach((el) => legend(el, [["Before repair", beforeColor], ["After repair", afterColor]]));
   plot("#latency-chart", (W) => {
     const H = 270, L = 39, R = W - 10, T = 30, B = H - 35, max = 88;
@@ -88,7 +88,7 @@
     const ys = (v) => B - v / max * (B - T), groupW = (R - L) / 2, barW = Math.min(40, groupW * .27);
     yAxis(svg, [0, 20, 40, 60, 80], ys, L, R);
     text(svg, L, 15, "Public median latency (ms)");
-    F.fig9.latency_ms.forEach((row, i) => {
+    F.fig10.latency_ms.forEach((row, i) => {
       const mid = L + groupW * (i + .5);
       text(svg, mid, B + 23, row.label, { "text-anchor": "middle", fill: C.ink2, "font-size": 11 });
       for (const [key, offset, color] of [["before", -barW - 2, beforeColor], ["after", 2, afterColor]]) {
@@ -103,7 +103,7 @@
     return svg;
   });
 
-  /* Figure 9b: cache-key repair halves launches in three kernel families. */
+  /* Figure 10b: cache-key repair halves launches in three kernel families. */
   plot("#launches-chart", (W) => {
     const H = 270, L = W < 360 ? 75 : 109, R = W - 45, T = 35, B = H - 34;
     const svg = canvas(W, H, "DeepSeek LLaDA GPU launches before and after repair");
@@ -113,7 +113,7 @@
       s("line", { x1: xs(v), x2: xs(v), y1: T - 4, y2: B, stroke: C.hair }, svg);
       text(svg, xs(v), B + 20, v ? `${v / 1000}k` : "0", { "text-anchor": "middle" });
     }
-    F.fig9.launches.forEach((row, i) => {
+    F.fig10.launches.forEach((row, i) => {
       const y = T + i * 65;
       const label = row.label === "Residual + norm" && W < 360 ? ["Residual", "+ norm"] : [row.label];
       label.forEach((v, j) => text(svg, L - 9, y + 21 + j * 13 - (label.length > 1 ? 6 : 0), v, { "text-anchor": "end", fill: C.ink2, "font-size": 11 }));
@@ -126,9 +126,9 @@
     return svg;
   });
 
-  /* Figure 10: all plotted split variants and their two process measurements. */
+  /* Figure 11: all plotted split variants and their two process measurements. */
   legend($("#split-legend"), [1, 2, 4].map((n) => [`Split = ${n}`, splitColors[n]]));
-  for (const [i, panel] of F.fig10.panels.entries()) {
+  for (const [i, panel] of F.fig11.panels.entries()) {
     const chart = h("div", { class: "behavior-plot" });
     $("#workload-panels").append(h("div", { class: "workload-panel" }, h("h4", { text: `${String.fromCharCode(97 + i)} · ${panel.title}` }), h("p", { text: panel.shape }), chart));
     plot(chart, (W) => {
@@ -147,7 +147,7 @@
         const color = splitColors[variant.split], values = variant.medians_ms;
         s("line", { x1: xs(0), x2: xs(1), y1: ys(values[0]), y2: ys(values[1]), stroke: color, "stroke-width": 2 }, svg);
         values.forEach((value, j) => {
-          const g = interactive(svg, `Split ${variant.split} · ${j ? "assigned" : "balanced"} labels`, [{ color, value: `${approx(value)} ms`, label: "Across-process median" }, ...variant.process_medians_ms[j].map((v, k) => ({ color, value: `${approx(v)} ms`, label: `Process ${k + 1} median` }))], "Figure 10 · approximate vector-derived values");
+          const g = interactive(svg, `Split ${variant.split} · ${j ? "assigned" : "balanced"} labels`, [{ color, value: `${approx(value)} ms`, label: "Across-process median" }, ...variant.process_medians_ms[j].map((v, k) => ({ color, value: `${approx(v)} ms`, label: `Process ${k + 1} median` }))], "Figure 11 · approximate vector-derived values");
           variant.process_medians_ms[j].forEach((v, k) => s("line", { x1: xs(j) + (k ? 4 : -4), x2: xs(j) + (k ? 4 : -4), y1: ys(v) - 4, y2: ys(v) + 4, stroke: color, "stroke-width": 1.5 }, g));
           s("circle", { cx: xs(j), cy: ys(value), r: 4, fill: color, stroke: C.panel, "stroke-width": 1.4 }, g);
         });
@@ -156,8 +156,8 @@
     });
   }
 
-  /* Figure 11: printed scores and run counts; independent of the current ranking. */
-  const behavior = D.tokens.behavior;
+  /* Figure 12: printed scores and run counts; independent of the current ranking. */
+  const behavior = F.fig12;
   for (const row of behavior.completion) {
     const { model: m, task: key, before, after } = row, t = TASK[key], gain = (after / before - 1) * 100;
     $("#completion-gains").append(h("a", { class: "gain-example", href: X.taskHref(key), style: `--case-color:${COLOR[m]}` },

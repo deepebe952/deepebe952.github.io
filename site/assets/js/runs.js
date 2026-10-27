@@ -6,7 +6,7 @@
   const { D, MODELS, MODEL, TASK, STAGES, LEVELS, h, $, cap, fmt, withUnit } = X;
   const STATUS = { v: "scored", x: "failed checks", r: "rejected by integrity review", n: "infrastructure failure", w: "waiting" };
 
-  $("#r-lede").textContent = `Every selected run in the ${D.snapshot} export, submission by submission: ${D.summary.n_runs} runs and ${D.summary.n_submissions.toLocaleString("en-US")} judged submissions. Pick a task and a configuration to see what the judge returned over the run, or browse all runs below.`;
+  $("#r-lede").textContent = `${D.summary.n_runs} runs and ${D.summary.n_submissions.toLocaleString("en-US")} judged submissions. Select a task and configuration to explore its scores and submission history.`;
 
   const sel = $("#r-task");
   for (const stg of STAGES) {

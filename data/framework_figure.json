@@ -1,0 +1,20 @@
+{
+  "source_archive": "_AI_Infra____New_Template_Version___Zhengyu_Hu.zip",
+  "source_member": "images/ultrainfrabench_framework.pdf",
+  "source_tex": "main.tex",
+  "source_tex_line": 797,
+  "source_pdf_sha256": "9d304e4470a82262afd30641ab9d4723e79c319e2e3ea60f7f3336825c21fdc3",
+  "compiled_paper": "_AI_Infra____New_Template_Version___Zhengyu_Hu (1).pdf",
+  "compiled_paper_page": 5,
+  "figure": 1,
+  "label": "fig:benchmark_framework",
+  "section": "3 Infrathon",
+  "caption": "Infrathon framework. (a) Training and inference tasks across three optimization levels share a common specification. (b) The feedback loop between the Work environment, the Controller, and the Judge environment supports continued optimization without a fixed horizon limit; experiments use 12-hour or 24-hour budgets.",
+  "width_pt": 607.21002,
+  "height_pt": 257.13,
+  "files": {
+    "pdf": "assets/img/framework.pdf",
+    "svg": "assets/img/framework.svg"
+  },
+  "conversion": "Original PDF extracted byte-for-byte from the Overleaf archive. SVG exported with PyMuPDF, text converted to vector paths, original geometry and colors retained, and the PDF white page background made explicit."
+}

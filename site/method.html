@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Infrathon Method</title>
+<title>Infrathon · Section 3</title>
 <meta name="description" content="How Infrathon runs work: task specification, the Work, Controller and Judge environments, scoring and the rank-score method.">
 <meta property="og:title" content="Infrathon">
 <meta property="og:description" content="Can frontier models solve long-horizon AI infrastructure tasks? 25 tasks, 6 configurations, 150 runs on H100s.">
@@ -18,84 +18,57 @@
 <body data-page="method">
 <main>
   <header class="page-head"><div class="wrap">
-    <div class="crumbs"><a href="index.html">Infrathon</a><span>/</span><span>Method</span></div>
-    <h1>How a run works</h1>
-    <p class="lede">Every task uses the same five-part specification. The agent works in its own container; a trusted controller enforces the deadline and reviews each submission; a separate judge runs hidden tests and scores the candidate. Nothing the agent can see contains private test data or scoring code.</p>
+    <div class="crumbs"><a href="index.html">Infrathon</a><span>/</span><span>Section 3</span></div>
+    <h1>Infrathon</h1>
+    <p class="lede">Task Definition specifies the workspace, tests, resources, and time budget. Task Execution connects Work, Controller, and Judge in a feedback loop with no fixed horizon limit.</p>
   </div></header>
 
+  <section class="sec" id="framework"><div class="wrap">
+    <figure class="framework-figure">
+      <a class="framework-art" href="assets/img/framework.pdf" target="_blank" rel="noopener" aria-label="Open the original Infrathon framework figure as a PDF">
+        <img src="assets/img/framework.svg" width="1214" height="514" alt="Infrathon framework. Training and inference tasks at operator, module, and system levels share a task specification. The agent develops candidates in Work; the Controller checks submissions; the Judge returns private validation and performance results for continued optimization.">
+      </a>
+      <figcaption><span><b>Figure 1.</b> Infrathon framework. Task definition and the Work–Controller–Judge feedback loop.</span><a class="link" href="assets/img/framework.pdf" target="_blank" rel="noopener">View original PDF ↗</a></figcaption>
+    </figure>
+  </div></section>
+
   <section class="sec" id="protocol"><div class="wrap">
-    <div class="sec-title"><div><h2>Task specification τ = (W, P, E, R, T)</h2></div></div>
+    <div class="sec-title"><div><span class="label">3.1</span><h2>Task Definition</h2><p>25 tasks: 10 training and 15 inference, across operator, module, and system levels. Each task follows τ = (W, P, E, R, T).</p></div><a class="more link" href="tasks.html">Explore the tasks →</a></div>
     <div class="card spec">
       <div><b>W</b><span>Workspace: starting code or an interface to implement, and the files the agent may edit.</span></div>
-      <div><b>P</b><span>Public tests: visible cases and a local runner for correctness checks and profiling.</span></div>
-      <div><b>E</b><span>Private protocol: hidden test assets, task checks, the scoring objective and the feedback the agent may see.</span></div>
-      <div><b>R</b><span>Resources: GPU allocation and software runtime, per task.</span></div>
-      <div><b>T</b><span>Budget: 12 h for operators, 24 h for modules and systems, including tool runs and judge waits.</span></div>
-    </div>
-    <div class="card diagram" style="margin-top:12px;padding:12px">
-      <svg viewBox="0 0 1000 360" role="img" aria-labelledby="arch-title" style="min-width:720px">
-        <title id="arch-title">Run architecture. In Work, the agent edits candidates and runs public tests. Submissions go to the Controller, which snapshots them and runs an integrity review. Rejected candidates return rule feedback without a score. Admitted candidates go to the Judge, which runs private tests and returns a score, status and diagnostics. At the deadline the Controller stops the run and keeps every saved candidate for replay.</title>
-        <defs>
-          <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--ink)"/></marker>
-          <marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--ink-3)"/></marker>
-        </defs>
-        <g font-size="12.5">
-          <rect x="20" y="40" width="280" height="200" rx="10" fill="var(--panel-2)" stroke="var(--hair-2)"/>
-          <text x="38" y="66" fill="var(--ink)" font-size="13" font-weight="600" letter-spacing="1.5">WORK</text>
-          <text x="282" y="66" fill="var(--ink-3)" font-size="10.5" text-anchor="end">agent-visible</text>
-          <text x="38" y="98" fill="var(--ink-2)">model + tool scaffold (policy π)</text>
-          <text x="38" y="122" fill="var(--ink-2)">edit candidate c_t in workspace W</text>
-          <text x="38" y="146" fill="var(--ink-2)">profile, run public tests P</text>
-          <text x="38" y="170" fill="var(--ink-2)">save candidates, request evaluation</text>
-          <text x="38" y="206" fill="var(--ink-3)">stop hook blocks an early "done";</text>
-          <text x="38" y="224" fill="var(--ink-3)">recovery resumes crashed sessions</text>
-          <rect x="360" y="40" width="280" height="200" rx="10" fill="var(--panel-2)" stroke="var(--hair-2)"/>
-          <text x="378" y="66" fill="var(--ink)" font-size="13" font-weight="600" letter-spacing="1.5">CONTROLLER</text>
-          <text x="622" y="66" fill="var(--ink-3)" font-size="10.5" text-anchor="end">trusted</text>
-          <text x="378" y="98" fill="var(--ink-2)">enforce wall-clock deadline T</text>
-          <text x="378" y="122" fill="var(--ink-2)">limits and cooldowns</text>
-          <text x="378" y="146" fill="var(--ink-2)">snapshot the submitted files</text>
-          <text x="378" y="170" fill="var(--ink-2)">integrity review I(c) ∈ {0, 1}</text>
-          <text x="378" y="206" fill="var(--ink-3)">LLM reviewer cites evidence;</text>
-          <text x="378" y="224" fill="var(--ink-3)">controller verifies it before rejecting</text>
-          <rect x="700" y="40" width="280" height="200" rx="10" fill="var(--panel-2)" stroke="var(--hair-2)"/>
-          <text x="718" y="66" fill="var(--ink)" font-size="13" font-weight="600" letter-spacing="1.5">JUDGE</text>
-          <text x="962" y="66" fill="var(--ink-3)" font-size="10.5" text-anchor="end">private</text>
-          <text x="718" y="98" fill="var(--ink-2)">run hidden tests under E and R</text>
-          <text x="718" y="122" fill="var(--ink-2)">exact, tolerance and quality checks</text>
-          <text x="718" y="146" fill="var(--ink-2)">measure task performance</text>
-          <text x="718" y="170" fill="var(--ink-2)">report J(c) = (score, status, diag.)</text>
-          <text x="718" y="206" fill="var(--ink-3)">infrastructure errors stay separate</text>
-          <text x="718" y="224" fill="var(--ink-3)">from candidate failures</text>
-        </g>
-        <line x1="302" y1="110" x2="356" y2="110" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#a2)"/>
-        <text x="329" y="100" fill="var(--ink-2)" font-size="10.5" text-anchor="middle">submit</text>
-        <line x1="642" y1="110" x2="696" y2="110" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#a2)"/>
-        <text x="669" y="100" fill="var(--ink-2)" font-size="10.5" text-anchor="middle">I = 1</text>
-        <path d="M500 242 V 270 H 160 V 244" fill="none" stroke="var(--ink-3)" stroke-width="1.4" marker-end="url(#a3)"/>
-        <text x="330" y="262" fill="var(--ink-3)" font-size="10.5" text-anchor="middle">I = 0: rule feedback, no score</text>
-        <path d="M840 242 V 300 H 120 V 244" fill="none" stroke="var(--ink)" stroke-width="1.4" marker-end="url(#a2)"/>
-        <text x="480" y="292" fill="var(--ink-2)" font-size="10.5" text-anchor="middle">permitted judge feedback returns to Work within T</text>
-        <text x="500" y="336" fill="var(--ink-3)" font-size="11" text-anchor="middle">At T the controller stops the run; every saved candidate is kept for replay on a fixed evaluator.</text>
-      </svg>
-    </div>
-    <div class="two" style="margin-top:12px">
-      <div class="card card-body prose"><h3 style="margin:0 0 8px">Scoring</h3><p style="color:var(--ink-2);margin:0">Each task keeps its own engineering objective: compute throughput for kernels, bandwidth for KV transfer, fidelity or retained accuracy for KV policies, quality gained per training hour for RL and distillation systems, and throughput for serving. A candidate that fails a correctness, quality or memory check scores by the task's rule, often zero. Infrastructure failures are kept separate from candidate failures and are never scored.</p></div>
-      <div class="card card-body prose"><h3 style="margin:0 0 8px">Run score</h3><p style="color:var(--ink-2);margin:0">Every submission is evaluated by the private judge while the run is in progress. Submissions that pass all of the task's checks get a score; a run's result is the best of those scores, and the time it was reached is recorded alongside it. Infrastructure failures and integrity rejections never count as scores.</p></div>
+      <div><b>P</b><span>Public tests: visible cases and a runner for correctness checks and profiling.</span></div>
+      <div><b>E</b><span>Private tests: hidden cases, task checks, the scoring objective and direction, and permitted feedback.</span></div>
+      <div><b>R</b><span>Resources: task-specific hardware allocation and software runtime.</span></div>
+      <div><b>T</b><span>Time budget: T ∈ (0, ∞]. Experiments use 12 h for operators and 24 h for modules and systems, including tool runs and feedback waits.</span></div>
     </div>
   </div></section>
 
+  <section class="sec" id="execution"><div class="wrap">
+    <div class="sec-title"><div><span class="label">3.2</span><h2>Task Execution</h2></div></div>
+    <div class="execution-notes">
+      <div><h3>Work environment</h3><p>The agent edits candidates, profiles, and runs public tests. Permitted judge feedback guides further changes. A stop hook prompts continued work; session recovery resumes eligible exits in the same workspace under the original deadline.</p></div>
+      <div><h3>Controller</h3><p>The controller snapshots allowed files and coordinates an integrity check, verifying cited evidence before rejection. Candidates with I<sub>τ</sub>(c) = 1 proceed to the Judge; rejected candidates return rule feedback without a score.</p></div>
+      <div><h3>Judge environment</h3><p>Private tests check correctness, quality, and any memory constraints, then measure task performance. The result J<sub>τ</sub>(c) = (s, z, d) returns a score, status, and permitted diagnostics. Validation failures and infrastructure errors have distinct statuses.</p></div>
+    </div>
+  </div></section>
+
+  <section class="sec" id="configs"><div class="wrap">
+    <div class="sec-title"><div><span class="label">4 · Experimental Results</span><h2>Configurations</h2><p>One selected main-experiment run per task–model pair: six configurations, 25 tasks, and 150 runs. All use max reasoning effort on NVIDIA H100 NVL GPUs.</p></div></div>
+    <div class="card"><div class="scroll-x"><table class="data" id="cfg-table" style="min-width:720px"></table></div>
+      <div class="card-foot">Appendix B: Experimental Setup and Analysis. The main experiment allocates 10,560 GPU-hours, including Work, continuously allocated Judge environments, and serving backends. The time-budget ablation adds 36 short runs and 1,008 GPU-hours, reported separately. Astra was evaluated later than most other runs, under different service conditions.</div></div>
+  </div></section>
+
   <section class="sec" id="ranking"><div class="wrap">
-    <div class="sec-title"><div><h2>The rank score</h2><p>Scores come in TFLOPS, tokens per second, compression ratios and accuracy points per training hour, so they cannot be averaged. Configurations are ranked within each task instead.</p></div></div>
+    <div class="sec-title"><div><span class="label">4.1 · Main Results</span><h2>Rank score</h2><p>Scores come in TFLOPS, tokens per second, compression ratios and accuracy points per training hour, so they cannot be averaged. Configurations are ranked within each task instead.</p></div></div>
     <div class="two">
       <div class="card card-body">
         <div class="label" style="margin-bottom:10px">Per task, then averaged</div>
-        <div class="formula">RankScore<sub>m</sub> = mean over tasks τ of&nbsp; 100 · (n<sub>τ</sub> − ρ<sub>τ,m</sub>) / (n<sub>τ</sub> − 1)</div>
-        <p style="color:var(--ink-2);margin:14px 0 0;font-size:14px">ρ<sub>τ,m</sub> is the rank of configuration m on task τ by its best valid score during the run (1 = best; exact ties share the average rank; a run with no valid score ranks last) and n<sub>τ</sub> is the number of configurations that ran the task. 100 means first on every task, 0 means last on every task. Scores are averaged across tasks with equal weight, as in paper Eq. 5.</p>
+        <div class="formula">RankScore<sub>m</sub>(G) = 100 / [|G| · (K − 1)] · ∑<sub>τ∈G</sub> (K − ρ<sub>τ,m</sub>)</div>
+        <p style="color:var(--ink-2);margin:14px 0 0;font-size:14px">ρ<sub>τ,m</sub> ranks configuration m on task τ by its best valid score (1 = best; exact ties share the average rank). G is the selected task group, and K = 6 is the fixed number of configurations. Tasks have equal weight. Scores of 100 and 0 mean first and last on every task, respectively (paper Eq. 5).</p>
       </div>
       <div class="card card-body">
         <div class="label" style="margin-bottom:10px">Coverage</div>
-        <p style="color:var(--ink-2);margin:0 0 10px;font-size:14px"><b style="color:var(--ink);font-weight:500">All 25 tasks count equally.</b> All six configurations cover all 25 tasks. A run without a valid scored submission receives zero. Miles OPD includes Astra’s earlier run.</p>
+        <p style="color:var(--ink-2);margin:0 0 10px;font-size:14px"><b style="color:var(--ink);font-weight:500">All 25 tasks count equally.</b> Each run uses its best valid private-test score. All six configurations cover all 25 tasks; a run without a valid scored submission receives zero.</p>
         <p style="color:var(--ink-2);margin:0;font-size:14px"><b style="color:var(--ink);font-weight:500">Uncertainty.</b> The 95% intervals resample tasks with replacement: 10,000 resamples for the full suite, 3,000 for filtered subsets.</p>
       </div>
     </div>
@@ -104,15 +77,9 @@
   </div></section>
 
   <section class="sec" id="tokens"><div class="wrap">
-    <div class="sec-title"><h2>Token accounting</h2></div>
+    <div class="sec-title"><div><span class="label">Appendix B.4 · Trajectory and Interaction Statistics</span><h2>Token accounting</h2></div></div>
     <p>Visible output is tokenized with <code>o200k_base</code>: agent text and recorded tool-call content, excluding tool responses, repeated code-diff displays, and reasoning traces.</p>
-    <p>Full-suite totals follow paper Figure 7. Filtered totals sum the selected Figure 14 values, rounded to thousands of tokens. First-score time is the median over scored runs in the selected tasks.</p>
-  </div></section>
-
-  <section class="sec" id="configs"><div class="wrap">
-    <div class="sec-title"><div><h2>Configurations and data</h2><p>Six deployed model configurations, each run once per task. The comparison is between deployed configurations, not model weights alone.</p></div></div>
-    <div class="card"><div class="scroll-x"><table class="data" id="cfg-table" style="min-width:720px"></table></div>
-      <div class="card-foot">Reasoning effort uses the unified display label max for all configurations (Appendix A.1). Astra was evaluated later than most of the other runs, under different service conditions. Results come from the selected October 25, 2026 export: 150 runs across 25 tasks, including Astra’s earlier Miles OPD run. Visible output tokens and agent actions follow Figures 5–7 and Appendix A.2 of the paper. The full allocated budget is 10,560 GPU-hours, including Work, continuously allocated Judge environments, and serving backends.</div></div>
+    <p>Full-suite totals follow paper Figure 8. Filtered totals sum the selected Figure 15 values, rounded to thousands of tokens. First-score time is the median over scored runs in the selected tasks.</p>
   </div></section>
 
   <section class="sec" id="cite"><div class="wrap">

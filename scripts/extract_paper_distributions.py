@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
-"""Recover Figure 5's plotted values from the supplied PDF's vector paths.
+"""Archived extractor for Figure 5 in the October 25 manuscript.
 
-Optional update tool: pip install pymupdf; pass the October 25 paper PDF.
+Optional update tool: pip install pymupdf; pass the October 25, 41-page PDF.
+This page/coordinate layout is specific to that revision. The current 50-page
+manuscript numbers the first-score chart Figure 6 on page 12; this script does
+not extract that newer layout or relabel old coordinates as a new extraction.
 The committed data keeps this dependency out of the website build. Values are
 digitized approximations, not original token/action logs or task identities.
 """
@@ -26,7 +29,10 @@ def color(rgb):
 
 
 def extract(path):
-    page = pymupdf.open(path)[10]
+    document = pymupdf.open(path)
+    if len(document) != 41:
+        raise ValueError("Archived extractor requires the October 25, 41-page PDF; newer layouts are unsupported.")
+    page = document[10]
     assert "Interaction before the first scored submission" in page.get_text()
     paths = [d for d in page.get_drawings() if 135 < d["rect"].y0 < 266]
     frames = sorted((d["rect"] for d in paths if d["type"] == "f"
@@ -65,7 +71,7 @@ def extract(path):
     assert round(out["actions"]["sol"]["median"]) == 71
     # Figure 5 plots 248; the prose in Section 4.4 instead says 253.
     assert round(out["actions"]["qwen"]["median"]) == 248
-    return {"source": "Paper Figure 5, page 11, October 25 revision",
+    return {"source": "Archived extraction: Figure 5, page 11, October 25 manuscript",
             "pdf_sha256": hashlib.sha256(Path(path).read_bytes()).hexdigest(),
             "method": "Approximate values recovered from vector marker centers and logarithmic axis ticks; no task identities are inferred.",
             "units": {"elapsed": "hours", "tokens": "thousand visible output tokens", "actions": "agent actions"},

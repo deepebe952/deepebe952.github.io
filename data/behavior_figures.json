@@ -1,9 +1,15 @@
 {
-  "source": "Infrathon paper, Section 5, Figures 8–11 (49-page revision)",
-  "pdf_sha256": "94201e9962a18a7b359713149c5b0e9b46d75341a6bc551f345557918433c4dd",
+  "source": "Infrathon paper, Section 5, Figures 9–12 (50-page revision)",
+  "figure_numbers": [
+    9,
+    10,
+    11,
+    12
+  ],
+  "pdf_sha256": "3889b27aeb329176abb0b95e27689e03a184ff8856c48295f1f87a5b1df18a06",
   "digitization": "Unlabeled points and process ticks are recovered from PDF vector coordinates and axis ticks; values remain approximate. Printed numeric labels are transcribed directly.",
-  "fig8": {
-    "page": 14,
+  "fig9": {
+    "page": 15,
     "logprob": [
       {
         "label": "Plain A",
@@ -80,8 +86,8 @@
       ]
     }
   },
-  "fig9": {
-    "page": 15,
+  "fig10": {
+    "page": 16,
     "latency_ms": [
       {
         "label": "Forward",
@@ -114,8 +120,8 @@
       }
     ]
   },
-  "fig10": {
-    "page": 15,
+  "fig11": {
+    "page": 16,
     "panels": [
       {
         "title": "The ranking reverses",
@@ -269,6 +275,52 @@
               ]
             ]
           }
+        ]
+      }
+    ]
+  },
+  "fig12": {
+    "page": 17,
+    "completion": [
+      {
+        "model": "glm",
+        "task": "sageattention",
+        "before": 365.43,
+        "after": 456.03
+      },
+      {
+        "model": "claude",
+        "task": "gkd",
+        "before": 177.02,
+        "after": 182.46
+      },
+      {
+        "model": "deepseek",
+        "task": "sd35",
+        "before": 40.81,
+        "after": 46.53
+      }
+    ],
+    "n_runs": 141,
+    "pooled_pct": [
+      4.8,
+      19.9
+    ],
+    "halves": [
+      {
+        "label": "First half",
+        "counts": [
+          113,
+          26,
+          2
+        ]
+      },
+      {
+        "label": "Second half",
+        "counts": [
+          96,
+          27,
+          18
         ]
       }
     ]
