@@ -33,13 +33,23 @@
   </div></section>
 
   <section class="sec"><div class="wrap architecture-summary">
-    <div id="protocol">
-      <h2>Task Definition</h2>
-      <p>Each of the 25 tasks specifies a workspace, public and private tests, resources, and a time budget. The framework has no fixed horizon limit; experiments use 12 hours for operators and 24 hours for modules and systems.</p>
-    </div>
     <div id="execution">
-      <h2>Task Execution</h2>
-      <p>In Work, the agent edits and tests candidates. The Controller checks submissions; the Judge evaluates accepted candidates on private tests and returns feedback for continued optimization.</p>
+      <h2>Three components</h2>
+      <dl class="architecture-key">
+        <div><dt>Work environment</dt><dd>The agent edits code, profiles performance, and runs public tests here. It receives permitted judge feedback; private test cases and scoring code stay hidden.</dd></div>
+        <div><dt>Controller</dt><dd>Snapshots allowed files and checks task rules and editable scope. Accepted submissions go to the Judge; rejected submissions return a reason without a score.</dd></div>
+        <div><dt>Judge environment</dt><dd>Evaluates accepted candidates on private tests: checks correctness, quality, and applicable memory constraints, then measures performance. Returns a score, status, and permitted diagnostics.</dd></div>
+      </dl>
+    </div>
+    <div id="protocol">
+      <h2>Task specification</h2>
+      <dl class="architecture-key">
+        <div><dt><span class="key-symbol">W</span>Workspace</dt><dd>Starting code or an interface to implement, plus the files the agent may edit.</dd></div>
+        <div><dt><span class="key-symbol">P</span>Public tests</dt><dd>Visible test cases and a runner for local correctness checks and profiling.</dd></div>
+        <div><dt><span class="key-symbol">E</span>Private tests</dt><dd>Hidden cases, validation rules, the scoring objective and its direction, and permitted feedback.</dd></div>
+        <div><dt><span class="key-symbol">R</span>Resources</dt><dd>The task’s hardware allocation and software runtime.</dd></div>
+        <div><dt><span class="key-symbol">T</span>Time budget</dt><dd>Wall-clock time, including tool execution and feedback waits. T may be unbounded; experiments use 12 h for operators and 24 h for modules and systems.</dd></div>
+      </dl>
     </div>
   </div></section>
 </main>

@@ -473,9 +473,15 @@ details.notes li { margin-bottom: 6px; }
 .framework-art img { display: block; width: 100%; height: auto; }
 .framework-art:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
 .framework-figure figcaption { margin-top: 14px; color: var(--ink-2); font-size: 13px; }
-.architecture-summary { display: grid; gap: 28px; }
-.architecture-summary h2 { font-size: 20px; font-weight: 600; margin: 0 0 8px; }
-.architecture-summary p { margin: 0; color: var(--ink-2); max-width: 95ch; }
+.architecture-summary { display: grid; gap: 36px; }
+.architecture-summary h2 { font-size: 20px; font-weight: 600; margin: 0 0 12px; }
+.architecture-key { margin: 0; }
+.architecture-key > div { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 8px 24px; padding: 14px 0; border-bottom: 1px solid var(--hair); }
+.architecture-key > div:last-child { border-bottom: 0; }
+.architecture-key dt { display: flex; align-items: baseline; gap: 12px; font-size: 15px; font-weight: 600; }
+.architecture-key dd { margin: 0; color: var(--ink-2); font-size: 14px; line-height: 1.65; }
+.key-symbol { flex: 0 0 20px; font: 500 17px/1.4 var(--f-mono); }
+@media (max-width: 600px) { .architecture-key > div { grid-template-columns: 1fr; } }
 .task-detail-hint { color: #bd3333; font-size: 14px; font-weight: 500; margin: 0 0 16px; }
 html[data-theme="dark"] .task-detail-hint { color: #ff8e8e; }
 .facts dd { min-width: 0; overflow-wrap: anywhere; }
