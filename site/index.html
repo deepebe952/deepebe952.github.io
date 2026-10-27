@@ -17,7 +17,10 @@
 </head>
 <body data-page="index">
 <main>
-  <section class="hero">
+  <nav class="subnav" aria-label="Homepage sections"><div class="wrap">
+    <a href="#overview">Overview</a><a href="#leaderboard">Leaderboard</a><a href="#map">Task map</a><a href="#results">Trajectories</a><a href="#framework">Framework</a>
+  </div></nav>
+  <section class="hero" id="overview">
     <div class="wrap">
       <h1 class="paper-title"><span>Infrathon: 10,000 GPU-Hours Later,</span><span class="paper-subtitle">Can Frontier Models Solve Real-World Long-Horizon AI Infra Tasks?</span></h1>
       <div class="paper-team">
@@ -77,14 +80,51 @@
           <button class="resource-button" type="button" disabled title="Coming soon" aria-label="HuggingFace: coming soon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6c0-4 16-4 16 0v12c0 4-16 4-16 0z M4 6c0 4 16 4 16 0 M4 12c0 4 16 4 16 0"/></svg>HuggingFace</button>
         </div>
         <p class="resource-status">Coming soon</p>
-        <p><a class="link" href="experimental-results.html">Explore experimental results →</a></p>
+        <p><a class="link" href="#leaderboard">Explore experimental results →</a></p>
       </div>
     </div>
   </section>
 
-  <section class="sec" id="architecture"><div class="wrap">
-    <div class="sec-title"><h2>Architecture</h2></div>
-    <figure class="framework-figure" id="framework">
+  <section class="sec" id="leaderboard"><div class="wrap">
+    <div class="card">
+      <div class="card-head"><div><h2>Leaderboard</h2><p id="lb-sub">Rank score across 25 tasks.</p></div></div>
+      <div class="lb-controls"><div class="toolbar">
+        <span class="tool"><span class="tool-label">Stage</span><span class="seg" id="seg-stage"></span></span>
+        <span class="tool"><span class="tool-label">Level</span><span class="seg" id="seg-level"></span></span>
+      </div></div>
+      <div class="scroll-x"><table class="lb" id="lb">
+        <caption class="sr-only">Rank-score leaderboard</caption>
+        <thead><tr>
+          <th scope="col">#</th><th scope="col">Configuration</th><th scope="col">Rank score</th><th scope="col">0–100 · 95% interval</th>
+          <th scope="col" class="n">Wins</th><th scope="col" class="n">First score</th><th scope="col" class="n">Visible tokens</th>
+        </tr></thead><tbody></tbody>
+      </table></div>
+      <div class="card-foot">Rank score: paper Eq. 5. Tokens: <code>o200k_base</code>, rounded totals from Figures 8 and 15.</div>
+    </div>
+    <details class="notes" id="score-notes" style="margin-top:12px">
+      <summary>Scoring and token definitions</summary>
+      <p>Paper Eq. 5 ranks all six models by each task’s best valid, within-budget score (zero if none), then averages 100 × (6 − rank) / 5 equally across tasks. Ties share average rank. The 95% intervals bootstrap tasks: 10,000 resamples for the full suite; 3,000 for filtered groups.</p>
+      <p>Visible tokens use <code>o200k_base</code> for agent text and tool-call content, excluding tool responses, repeated code-diff displays, and reasoning traces. Full-suite totals follow Figure 8; filtered totals sum rounded Figure 15 values (≈). First-score time is the median across scored runs in the selected tasks.</p>
+    </details>
+  </div></section>
+
+  <section class="sec" id="map"><div class="wrap">
+    <div class="sec-title"><h2>Task map</h2><p>25 tasks · Training and inference × Operators, modules, systems</p></div>
+    <div class="card die">
+      <div class="die-body" id="die"></div>
+      <div class="die-legend" id="die-legend"></div>
+    </div>
+  </div></section>
+
+  <section class="sec" id="results"><div class="wrap">
+    <div class="sec-title"><div><h2>Optimization Trajectories</h2><p>Best valid scores across all 25 tasks. Select a model to highlight its curves.</p></div><a class="more" href="tasks.html">Task Results →</a></div>
+    <div class="legend" id="results-legend" aria-label="Highlight a model"></div>
+    <div id="task-results"></div>
+  </div></section>
+
+  <section class="sec" id="framework"><div class="wrap">
+    <div class="sec-title"><h2>Framework</h2></div>
+    <figure class="framework-figure">
       <a class="framework-art" href="assets/img/framework.pdf" target="_blank" rel="noopener" aria-label="Open the original Infrathon framework figure as a PDF">
         <img src="assets/img/framework.svg" width="1214" height="514" alt="Infrathon framework. Training and inference tasks at operator, module, and system levels share a task specification. The agent develops candidates in Work; the Controller checks submissions; the Judge returns private validation and performance results for continued optimization.">
       </a>
@@ -128,6 +168,7 @@
 </main>
 <script src="data/infrathon.js"></script>
 <script src="assets/js/core.js"></script>
+<script src="assets/js/experimental-results.js"></script>
 <script src="assets/js/home.js"></script>
 </body>
 </html>

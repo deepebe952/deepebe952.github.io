@@ -1,4 +1,4 @@
-/* Experimental Results: leaderboard, task map, and trajectories grouped by stage and level. */
+/* Shared results: leaderboard, task map, and trajectories on Home and Experimental Results. */
 (() => {
   "use strict";
   const X = window.IX;
@@ -6,7 +6,7 @@
   const { D, MODELS, MODEL, COLOR, C, STAGES, LEVELS, s, st, h, $, fmt, withUnit, unitOf, cap } = X;
 
   // Scoring details stay with the results; citation belongs to the homepage.
-  if (location.hash === "#cite") {
+  if (document.body.dataset.page !== "index" && location.hash === "#cite") {
     const url = new URL("index.html#cite", location.href);
     url.search = location.search;
     location.replace(url.href);

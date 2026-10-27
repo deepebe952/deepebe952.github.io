@@ -4,14 +4,14 @@ Static site for **Infrathon: 10,000 GPU-Hours Later, Can Frontier Models Solve R
 
 ```
 site/
-  index.html                 homepage: paper header, Architecture, citation
+  index.html                 overview, leaderboard, task map, trajectories, Framework
   experimental-results.html Main Results, task map, Optimization Trajectories
   agent-behavior.html        Section 5: requirements, validation, improvement
   tasks.html                 Task Results → Tasks: searchable task catalogue
   trajectories.html#<task>/<model>  Task Results → Trajectories: submission logs
   task.html#<key>             task details, scores, trajectories, run trace
-  architecture.html         compatibility redirect → index.html#architecture
-  method.html                compatibility redirect → index.html#architecture
+  architecture.html         compatibility redirect → index.html#framework
+  method.html                compatibility redirect → index.html#framework
   results.html               compatibility redirect → experimental-results.html
   behavior.html              compatibility redirect → agent-behavior.html
   analysis.html              compatibility redirect → agent-behavior.html
@@ -19,7 +19,8 @@ site/
   assets/css/site.css        shared layout and themes
   assets/css/agent-behavior.css  behavior figure components
   assets/js/core.js          shared data access, rank math, charts, navigation
-  assets/js/home.js          homepage citation and legacy section links
+  assets/js/home.js          homepage section navigation and citation
+  assets/js/experimental-results.js  shared Home / Experimental Results charts
   assets/js/<page>.js        page rendering
   assets/img/institutions/   institution artwork extracted from the paper
   data/infrathon.js          generated results and cost bundle
@@ -73,11 +74,13 @@ The homepage (`index.html`) follows the paper title and author order, with 18 na
 
 The brand opens Home; the three top-level navigation links are Experimental Results (`experimental-results.html`), Agent Behavior (`agent-behavior.html`), and Task Results (`tasks.html`). Experimental Results has only Main Results and Optimization Trajectories in its subnav, with a contextual Task Results link in the content. Task Results has Tasks (`tasks.html`) and Trajectories (`trajectories.html`) subviews; both and task details keep Task Results active in the main navigation. Task detail URLs remain `task.html#<key>`.
 
-Home's `#architecture` section contains the original Figure 1, W/P/E/R/T task definitions, and Work/Controller/Judge component descriptions. The figure opens its unchanged original PDF; `data/framework_figure.json` records its source. Citation is collapsed at `index.html#cite`; scoring/token definitions are collapsed at `experimental-results.html#score-notes`. The task table includes a red hint inviting readers to open a task's details.
+Home presents Overview (paper header and authors), Leaderboard, Task map, Trajectories, and Framework in that order, with matching subsection navigation. The separate Experimental Results page remains available; both pages use the same data and rendering code for the leaderboard, task map, and all 25 trajectories.
 
-Old Architecture/Method, Results, Behavior/Analysis, and Runs URLs are redirect stubs, preserving query strings and section links. Legacy Architecture/Method `#ranking` and `#tokens` links open scoring notes; `#configs` opens the leaderboard; `#cite` opens Home's citation. Old homepage `#leaderboard`, `#score-notes`, `#map`, and `#results…` links open their Experimental Results sections. Old Results citation links return to Home. Task and run-selection hashes remain unchanged.
+Home's `#framework` section contains the original Figure 1, W/P/E/R/T task definitions, and Work/Controller/Judge component descriptions. The figure opens its unchanged original PDF; `data/framework_figure.json` records its source. Citation is collapsed at `index.html#cite`; scoring/token definitions are collapsed under each page's leaderboard at `#score-notes`. The task table includes a red hint inviting readers to open a task's details.
 
-Experimental Results retains the full-width task map and all 25 trajectories in three columns (operators, modules, systems), grouped by training and inference. Flash-KMeans uses a logarithmic throughput axis. The best observed score carries forward to the complete task budget, including DeepSeek GQA at 12 hours.
+Old Architecture/Method, Results, Behavior/Analysis, and Runs URLs are redirect stubs, preserving query strings and section links. Architecture/Method open `index.html#framework`, and the old homepage `#architecture` maps to `#framework`. Legacy `#ranking` and `#tokens` links open scoring notes; `#configs` opens the leaderboard; `#cite` opens Home's citation. Homepage `#leaderboard`, `#score-notes`, `#map`, and `#results…` links stay on Home. Old Results and Experimental Results citation links return to `index.html#cite`. Task and run-selection hashes remain unchanged.
+
+Home and Experimental Results show the full-width task map and all 25 trajectories in three columns (operators, modules, systems), grouped by training and inference. Flash-KMeans uses a logarithmic throughput axis. The best observed score carries forward to the complete task budget, including DeepSeek GQA at 12 hours.
 
 Task detail pages have a visible Back button. Visits from another site page return through browser history; direct or external arrivals go to Tasks. Task filters and search text are saved on their history entry so returning restores the list without applying old filters to a new visit.
 

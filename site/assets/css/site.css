@@ -336,7 +336,8 @@ dl.facts { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 9px 1
 .subnav .wrap { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; height: 46px; align-items: center; }
 .subnav a { font-size: 13.5px; color: var(--ink-3); padding: 6px 10px; border-radius: 7px; white-space: nowrap; }
 .subnav a:hover { color: var(--ink); background: var(--panel-2); }
-.subnav a[aria-current="page"] { color: var(--ink); background: var(--panel-3); }
+.subnav a[aria-current="page"], .subnav a[aria-current="location"] { color: var(--ink); background: var(--panel-3); }
+body[data-page="index"] main [id] { scroll-margin-top: 46px; }
 .cat-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 @media (max-width: 900px) { .cat-grid { grid-template-columns: minmax(0, 1fr); } }
 .cat { padding: 14px 16px 10px; }
