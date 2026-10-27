@@ -1,18 +1,22 @@
-/* Results: leaderboard, task map, and trajectories grouped by stage and level. */
+/* Experimental Results: leaderboard, task map, and trajectories grouped by stage and level. */
 (() => {
   "use strict";
   const X = window.IX;
   if (!X) return;
   const { D, MODELS, MODEL, COLOR, C, STAGES, LEVELS, s, st, h, $, fmt, withUnit, unitOf, cap } = X;
 
-  // Open the compact notes when reached through a citation or a saved link.
+  // Scoring details stay with the results; citation belongs to the homepage.
+  if (location.hash === "#cite") {
+    const url = new URL("index.html#cite", location.href);
+    url.search = location.search;
+    location.replace(url.href);
+    return;
+  }
   function openLinkedNotes() {
-    const id = location.hash.slice(1);
-    if (id === "score-notes" || id === "cite") document.getElementById(id).open = true;
+    if (location.hash === "#score-notes") $("#score-notes").open = true;
   }
   openLinkedNotes();
   window.addEventListener("hashchange", openLinkedNotes);
-  document.querySelector('footer.site a[href="results.html#cite"]').addEventListener("click", () => { $("#cite").open = true; });
 
   /* ---------------- leaderboard ---------------- */
   const state = { stage: "all", level: "all" };

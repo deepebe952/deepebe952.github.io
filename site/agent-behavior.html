@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Agent Behavior · Infrathon</title>
+<meta name="description" content="Agent behavior across task requirements, experimental validation, and continued improvement.">
+<meta property="og:title" content="Infrathon">
+<meta property="og:description" content="Can frontier models solve long-horizon AI infrastructure tasks? 25 tasks, 6 configurations, 150 runs on H100s.">
+<meta name="theme-color" content="#fafbfd">
+<script src="assets/js/theme.js"></script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23060709'/%3E%3Cpath d='M7 22h4v-8h4v5h4V9h4v10h3' fill='none' stroke='%23ededef' stroke-width='2.4'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/css/site.css">
+<link rel="stylesheet" href="assets/css/agent-behavior.css">
+</head>
+<body data-page="agent-behavior">
+<main>
+  <header class="page-head"><div class="wrap">
+    <div class="crumbs"><a href="index.html">Home</a><span>/</span><span>Agent Behavior</span></div>
+    <h1>Agent Behavior Analysis</h1>
+    <p class="lede">Can frontier models solve real-world long-horizon AI infra tasks?</p>
+  </div></header>
+  <nav class="subnav" aria-label="Agent Behavior sections"><div class="wrap">
+    <a href="#requirements">Task requirements</a><a href="#validation">Testing optimizations</a><a href="#improvement">Continued improvement</a>
+  </div></nav>
+
+  <section class="sec" id="requirements"><div class="wrap">
+    <div class="sec-title"><div><h2>Do Agents Follow Task Requirements?</h2><p>Agents sometimes change the required computation or violate explicit constraints, and local checks can miss these violations.</p></div></div>
+    <div class="behavior-pair">
+      <figure class="card behavior-figure" id="figure-9a">
+        <div class="card-head"><div><span class="label">Figure 9a · Claude / ALFWorld</span><h3>Token-wise checks reveal disagreement</h3></div></div>
+        <div class="card-body"><div id="logprob-chart"></div></div>
+        <figcaption>Generated-token log-probabilities versus plain-engine recomputation at fixed weights. First 48 saved episodes of round 2; 19,935–20,979 tokens per setting. Settings generate different token paths. Shading marks breadth one; CD2 means two continuous decode steps.</figcaption>
+      </figure>
+      <figure class="card behavior-figure" id="figure-9b">
+        <div class="card-head"><div><span class="label">Figure 9b · Attn-QAT</span><h3>Tolerance passes miss a contract change</h3></div></div>
+        <div class="card-body"><div class="behavior-legend" id="fixture-legend"></div><div class="behavior-plot" id="fixture-chart"></div><p class="figure-finding">Both pass 11/11 local fixtures. Both are rejected before timing.</p></div>
+        <figcaption>Claude and DeepSeek use the same forbidden denominator substitution. Points show the worst reported error relative to each fixture’s tolerance.</figcaption>
+      </figure>
+    </div>
+  </div></section>
+
+  <section class="sec" id="validation"><div class="wrap">
+    <div class="sec-title"><div><h2>Do Agents Correctly Test Their Own Optimizations?</h2><p>Agents sometimes test a different configuration from the one they intend to evaluate, or use workloads that omit constraints crucial to the optimization.</p></div></div>
+    <div class="behavior-pair">
+      <figure class="card behavior-figure" id="figure-10a">
+        <div class="card-head"><div><span class="label">Figure 10a · GLM / Attn-QAT</span><h3>Source and microbenchmark disagree</h3></div></div>
+        <div class="card-body"><div class="behavior-legend repair-legend"></div><div class="behavior-plot" id="latency-chart"></div></div>
+        <figcaption>Public-runner latency on the same input before and after correcting source tile constants. Open circles show a second pre-repair measurement.</figcaption>
+      </figure>
+      <figure class="card behavior-figure" id="figure-10b">
+        <div class="card-head"><div><span class="label">Figure 10b · DeepSeek / LLaDA</span><h3>A fast path silently falls back</h3></div></div>
+        <div class="card-body"><div class="behavior-legend repair-legend"></div><div class="behavior-plot" id="launches-chart"></div></div>
+        <figcaption>GPU launches for the same decoding case before and after repairing cache-key normalization. Numerical checks pass in both states.</figcaption>
+      </figure>
+    </div>
+    <figure class="card behavior-figure workload-figure" id="figure-11">
+      <div class="card-head"><div><span class="label">Figure 11 · DeepSeek / Flash-KMeans</span><h3>A proxy workload can reverse an optimization decision</h3></div><div class="behavior-legend" id="split-legend"></div></div>
+      <div class="card-body workload-panels" id="workload-panels"></div>
+      <figcaption>Update-kernel latency under balanced and assignment-produced labels. Dots show the median across two fresh processes; ticks show each process median. B, N, K, D: batch size, points, clusters, feature dimension.</figcaption>
+    </figure>
+  </div></section>
+
+  <section class="sec" id="improvement"><div class="wrap">
+    <div class="sec-title"><div><h2>Do Agents Keep Improving over Long Horizons?</h2><p>Agents achieve late gains, yet some declare completion too early or seek higher scores by rerunning unchanged candidates.</p></div></div>
+    <div class="behavior-pair">
+      <figure class="card behavior-figure" id="figure-12a">
+        <div class="card-head"><div><span class="label">Figure 12a</span><h3>Gains follow a completion statement</h3></div></div>
+        <div class="card-body" id="completion-gains"></div>
+        <figcaption>Three completion–continuation sequences with code changes and higher valid scores. Bars share a 0–30% gain scale.</figcaption>
+      </figure>
+      <figure class="card behavior-figure" id="figure-12b">
+        <div class="card-head"><div><span class="label">Figure 12b</span><h3>Repetition grows in a subset of runs</h3></div></div>
+        <div class="card-body" id="repeat-comparison"></div>
+        <figcaption>The same 141 full-budget runs in both halves, including all submission statuses. A repeat resubmits an earlier implementation in the same run.</figcaption>
+      </figure>
+    </div>
+    <details class="notes behavior-sources"><summary>Figure data</summary><p>Figures 9–12 follow Section 5 of the paper. Printed values are transcribed directly. Unlabeled points in Figure 9b, the open markers in Figure 10a, and Figure 11’s points and ticks are recovered from PDF vector coordinates and shown as approximate values.</p></details>
+  </div></section>
+</main>
+<script src="data/infrathon.js"></script>
+<script src="data/behavior.js"></script>
+<script src="assets/js/core.js"></script>
+<script src="assets/js/agent-behavior.js"></script>
+</body>
+</html>

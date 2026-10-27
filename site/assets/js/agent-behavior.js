@@ -9,7 +9,7 @@
   const approx = (value, dp = 3) => `≈${fmt(value, dp)}`;
 
   // Preserve links to the previous analysis layout without adding extra sections.
-  const oldLinks = { trajectories: "results.html#results", ranking: "results.html#leaderboard", stability: "results.html#leaderboard", efficiency: "results.html#leaderboard", behavior: "#improvement" };
+  const oldLinks = { trajectories: "experimental-results.html#results", ranking: "experimental-results.html#leaderboard", stability: "experimental-results.html#leaderboard", efficiency: "experimental-results.html#leaderboard", behavior: "#improvement" };
   const redirect = () => {
     const target = oldLinks[location.hash.slice(1)];
     if (target) {

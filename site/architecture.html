@@ -2,59 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Architecture · Infrathon</title>
-<meta name="description" content="The Infrathon architecture: a shared task specification and the Work–Controller–Judge feedback loop.">
-<meta property="og:title" content="Infrathon">
-<meta property="og:description" content="Can frontier models solve long-horizon AI infrastructure tasks? 25 tasks, 6 configurations, 150 runs on H100s.">
-<meta name="theme-color" content="#fafbfd">
-<script src="assets/js/theme.js"></script>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23060709'/%3E%3Cpath d='M7 22h4v-8h4v5h4V9h4v10h3' fill='none' stroke='%23ededef' stroke-width='2.4'/%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="assets/css/site.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Infrathon · Infrathon</title>
+<link rel="canonical" href="https://deepebe952.github.io/index.html">
+<script src="assets/js/redirect.js" data-target="index.html#architecture" data-redirect-group="architecture"></script>
+<noscript><meta http-equiv="refresh" content="0;url=index.html#architecture"></noscript>
 </head>
-<body data-page="architecture">
-<main>
-  <header class="page-head"><div class="wrap">
-    <div class="crumbs"><a href="results.html">Infrathon</a><span>/</span><span>Architecture</span></div>
-    <h1>Architecture</h1>
-    <p class="lede">A shared task specification and a Work–Controller–Judge feedback loop.</p>
-  </div></header>
-
-  <section class="sec" id="framework"><div class="wrap">
-    <figure class="framework-figure">
-      <a class="framework-art" href="assets/img/framework.pdf" target="_blank" rel="noopener" aria-label="Open the original Infrathon framework figure as a PDF">
-        <img src="assets/img/framework.svg" width="1214" height="514" alt="Infrathon framework. Training and inference tasks at operator, module, and system levels share a task specification. The agent develops candidates in Work; the Controller checks submissions; the Judge returns private validation and performance results for continued optimization.">
-      </a>
-      <figcaption><b>Figure 1.</b> Infrathon framework.</figcaption>
-    </figure>
-  </div></section>
-
-  <section class="sec"><div class="wrap architecture-summary">
-    <div id="execution">
-      <h2>Three components</h2>
-      <dl class="architecture-key">
-        <div><dt>Work environment</dt><dd>The agent edits code, profiles performance, and runs public tests here. It receives permitted judge feedback; private test cases and scoring code stay hidden.</dd></div>
-        <div><dt>Controller</dt><dd>Snapshots allowed files and checks task rules and editable scope. Accepted submissions go to the Judge; rejected submissions return a reason without a score.</dd></div>
-        <div><dt>Judge environment</dt><dd>Evaluates accepted candidates on private tests: checks correctness, quality, and applicable memory constraints, then measures performance. Returns a score, status, and permitted diagnostics.</dd></div>
-      </dl>
-    </div>
-    <div id="protocol">
-      <h2>Task specification</h2>
-      <dl class="architecture-key">
-        <div><dt><span class="key-symbol">W</span>Workspace</dt><dd>Starting code or an interface to implement, plus the files the agent may edit.</dd></div>
-        <div><dt><span class="key-symbol">P</span>Public tests</dt><dd>Visible test cases and a runner for local correctness checks and profiling.</dd></div>
-        <div><dt><span class="key-symbol">E</span>Private tests</dt><dd>Hidden cases, validation rules, the scoring objective and its direction, and permitted feedback.</dd></div>
-        <div><dt><span class="key-symbol">R</span>Resources</dt><dd>The task’s hardware allocation and software runtime.</dd></div>
-        <div><dt><span class="key-symbol">T</span>Time budget</dt><dd>Wall-clock time, including tool execution and feedback waits. T may be unbounded; experiments use 12 h for operators and 24 h for modules and systems.</dd></div>
-      </dl>
-    </div>
-  </div></section>
-</main>
-<script src="data/infrathon.js"></script>
-<script src="assets/js/core.js"></script>
-<script src="assets/js/architecture.js"></script>
-</body>
+<body><p><a href="index.html#architecture">Continue to Infrathon</a></p></body>
 </html>

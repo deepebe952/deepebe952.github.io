@@ -331,21 +331,22 @@ window.IX = (() => {
   }
 
   /* ---------- chrome ---------- */
-  const PAGES = [["architecture.html", "Architecture"], ["results.html", "Results"], ["behavior.html", "Behavior"], ["tasks.html", "Tasks"], ["trajectories.html", "Trajectories"]];
+  const PAGES = [["experimental-results.html", "Experimental Results"], ["agent-behavior.html", "Agent Behavior"]];
   function chrome() {
     const page = document.body.dataset.page;
+    const activePage = ["experimental-results", "tasks", "task", "trajectories"].includes(page) ? "experimental-results" : page;
     const logo = s("svg", { width: 22, height: 22, viewBox: "0 0 32 32", "aria-hidden": "true" });
     s("rect", { x: 1, y: 1, width: 30, height: 30, rx: 8, fill: "none", stroke: C.hair2 }, logo);
     s("path", { d: "M7 22h4v-8h4v5h4V9h4v10h3", fill: "none", stroke: C.ink, "stroke-width": 2.2, "stroke-linejoin": "round" }, logo);
     const nav = h("header", { class: "nav" }, h("div", { class: "wrap" },
-      h("a", { class: "brand", href: "results.html", "aria-label": "Infrathon home" }, logo, "Infrathon"),
-      h("nav", { class: "nav-links", "aria-label": "Pages" }, PAGES.map(([href, label]) => h("a", { href, "aria-current": href === `${page}.html` ? "page" : null, text: label }))),
+      h("a", { class: "brand", href: "index.html", "aria-label": "Infrathon home", "aria-current": page === "index" ? "page" : null }, logo, "Infrathon"),
+      h("nav", { class: "nav-links", "aria-label": "Pages" }, PAGES.map(([href, label]) => h("a", { href, "aria-current": href === `${activePage}.html` ? "page" : null, text: label }))),
       h("div", { class: "nav-right" }, h("button", { id: "theme-toggle", class: "pill theme-toggle", type: "button", onclick: () => window.InfrathonTheme.toggle(), "aria-label": "Switch to dark theme", "aria-pressed": "false", text: "☾ Dark" }))));
     document.body.prepend(nav);
     window.InfrathonTheme.sync();
     const foot = h("footer", { class: "site" }, h("div", { class: "wrap" },
-      h("a", { class: "brand", href: "results.html" }, logo.cloneNode(true), "Infrathon"),
-      h("nav", { "aria-label": "Footer" }, h("a", { href: "results.html#cite", text: "Citation" }), h("a", { href: "architecture.html", text: "Architecture" }))));
+      h("a", { class: "brand", href: "index.html" }, logo.cloneNode(true), "Infrathon"),
+      h("nav", { "aria-label": "Footer" }, h("a", { href: "index.html#cite", text: "Citation" }), h("a", { href: "index.html#architecture", text: "Architecture" }))));
     document.body.append(foot);
   }
 

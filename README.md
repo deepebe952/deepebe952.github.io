@@ -4,19 +4,22 @@ Static site for **Infrathon: 10,000 GPU-Hours Later, Can Frontier Models Solve R
 
 ```
 site/
-  architecture.html          framework figure, component roles, W/P/E/R/T definitions
-  results.html               paper header, leaderboard, task map, 25 task trajectories
-  behavior.html              Section 5: Q1 requirements, Q2 validation, Q3 improvement
-  tasks.html                 searchable task catalogue
-  trajectories.html#<task>/<model>  submission logs and run table
+  index.html                 homepage: paper header, Architecture, citation
+  experimental-results.html Main Results, task map, Optimization Trajectories
+  agent-behavior.html        Section 5: requirements, validation, improvement
+  tasks.html                 Task Results → Tasks: searchable task catalogue
+  trajectories.html#<task>/<model>  Task Results → Trajectories: submission logs
   task.html#<key>             task details, scores, trajectories, run trace
-  method.html                compatibility redirect → architecture.html
-  index.html                 compatibility redirect → results.html
-  analysis.html              compatibility redirect → behavior.html
+  architecture.html         compatibility redirect → index.html#architecture
+  method.html                compatibility redirect → index.html#architecture
+  results.html               compatibility redirect → experimental-results.html
+  behavior.html              compatibility redirect → agent-behavior.html
+  analysis.html              compatibility redirect → agent-behavior.html
   runs.html                  compatibility redirect → trajectories.html
   assets/css/site.css        shared layout and themes
-  assets/css/behavior.css     behavior figure components
+  assets/css/agent-behavior.css  behavior figure components
   assets/js/core.js          shared data access, rank math, charts, navigation
+  assets/js/home.js          homepage citation and legacy section links
   assets/js/<page>.js        page rendering
   assets/img/institutions/   institution artwork extracted from the paper
   data/infrathon.js          generated results and cost bundle
@@ -66,17 +69,19 @@ The retained first-score distributions come from the October 25, 41-page manuscr
 
 ## Paper layout and figures
 
-The Results homepage (`results.html`) follows the paper title and author order, with 18 names in three desktop rows (5 / 7 / 6), 16 verified homepage links, numbered affiliations, and eight unlinked logos. Author rows wrap within their groups on narrow screens. Affiliation numbers and logo order follow the latest author-supplied reference: Washington, Ai2, Penn, Pyromind, Stanford, RadixArk, UT Austin, Northwestern. Zheyuan Xiao is affiliated with Washington. Seven logos preserve the PDF’s vector paths; Pyromind uses its original transparent image. `data/institution_logos.json` records the original PDF hash and extraction positions, not the display order. Paper, Code, Docker, and HuggingFace buttons are explicitly marked coming soon until public URLs are supplied.
+The homepage (`index.html`) follows the paper title and author order, with 18 names in three desktop rows (5 / 7 / 6), 16 verified homepage links, numbered affiliations, and eight unlinked logos. Author rows wrap within their groups on narrow screens. Affiliation numbers and logo order follow the latest author-supplied reference: Washington, Ai2, Penn, Pyromind, Stanford, RadixArk, UT Austin, Northwestern. Zheyuan Xiao is affiliated with Washington. Seven logos preserve the PDF’s vector paths; Pyromind uses its original transparent image. `data/institution_logos.json` records the original PDF hash and extraction positions, not the display order. Paper, Code, Docker, and HuggingFace buttons are explicitly marked coming soon until public URLs are supplied.
 
-Navigation follows the paper's order with concise labels and matching canonical URLs: Architecture (`architecture.html`), Results (`results.html`), Behavior (`behavior.html`), Tasks (`tasks.html`), and Trajectories (`trajectories.html`). Page scripts use the same stems; the Behavior stylesheet is `assets/css/behavior.css`. The brand links to Results, and Citation links to `results.html#cite`. Old `method.html`, `index.html`, `analysis.html`, and `runs.html` URLs remain compatibility redirects, preserving query strings and hash fragments. Task detail URLs remain `task.html#<key>`.
+The brand opens Home; the two top-level navigation links are Experimental Results (`experimental-results.html`) and Agent Behavior (`agent-behavior.html`). Experimental Results contains Main Results and Optimization Trajectories, with a Task Results entry leading to the Tasks (`tasks.html`) and Trajectories (`trajectories.html`) subviews. These subviews and task details keep Experimental Results active in the navigation. Task detail URLs remain `task.html#<key>`.
 
-`architecture.html` contains the original Figure 1 with concise definitions of the Work, Controller, and Judge components and the W/P/E/R/T task-specification symbols. The figure opens its unchanged original PDF for full-size viewing; `data/framework_figure.json` records its source. Scoring/token definitions and Citation are collapsed notes at `results.html#score-notes` and `results.html#cite`. Saved method-page links to those notes redirect there. The task table includes a red hint inviting readers to open a task's details.
+Home's `#architecture` section contains the original Figure 1, W/P/E/R/T task definitions, and Work/Controller/Judge component descriptions. The figure opens its unchanged original PDF; `data/framework_figure.json` records its source. Citation is collapsed at `index.html#cite`; scoring/token definitions are collapsed at `experimental-results.html#score-notes`. The task table includes a red hint inviting readers to open a task's details.
 
-The task map spans the page. Results show all 25 trajectories in a three-column layout (operators, modules, systems), with training and inference as the two groups. Flash-KMeans uses a logarithmic throughput axis. The best observed score carries forward to the complete task budget, including DeepSeek GQA at 12 hours.
+Old Architecture/Method, Results, Behavior/Analysis, and Runs URLs are redirect stubs, preserving query strings and section links. Legacy Architecture/Method `#ranking` and `#tokens` links open scoring notes; `#configs` opens the leaderboard; `#cite` opens Home's citation. Old homepage `#leaderboard`, `#score-notes`, `#map`, and `#results…` links open their Experimental Results sections. Old Results citation links return to Home. Task and run-selection hashes remain unchanged.
+
+Experimental Results retains the full-width task map and all 25 trajectories in three columns (operators, modules, systems), grouped by training and inference. Flash-KMeans uses a logarithmic throughput axis. The best observed score carries forward to the complete task budget, including DeepSeek GQA at 12 hours.
 
 Task detail pages have a visible Back button. Visits from another site page return through browser history; direct or external arrivals go to Tasks. Task filters and search text are saved on their history entry so returning restores the list without applying old filters to a new visit.
 
-Behavior (`behavior.html`) follows Section 5 and current Figures 9–12: task requirements use Figure 9, testing optimizations uses Figures 10–11, and continued improvement uses Figure 12. All panels are interactive UI components, without original-PDF links. Archived source PDFs and their hashes remain recorded in `data/behavior_original_figures.json`. Printed values are transcribed directly; unlabeled points and process ticks are recovered from vector coordinates and labeled approximate. The optional PDF extraction path requires PyMuPDF; normal builds use committed JSON and only Python’s standard library. Tests check printed anchors, the workload ranking reversal, two-process summaries, and bundle freshness. Previous Analysis links redirect to the corresponding question or Results section.
+Agent Behavior (`agent-behavior.html`) follows Section 5 and current Figures 9–12: task requirements use Figure 9, testing optimizations uses Figures 10–11, and continued improvement uses Figure 12. All panels are interactive UI components, without original-PDF links. Archived source PDFs and their hashes remain recorded in `data/behavior_original_figures.json`. Printed values are transcribed directly; unlabeled points and process ticks are recovered from vector coordinates and labeled approximate. The optional PDF extraction path requires PyMuPDF; normal builds use committed JSON and only Python’s standard library. Tests check printed anchors, the workload ranking reversal, two-process summaries, and bundle freshness. Previous Analysis links redirect to the corresponding question or Experimental Results section.
 
 The default theme is light, with a saved dark-theme preference and a navigation toggle. Charts use shared theme variables and responsive dimensions.
 

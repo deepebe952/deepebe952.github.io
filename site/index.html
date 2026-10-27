@@ -2,11 +2,132 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Results · Infrathon</title>
-<link rel="canonical" href="https://deepebe952.github.io/results.html">
-<script src="assets/js/redirect.js" data-target="results.html"></script>
-<noscript><meta http-equiv="refresh" content="0;url=results.html"></noscript>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Infrathon</title>
+<meta name="description" content="Infrathon benchmarks frontier models on 25 long-horizon AI infrastructure tasks across training and inference, from GPU kernels to RL training loops and serving engines.">
+<meta property="og:title" content="Infrathon">
+<meta property="og:description" content="Can frontier models solve long-horizon AI infrastructure tasks? 25 tasks, 6 configurations, 150 runs on H100s.">
+<meta name="theme-color" content="#fafbfd">
+<script src="assets/js/theme.js"></script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23060709'/%3E%3Cpath d='M7 22h4v-8h4v5h4V9h4v10h3' fill='none' stroke='%23ededef' stroke-width='2.4'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/css/site.css">
 </head>
-<body><p><a href="results.html">Continue to Results</a></p></body>
+<body data-page="index">
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <h1 class="paper-title"><span>Infrathon: 10,000 GPU-Hours Later,</span><span class="paper-subtitle">Can Frontier Models Solve Real-World Long-Horizon AI Infra Tasks?</span></h1>
+      <div class="paper-team">
+        <div class="authors" role="group" aria-label="Authors, in paper order">
+          <ul class="author-row">
+          <li><a href="https://huzhengyu477.github.io/">Zhengyu Hu</a><sup>1</sup></li>
+          <li><a href="https://zxia545.github.io/">Zheyuan Xiao</a><sup>1</sup></li>
+          <li><a href="https://yikee.github.io/">Yike Wang</a><sup>1,2</sup></li>
+          <li><a href="https://why2011btv.github.io/">Haoyu Wang</a><sup>3</sup></li>
+          <li><a href="https://ivison.id.au/">Hamish Ivison</a><sup>1</sup></li>
+          </ul>
+          <ul class="author-row">
+          <li><a href="https://yuetl9.github.io/">Yuetai Li</a><sup>1</sup></li>
+          <li>Niqi Lyu<sup>4</sup></li>
+          <li>Kevin Ding<sup>4</sup></li>
+          <li><a href="https://shuyhere.github.io/">Shu Yang</a><sup>5</sup></li>
+          <li><a href="https://zhichenzzz.github.io/">Zhichen Zeng</a><sup>1,6</sup></li>
+          <li><a href="https://jiaxin-pei.github.io/">Jiaxin Pei</a><sup>5,7</sup></li>
+          <li><a href="https://banghua.me/">Banghua Zhu</a><sup>1,6</sup></li>
+          </ul>
+          <ul class="author-row">
+          <li><a href="https://pdasigi.github.io/">Pradeep Dasigi</a><sup>2</sup></li>
+          <li><a href="https://www.cis.upenn.edu/~danroth/">Dan Roth</a><sup>3</sup></li>
+          <li><a href="https://hannaneh.ai/">Hannaneh Hajishirzi</a><sup>1</sup></li>
+          <li><a href="https://kaize0409.github.io/">Kaize Ding</a><sup>8,†</sup></li>
+          <li><a href="https://tengxiao1.github.io/">Teng Xiao</a><sup>1,2,†</sup></li>
+          <li><a href="https://people.ece.uw.edu/radha/">Radha Poovendran</a><sup>1,†</sup></li>
+          </ul>
+        </div>
+        <div class="affiliations" aria-label="Author affiliations">
+          <span><sup>1</sup>University of Washington</span>
+          <span><sup>2</sup>Allen Institute for AI</span>
+          <span><sup>3</sup>University of Pennsylvania</span>
+          <span><sup>4</sup>Pyromind</span>
+          <span><sup>5</sup>Stanford University</span>
+          <span><sup>6</sup>RadixArk</span>
+          <span><sup>7</sup>The University of Texas at Austin</span>
+          <span><sup>8</sup>Northwestern University</span>
+        </div>
+        <p class="team-note">† Project Leader</p>
+        <div class="institution-logos" aria-label="Institutions">
+          <img src="assets/img/institutions/paper-uw.svg" alt="University of Washington" width="140" height="42">
+          <img src="assets/img/institutions/paper-ai2.svg" alt="Allen Institute for AI" width="140" height="42">
+          <img src="assets/img/institutions/paper-penn.svg" alt="University of Pennsylvania" width="140" height="42">
+          <img src="assets/img/institutions/paper-pyromind.png" alt="Pyromind" width="140" height="42">
+          <img src="assets/img/institutions/paper-stanford.svg" alt="Stanford University" width="140" height="42">
+          <img src="assets/img/institutions/paper-radixark.svg" alt="RadixArk" width="140" height="42">
+          <img src="assets/img/institutions/paper-ut.svg" alt="The University of Texas at Austin" width="140" height="42">
+          <img src="assets/img/institutions/paper-northwestern.svg" alt="Northwestern University" width="140" height="42">
+        </div>
+      </div>
+      <div class="paper-resources">
+        <div class="resource-links" aria-label="Project resources">
+          <button class="resource-button" type="button" disabled title="Coming soon" aria-label="Paper: coming soon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6z M14 3v5h4 M9 12h6 M9 16h6"/></svg>Paper</button>
+          <button class="resource-button" type="button" disabled title="Coming soon" aria-label="Code: coming soon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 7-5 5 5 5 m8-10 5 5-5 5 m-3-13-2 16"/></svg>Code</button>
+          <button class="resource-button" type="button" disabled title="Coming soon" aria-label="Docker: coming soon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 7 9-4 9 4v10l-9 4-9-4z M3 7l9 5 9-5 M12 12v9"/></svg>Docker</button>
+          <button class="resource-button" type="button" disabled title="Coming soon" aria-label="HuggingFace: coming soon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6c0-4 16-4 16 0v12c0 4-16 4-16 0z M4 6c0 4 16 4 16 0 M4 12c0 4 16 4 16 0"/></svg>HuggingFace</button>
+        </div>
+        <p class="resource-status">Coming soon</p>
+        <p><a class="link" href="experimental-results.html">Explore experimental results →</a></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="architecture"><div class="wrap">
+    <div class="sec-title"><h2>Architecture</h2></div>
+    <figure class="framework-figure" id="framework">
+      <a class="framework-art" href="assets/img/framework.pdf" target="_blank" rel="noopener" aria-label="Open the original Infrathon framework figure as a PDF">
+        <img src="assets/img/framework.svg" width="1214" height="514" alt="Infrathon framework. Training and inference tasks at operator, module, and system levels share a task specification. The agent develops candidates in Work; the Controller checks submissions; the Judge returns private validation and performance results for continued optimization.">
+      </a>
+      <figcaption><b>Figure 1.</b> Infrathon framework.</figcaption>
+    </figure>
+  </div></section>
+
+  <section class="sec"><div class="wrap architecture-summary">
+    <div id="protocol">
+      <h2>Task Definition</h2>
+      <dl class="architecture-key">
+        <div><dt><span class="key-symbol">W</span>Workspace</dt><dd>Starting code or an interface to implement, with an explicit editable scope.</dd></div>
+        <div><dt><span class="key-symbol">P</span>Public tests</dt><dd>Visible cases and a public runner for correctness checks and profiling.</dd></div>
+        <div><dt><span class="key-symbol">E</span>Private tests</dt><dd>Hidden cases, validation rules, the scoring objective and its direction, and permitted feedback.</dd></div>
+        <div><dt><span class="key-symbol">R</span>Resources</dt><dd>Allocated hardware and software runtime.</dd></div>
+        <div><dt><span class="key-symbol">T</span>Time budget</dt><dd>Wall-clock time, including tools and feedback waits. Experiments use 12 h for operators and 24 h for modules and systems; the framework also supports execution without a preset deadline.</dd></div>
+      </dl>
+    </div>
+    <div id="execution">
+      <h2>Task Execution</h2>
+      <dl class="architecture-key">
+        <div><dt>Work environment</dt><dd>The agent edits candidates and runs public tests using the workspace and allocated resources.</dd></div>
+        <div><dt>Controller</dt><dd>Snapshots allowed files and checks task rules and editable scope before dispatching accepted submissions.</dd></div>
+        <div><dt>Judge environment</dt><dd>Checks correctness and constraints on private tests, measures performance, and returns permitted feedback.</dd></div>
+      </dl>
+    </div>
+  </div></section>
+  <div class="wrap" style="padding-bottom:32px">
+    <details class="notes" id="cite">
+      <summary>Citation</summary>
+      <p>The paper is under review.</p>
+      <pre class="mono" style="margin:0;font-size:12.5px;line-height:1.7;color:var(--ink-2);overflow-x:auto">@misc{infrathon2026,
+  title = {Infrathon: 10,000 GPU-Hours Later, Can Frontier Models
+           Solve Real-World Long-Horizon AI Infra Tasks?},
+  author = {Zhengyu Hu and Zheyuan Xiao and Yike Wang and Haoyu Wang and Hamish Ivison and Yuetai Li and Niqi Lyu and Kevin Ding and Shu Yang and Zhichen Zeng and Jiaxin Pei and Banghua Zhu and Pradeep Dasigi and Dan Roth and Hannaneh Hajishirzi and Kaize Ding and Teng Xiao and Radha Poovendran},
+  year  = {2026},
+  note  = {Under review}
+}</pre>
+    </details>
+  </div>
+</main>
+<script src="data/infrathon.js"></script>
+<script src="assets/js/core.js"></script>
+<script src="assets/js/home.js"></script>
+</body>
 </html>
