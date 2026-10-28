@@ -1,17 +1,15 @@
-/* Paper overview navigation and links from previous homepage layouts. */
+/* Homepage citation, scoring notes, and links from previous layouts. */
 (() => {
   "use strict";
   const citation = document.getElementById("cite");
-  const sectionLinks = document.querySelectorAll('.subnav[aria-label="Homepage sections"] a');
   const legacy = {
     architecture: "framework.html#overview", framework: "framework.html#overview",
     protocol: "framework.html#protocol", execution: "framework.html#execution",
-    map: "framework.html#task-inventory", leaderboard: "experimental-results.html#leaderboard",
-    "score-notes": "experimental-results.html#score-notes"
+    "task-definition": "framework.html#definition", "task-execution": "framework.html#execution"
   };
   function followHomeHash() {
     const hash = location.hash.slice(1);
-    const target = legacy[hash] || (/^results(?:-|$)/.test(hash) ? "experimental-results.html#results" : null);
+    const target = legacy[hash];
     if (target) {
       const url = new URL(target, location.href);
       url.search = location.search;
@@ -19,10 +17,12 @@
       return;
     }
     if (hash === "cite") citation.open = true;
-    sectionLinks.forEach((link) => {
-      if (link.getAttribute("href") === "#" + (!hash || hash === "overview" ? "introduction" : hash)) link.setAttribute("aria-current", "location");
-      else link.removeAttribute("aria-current");
-    });
+    if (hash === "score-notes") document.getElementById("score-notes").open = true;
+    const alias = { introduction: "overview", findings: "leaderboard", "figure-2": "leaderboard", "figure-3": "results" }[hash];
+    if (alias) {
+      history.replaceState(null, "", `${location.pathname}${location.search}#${alias}`);
+      document.getElementById(alias).scrollIntoView();
+    }
   }
   followHomeHash();
   window.addEventListener("hashchange", followHomeHash);

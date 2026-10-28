@@ -8,17 +8,18 @@ Inputs (all under ``data/``):
 
 Output: ``site/data/infrathon.js``, which sets ``window.INFRATHON``.
 
-Ranking uses the rank-score method of the paper (Eq. 5) applied to each run's best valid
-score during the run. On a task, every configuration with a run is ranked by that score
+Ranking uses the rank-score method of the paper (Eq. 5) applied to each run's best finite
+valid score within its time budget. On a task, every configuration with a run is ranked by that score
 (rank 1 = best, exact ties share the average rank; a run with no valid scored submission
 ranks last) and earns 100 (n - rank) / (n - 1), where n is the number of configurations
 that ran the task. A model's rank score is the mean over the tasks it ran.
 
-The tests compare all 150 best-so-far results against Table 4 of the current paper.
+The tests compare all 150 best-so-far results against Table 5 of the current paper.
 """
 from __future__ import annotations
 
 import json
+import math
 import random
 import statistics
 import sys
@@ -78,7 +79,14 @@ def rank_score(rows: list[dict[str, float]], models: list[str]) -> dict[str, flo
 
 def run_summary(task_key: str, run: dict) -> dict:
     subs = [[p[0], to_score(task_key, p[1]), p[2]] for p in run["points"]]
-    valid = [s for s in subs if s[2] == "valid" and s[1] is not None]
+    # Paper Eq. 39 admits only finite scores recorded within the task budget.
+    # Check the native score too: infinite latency converts to finite throughput.
+    # Keep every submission and its original status in the audit log below.
+    valid = [s for p, s in zip(run["points"], subs)
+             if s[2] == "valid"
+             and p[1] is not None and math.isfinite(p[1])
+             and s[1] is not None and math.isfinite(s[1])
+             and math.isfinite(s[0]) and 0 <= s[0] <= run["budget_h"]]
     traj, best = [], None
     for t, s, _ in valid:
         if best is None or s > best:

@@ -4,9 +4,9 @@ Paper website for **Infrathon: Benchmarking Language Agents for Real-World, Long
 
 ```
 site/
-  index.html                 paper overview, authors, task definition/execution, findings
+  index.html                 paper identity, leaderboard, task map, all task trajectories
   framework.html             Section 3: task definition, Table 2, task execution
-  experimental-results.html Section 4: all seven subsections and Figures 2–8
+  experimental-results.html Section 4: time-allocation and interaction studies, Figures 4–8
   agent-behavior.html        Section 5: requirements, validation, improvement
   tasks.html                 Task Results → Tasks: searchable task catalogue
   trajectories.html#<task>/<model>  Task Results → Trajectories: submission logs
@@ -22,8 +22,9 @@ site/
   assets/css/experimental-results.css  experimental figures and expansion dialog
   assets/css/agent-behavior.css  behavior figure components
   assets/js/core.js          shared data access, rank math, charts, navigation
-  assets/js/home.js          homepage section navigation and citation
-  assets/js/experimental-results.js  leaderboard and selected task trajectories
+  assets/js/home.js          homepage notes, citation, and legacy anchors
+  assets/js/home-results.js  leaderboard, task map, and all 25 task trajectories
+  assets/js/experimental-results.js  figure expansion and section navigation
   assets/js/<page>.js        page rendering
   assets/img/institutions/   institution artwork extracted from the paper
   assets/img/experimental-results/  original figure PDFs and vector SVG conversions
@@ -66,9 +67,9 @@ Preview with `python3 -m http.server -d site 8000`.
 
 ## Scoring and interaction costs
 
-The site follows paper Eq. 5. Each model is ranked by its best valid score within each task; exact ties share the average rank. A run without a valid scored submission receives zero. Its rank score is the mean of `100 × (K − rank) / (K − 1)` over selected tasks, with fixed `K = 6`. All six models cover all 25 tasks. Flash-KMeans latency is converted to equivalent throughput, preserving the ordering.
+The site follows paper Eq. 5. Each model is ranked by its best finite, valid score within each task's time budget; exact ties share the average rank. A run without a valid scored submission receives zero. Its rank score is the mean of `100 × (K − rank) / (K − 1)` over selected tasks, with fixed `K = 6`. All six models cover all 25 tasks. Flash-KMeans latency is converted to equivalent throughput, preserving the ordering. Budget and finiteness checks apply to performance summaries; submission records and status counts retain the original observations.
 
-All 150 values match Table 5 in the latest archive's `main.tex` (the unchanged regression fixture retains the filename `tests/paper_table4.json` from the previous edition). `tests/test_paper_audit.py` also checks the six category scores, exact-tie behavior, and Section 4.5's first-score action medians: 71 for Sol and 248 for Qwen. Full-suite confidence intervals use the generated 10,000 bootstrap resamples; filtered subsets use 3,000 resamples in the browser.
+All 150 values match Table 5 in the latest archive's `main.tex` (the unchanged regression fixture retains the filename `tests/paper_table4.json` from the previous edition). `tests/test_paper_audit.py` also checks the six category scores, exact-tie behavior, and Section 4.5's first-score action medians: 71 for Sol and 248 for Qwen. The website adds confidence intervals, which are not reported in the paper: the full suite uses 10,000 task-bootstrap resamples; filtered subsets use 3,000 resamples in the browser.
 
 Visible tokens follow Appendix B.4’s `o200k_base` definition: recorded agent text and tool-call content, excluding tool responses, repeated code-diff displays, and reasoning traces. Full-suite totals match current Figure 8. Filtered totals sum current Figure 15’s per-task values, which are rounded to thousands and displayed with `≈`. Summing these rounded cells does not reproduce the unrounded suite total exactly. Agent actions are integers and sum to 203,266. First-score medians are computed from the selected tasks’ scored runs. These statistics cover the 150 main-experiment runs and exclude the short-budget ablations.
 
@@ -82,13 +83,13 @@ The homepage (`index.html`) follows the paper title and author order, with 18 na
 
 The brand opens Home; the top-level navigation links are Framework (`framework.html`), Experimental Results (`experimental-results.html`), Agent Behavior (`agent-behavior.html`), and Task Results (`tasks.html`). Task Results has Tasks (`tasks.html`) and Trajectories (`trajectories.html`) subviews; both and task details keep Task Results active in the main navigation. Task detail URLs remain `task.html#<key>`.
 
-Home keeps the paper title, three author rows, institutions, and resource links, followed by a subsection navigation and a single reading column: Introduction, Task Definition, Task Execution, and Experimental Results. Introduction and Results use all ten sentences of the active paper abstract, in order; the framework paragraphs and Figure 1 caption use original Section 3 sentences. Only LaTeX formatting, mathematical symbols, and cross-references are converted for HTML. Source markers on the paragraphs identify these excerpts. Numeric summary cards and rewritten summaries are omitted. Citation is collapsed at `index.html#cite`.
+Home keeps the paper title, three author rows, institutions, and resource links, followed directly by a filterable leaderboard, a full-width task map, and trajectories for all 25 tasks. There is no homepage subsection bar or Introduction/Task Definition/Task Execution prose. The map and curves use the same two-stage, three-level grouping. Each map tile and trajectory card opens its task detail page. The leaderboard omits mean-relative performance and bootstrap first-place probability; visible output tokens are totals across the selected main runs, explicitly excluding reasoning traces. Scoring and token definitions are collapsed at `#score-notes`; Citation is collapsed at `#cite`.
 
 Framework follows Section 3: original Figure 1; Section 3.1's W/P/E/R/T definitions and complete Table 2 inventory; Section 3.2's Work/Controller/Judge feedback loop, integrity checks, private evaluation, and continuation mechanisms. `data/framework_figure.json` records the original extraction and verifies that the latest archive's figure is unchanged. Inventory rows link to task details.
 
-Experimental Results follows all seven Section 4 subsections in order: Main Results, Optimization Trajectories, One Long Run versus Multiple Short Runs, Ranking Variation with Time Budget, Cost to the First Scored Submission, Performance Gains in the Second Half, and Token and Interaction Counts Across All Tasks. Figures 2–8 accompany their analysis, including the latest two-model time-allocation comparison. Original figure assets retain their vector geometry; Figure 3 uses interactive trajectories for the paper's 12 illustrative tasks. The leaderboard remains filterable, with scoring/token definitions collapsed at `#score-notes`. Complete task results and submission histories remain under Task Results.
+Experimental Results contains the remaining five Section 4 studies in paper order: One Long Run versus Multiple Short Runs, Ranking Variation with Time Budget, Cost to the First Scored Submission, Performance Gains in the Second Half, and Token and Interaction Counts Across All Tasks. Figures 4–8 accompany their analysis, including the latest two-model time-allocation comparison. Original figure assets retain their vector geometry. The leaderboard and task trajectories live only on Home; the page links back to them. Full task details and submission histories remain under Task Results. Homepage curves carry the best known valid score through the full task budget, as on the task detail pages; they are not a reproduction of the paper’s selected 12-task Figure 3.
 
-Old Architecture/Method, Results, Behavior/Analysis, and Runs URLs are redirect stubs, preserving query strings and routing old sections to their canonical pages. Homepage `#architecture`/`#framework` and execution/specification links open Framework; `#map` opens its task inventory. Homepage leaderboard, scoring-note, and results links open Experimental Results. Legacy `#ranking`/`#tokens` open scoring notes, and `#configs` opens the leaderboard. Results citation links return to `index.html#cite`. Task and run-selection hashes remain unchanged.
+Old Architecture/Method, Results, Behavior/Analysis, and Runs URLs are redirect stubs, preserving query strings and routing old sections to their canonical pages. Homepage framework/definition/execution anchors open Framework; leaderboard, scoring notes, task map, and task results now resolve on Home. Experimental Results links to those moved sections redirect to the corresponding homepage anchors, including stage and level selections. Legacy Architecture `#ranking`/`#tokens` open homepage scoring notes, and `#configs` opens its leaderboard. Citation links return to `index.html#cite`. Task and run-selection hashes remain unchanged.
 
 Task detail pages have a visible Back button. Visits from another site page return through browser history; direct or external arrivals go to Tasks. Task filters and search text are saved on their history entry so returning restores the list without applying old filters to a new visit.
 

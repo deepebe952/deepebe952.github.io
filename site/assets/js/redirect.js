@@ -4,10 +4,10 @@
   const script = document.currentScript;
   const maps = {
     architecture: {
-      ranking: "experimental-results.html#score-notes", tokens: "experimental-results.html#score-notes",
-      configs: "experimental-results.html#leaderboard", cite: "index.html#cite", architecture: "framework.html#overview"
+      ranking: "index.html#score-notes", tokens: "index.html#score-notes",
+      configs: "index.html#leaderboard", cite: "index.html#cite", architecture: "framework.html#overview"
     },
-    results: { cite: "index.html#cite" }
+    results: { cite: "index.html#cite", leaderboard: "index.html#leaderboard", "score-notes": "index.html#score-notes", map: "index.html#map", results: "index.html#results" }
   };
   const mapped = maps[script.dataset.redirectGroup]?.[location.hash.slice(1)];
   const url = new URL(mapped || script.dataset.target, location.href);

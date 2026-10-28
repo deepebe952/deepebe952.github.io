@@ -1,8 +1,9 @@
 """Regression tests for the data pipeline.
 
-The extraction is checked against all 150 best-so-far results in the current paper's Table 4.
+The extraction is checked against all 150 best-so-far results in the current paper's Table 5.
 """
 import json
+import math
 import sys
 import unittest
 from pathlib import Path
@@ -15,6 +16,49 @@ import build_data  # noqa: E402
 REGISTRY, RAW, TOKENS = build_data.load()
 DATA = build_data.compute(REGISTRY, RAW, TOKENS)
 PAPER_TABLE = json.loads((ROOT / "tests/paper_table4.json").read_text())
+
+
+class RunSummary(unittest.TestCase):
+    @staticmethod
+    def fixture_run(points):
+        return {"points": points, "budget_h": 12, "elapsed_h": 13, "effort": "max"}
+
+    def test_only_finite_within_budget_scores_affect_performance(self):
+        eligible = [[1, 10, "valid"], [12, 20, "valid"]]
+        points = [[0.1, math.nan, "valid"], [0.2, math.inf, "valid"],
+                  [0.3, -math.inf, "valid"], [0.5, 999, "invalid"],
+                  *eligible, [12.0001, 999, "valid"]]
+        baseline = build_data.run_summary("attn-qat", self.fixture_run(eligible))
+        summary = build_data.run_summary("attn-qat", self.fixture_run(points))
+        for key in ("best", "best_at_h", "first_valid_h", "traj"):
+            self.assertEqual(summary[key], baseline[key], key)
+        self.assertEqual(summary["best"], 20)
+        self.assertEqual(summary["first_valid_h"], 1)
+        self.assertEqual(summary["traj"], [[1, 10], [12, 20]])
+        self.assertEqual(summary["n_sub"], 7)
+        self.assertEqual(summary["counts"]["valid"], 6)
+        self.assertEqual(summary["counts"]["invalid"], 1)
+        self.assertEqual(len(summary["subs"]), 7)
+        self.assertTrue(math.isnan(summary["subs"][0][1]))
+        self.assertEqual(summary["subs"][1][1], math.inf)
+        self.assertEqual(summary["subs"][2][1], -math.inf)
+        self.assertEqual(summary["subs"][-1], [12.0, 999, "v"])
+
+    def test_no_eligible_score_still_returns_zero_with_audit_records(self):
+        # Infinite native latency would otherwise become a finite zero score.
+        for task_key in ("attn-qat", "flash-kmeans"):
+            with self.subTest(task=task_key):
+                points = [[0.1, math.inf, "valid"], [0.2, None, "valid"],
+                          [1, 10, "rejected"], [12.1, 1, "valid"]]
+                summary = build_data.run_summary(task_key, self.fixture_run(points))
+                self.assertEqual(summary["best"], 0)
+                self.assertEqual(summary["traj"], [])
+                self.assertIsNone(summary["best_at_h"])
+                self.assertIsNone(summary["first_valid_h"])
+                self.assertEqual(summary["n_sub"], 4)
+                self.assertEqual(summary["counts"]["valid"], 3)
+                self.assertEqual(summary["counts"]["rejected"], 1)
+                self.assertEqual([s[2] for s in summary["subs"]], ["v", "v", "r", "v"])
 
 
 class PaperNumbers(unittest.TestCase):

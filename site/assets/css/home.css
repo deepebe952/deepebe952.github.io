@@ -1,22 +1,30 @@
-/* Homepage: original paper paragraphs in a single reading column. */
+/* Home: paper identity, followed directly by the interactive results. */
 body[data-page="index"] .hero .wrap { gap: 22px; padding-top: clamp(32px, 4vw, 48px); padding-bottom: 28px; }
-.home-reading .wrap { max-width: 1040px; }
-body[data-page="index"] .home-reading { padding-block: 32px; }
-body[data-page="index"] .home-reading + .home-reading { border-top: 0; }
-.home-reading h2 { margin: 0 0 20px; color: var(--ink); font-size: clamp(24px, 2.5vw, 28px); font-weight: 600; line-height: 1.35; letter-spacing: -.02em; }
-.home-reading p { margin: 0 0 18px; font-size: 16px; line-height: 1.8; color: var(--ink-2); }
-.home-reading p:last-child { margin-bottom: 0; }
-.home-reading strong { color: var(--ink); font-weight: 600; }
-.home-reading var { font-family: var(--f-sans); white-space: nowrap; }
-.home-paper-figure { margin: 24px 0; }
-.home-paper-figure > a { display: block; padding: 12px; border: 1px solid var(--hair); border-radius: 8px; background: #fff; }
-.home-paper-figure img { width: 100%; height: auto; }
-.home-paper-figure figcaption { margin-top: 12px; max-width: none; font-size: 13px; line-height: 1.7; }
-.home-reading .home-section-link { display: flex; flex-wrap: wrap; gap: 8px 26px; margin-top: 20px; font-size: 14px; }
+body[data-page="index"] .home-results { padding-block: 30px; }
+body[data-page="index"] .home-results + .home-results { border-top: 0; }
+.home-results h2 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -.015em; }
+.home-results .card-head { flex-wrap: wrap; gap: 8px 20px; }
+.home-results .card-head .task-detail-hint { margin: 0; font-size: 12.5px; color: #bd3333; }
+html[data-theme="dark"] .home-results .card-head .task-detail-hint { color: #ff8e8e; }
+.home-results .die { padding: 0; }
+.home-results .die-body { padding: 18px; }
+.home-results .die-legend { padding: 0 22px 18px; }
+.home-chart-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px 20px; margin-bottom: 18px; }
+.home-chart-head p { margin: 6px 0 0; color: var(--ink-3); font-size: 13px; }
+.home-results .results-stage-title { font-size: 17px; }
+.home-results .result-category-head h4 { font-size: 13px; }
+.home-results .result-category-head span { font-size: 10px; }
+.home-results .result-task { transition: border-color .15s ease; }
+.home-results .result-task:hover { border-color: var(--hair-3); }
+.home-results .result-task:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.home-results .notes { margin-top: 12px; }
+.home-results .notes p { max-width: 100ch; line-height: 1.7; }
+.home-results .lb th { font-size: 10px; letter-spacing: .035em; }
+.home-results .lb .barcell { min-width: 180px; }
 @media (max-width: 600px) {
-  body[data-page="index"] .home-reading { padding-block: 26px; }
-  .home-reading p { font-size: 15px; line-height: 1.8; }
-  .home-reading h2 { margin-bottom: 16px; }
-  .home-paper-figure > a { padding: 6px; }
-  .home-paper-figure figcaption { font-size: 12px; }
+  body[data-page="index"] .home-results { padding-block: 22px; }
+  .home-results .die-body { padding: 12px 6px; }
+  .home-results .die-legend { padding: 0 14px 14px; }
+  .home-results .card-head { padding-inline: 14px; }
+  .home-results .lb-controls { padding-inline: 14px; }
 }
