@@ -27,7 +27,6 @@ html[data-theme="dark"] .home-chart-head .task-detail-hint { color: #ff8e8e; }
 .task-result-budget { grid-area: budget; }
 .task-result-metric { grid-area: metric; }
 .metric-name { display: block; color: var(--ink-2); font-weight: 500; line-height: 1.45; }
-.metric-brief { display: block; margin-top: 5px; color: var(--ink-3); font-size: 11px; line-height: 1.5; }
 .task-result-winner { grid-area: winner; }
 .task-result-row .label { display: block; margin-bottom: 8px; font-size: 9px; letter-spacing: .06em; }
 .task-result-category, .task-result-budget, .task-result-metric, .task-result-winner { font-size: 12px; line-height: 1.6; color: var(--ink-2); }

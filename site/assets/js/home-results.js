@@ -147,7 +147,7 @@
       h("div", { class: "task-result-info" }, h("h3", { text: task.name }), h("p", { class: "target", text: task.target })),
       h("div", { class: "task-result-category" }, h("span", { class: "label", text: "Category" }), h("span", { text: `${cap(task.stage)} · ${cap(task.level)}` })),
       h("div", { class: "task-result-budget" }, h("span", { class: "label", text: "Budget" }), h("b", { text: `${task.budget_h} h` })),
-      h("div", { class: "task-result-metric" }, h("span", { class: "label", text: "Metric" }), h("span", { class: "metric-name", text: X.metricLabel(task) }), h("span", { class: "metric-brief", text: task.metric_info?.brief })),
+      h("div", { class: "task-result-metric" }, h("span", { class: "label", text: "Metric" }), h("span", { class: "metric-name", text: task.metric_info?.home_label || X.metricLabel(task) })),
       h("div", { class: "task-result-winner" }, h("span", { class: "label", text: "Top configuration" }), X.who(winner, MODEL[winner].short), h("span", { class: "task-result-score", text: withUnit(task, task.results[winner].best) })),
       h("div", { class: "task-result-chart" }, X.trajChart(task, { W: 300, H: 160, logY: task.key === "flash-kmeans" })));
     results.append(row);

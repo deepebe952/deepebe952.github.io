@@ -39,7 +39,7 @@
   "tasks": {
     "attn-qat": {
       "label": "Effective TFLOPS",
-      "brief": "Forward/backward work ÷ runtime, combined across workloads.",
+      "home_label": "TFLOPS",
       "formula": "F = 26 × B × H × S_q × S_k × d_h\nt = 2 × t_forward + t_backward\nq_case = median₇(F / t / 10¹²)\nscore = (G_Wan13B × G_LTX2 × G_Kandinsky5)^(1/3)",
       "details": [
         "B is batch size, H is the number of heads, S_q/S_k are query/key lengths, and d_h is head size. Durations are in seconds; the doubled forward term models activation recomputation.",
@@ -61,7 +61,7 @@
     },
     "wgrad": {
       "label": "Effective TFLOPS",
-      "brief": "Useful gradient GEMM work ÷ runtime across workloads.",
+      "home_label": "TFLOPS",
       "formula": "F_trial = 2 × M × N × Σ_g K_g\nq_case = median₅(F_trial / t_trial / 10¹²)\nscore = √(G_coarse × G_fine)",
       "details": [
         "M and N are output matrix dimensions; K_g is the actual reduction length of group g, freshly drawn for each trial. Durations are in seconds.",
@@ -83,7 +83,7 @@
     },
     "flux-moe": {
       "label": "Effective TFLOPS",
-      "brief": "Useful GEMM work ÷ communication-and-compute runtime.",
+      "home_label": "TFLOPS",
       "formula": "F = 4 × M_local × top_k × N × K\nt_trial = max(t_rank1, t_rank2)\nq_case = F / median₇(t_trial) / 10¹²\nscore = √(G_heavy × G_moderate)",
       "details": [
         "M_local is the number of input tokens on each rank, top_k is experts selected per token, K is the input width, and N is the output width per rank. F counts useful matrix work on one rank.",
@@ -105,7 +105,7 @@
     },
     "orpo": {
       "label": "Training speedup",
-      "brief": "100 × geometric-mean speedup vs. official TRL.",
+      "home_label": "100 × speedup",
       "formula": "u = completion-target tokens / Σ₁₀_steps max(t_rank1, t_rank2)\nr_row = median₄_pairs(u_candidate / u_TRL)\nscore = 100 × (r₁ × r₂ × r₃ × r₄ × r₅)^(1/5)",
       "details": [
         "u is completion-target tokens/s across both ranks over ten timed optimizer steps. Each step charges the slower rank; warm-up is excluded.",
@@ -128,7 +128,7 @@
     },
     "gkd": {
       "label": "Training speedup",
-      "brief": "100 × geometric-mean speedup vs. official TRL.",
+      "home_label": "100 × speedup",
       "formula": "u = completion-target tokens / Σ₁₀_steps max(t_rank1, t_rank2)\nr_row = median₄_pairs(u_candidate / u_TRL)\nscore = 100 × (r₁ × r₂ × r₃ × r₄ × r₅)^(1/5)",
       "details": [
         "u counts shifted answer-prediction targets across both ranks, including answer EOS and excluding prompt/padding. Ten complete steps are timed, charging the slower rank per step.",
@@ -151,7 +151,7 @@
     },
     "opcd": {
       "label": "Medical accuracy gain (pp/hour)",
-      "brief": "Held-out medical accuracy gain ÷ audited training hours",
+      "home_label": "Accuracy gain / h",
       "formula": "Δpp = 100 × (mean₃(a_final) − a_base)\nscore = 3600 × Δpp / D, if checks pass and Δpp ≥ 6.5\nscore = 0 otherwise",
       "details": [
         "a_final and a_base are accuracy fractions. Evaluate the final student on 2,436 held-out MedMCQA questions in three seeded repeats with a fixed answer-tag grader, without the privileged medical prompt.",
@@ -174,7 +174,7 @@
     },
     "opd": {
       "label": "Math accuracy gain (pp/hour)",
-      "brief": "Held-out math accuracy gain ÷ audited training hours",
+      "home_label": "Accuracy gain / h",
       "formula": "Δpp = 100 × (mean₃(a_final) − a_base)\nscore = 3600 × Δpp / D, if checks pass and Δpp ≥ 1.6\nscore = 0 otherwise",
       "details": [
         "a_final and a_base are accuracy fractions. The trained Qwen3-1.7B student is evaluated on 2,000 held-out DAPO-Math problems in three seeded repeats with the fixed math grader.",
@@ -197,7 +197,7 @@
     },
     "alfworld": {
       "label": "Game-success gain (pp/hour)",
-      "brief": "Held-out game-success gain ÷ audited training hours",
+      "home_label": "Success gain / h",
       "formula": "Δpp = 100 × (mean₃(s_final) − s_base)\nscore = 3600 × Δpp / D, if checks pass and Δpp ≥ 15\nscore = 0 otherwise",
       "details": [
         "s_final and s_base are game-success fractions. The final Qwen3-4B policy is evaluated greedily on 1,134 held-out games in three repeats; the separate 140-game public evaluation does not enter the score.",
@@ -220,7 +220,7 @@
     },
     "sd35": {
       "label": "Teacher-gap closure per replay hour",
-      "brief": "Mean OCR/PickScore teacher-gap closure ÷ replay hours",
+      "home_label": "Gap closure / h",
       "formula": "c_r = (q_student,r − q_base,r) / (q_teacher,r − q_base,r)\nD = median(D₁, D₂, D₃)\nscore = 3600 × (c_OCR + c_PickScore) / (2 × D), if all gates pass\nscore = 0 otherwise",
       "details": [
         "q is mean quality: normalized edit-distance OCR accuracy on 1,012 prompts, or raw PickScore on 2,040 prompts.",
@@ -243,7 +243,7 @@
     },
     "wan22": {
       "label": "Fixed-workload replays per hour",
-      "brief": "3600 ÷ median replay seconds, after the HPSv3 quality gate",
+      "home_label": "Replays / h",
       "formula": "D = median(D₁, D₂, D₃)\nscore = 3600 / D, if checks pass and mean_HPSv3 − h_base ≥ −0.28\nscore = 0 otherwise",
       "details": [
         "D is the median duration in seconds of three hidden replay workloads, each containing 16 prompts × 8 videos. Higher scores mean more completions of this fixed workload per hour.",
@@ -265,7 +265,7 @@
     },
     "grouped-fp8": {
       "label": "Effective TFLOPS",
-      "brief": "Useful GEMM work ÷ runtime, combined across workloads.",
+      "home_label": "TFLOPS",
       "formula": "F = 2 × N × K × Σg M_g\nq_i = median of 5 trials [F / (10¹² × t)]\nG_masked = GM(16 masked cases); G_psum = GM(16 packed cases)\nscore = √(G_masked × G_psum)",
       "details": [
         "M_g is the actual valid row count of expert g; N is output width and K is the reduction dimension. Padded rows do not add useful work.",
@@ -288,7 +288,7 @@
     },
     "sparse-mla": {
       "label": "Sparse-attention TFLOPS",
-      "brief": "Selected attention work ÷ runtime across workloads.",
+      "home_label": "TFLOPS",
       "formula": "A_s = S_q × k\nF = 2 × H_q × A_s × (d_qk + 512)\nq_i = median of 7 trials [F / (10¹² × t)]\nscore = (G_V3.2 × G_V4-Flash × G_V4-Pro)^(1/3)",
       "details": [
         "S_q is query length, k the selected keys per query in scored cases, H_q query-head count, and d_qk query/key width. Values have width 512. F counts selected interactions, not dense context-length attention.",
@@ -311,7 +311,7 @@
     },
     "paged-gqa": {
       "label": "Attention TFLOPS",
-      "brief": "Causal attention work ÷ runtime across workloads.",
+      "home_label": "TFLOPS",
       "formula": "A = Σb [S_q × L_b − S_q(S_q − 1)/2]\nF = 4 × H_q × 128 × A\nq_i = median of 7 trials [F / (10¹² × t)]\nscore = √(GM(5 one-query cases) × GM(5 16-query cases))",
       "details": [
         "L_b is request b’s valid cache length and S_q its query length. A counts only query–key pairs visible under the bottom-right causal mask; H_q is query-head count and head width is 128.",
@@ -334,7 +334,7 @@
     },
     "sageattention": {
       "label": "Dense-equivalent TFLOPS",
-      "brief": "Dense-equivalent attention work ÷ runtime across workloads.",
+      "home_label": "TFLOPS",
       "formula": "A = B × L² (noncausal), or B × L(L + 1)/2 (causal)\nF = 4 × H_q × d_h × A\nq_i = median of 7 trials [F / (10¹² × t)]\nscore = √(GM(3 video-DiT cases) × GM(2 causal cases))",
       "details": [
         "B is batch size, L sequence length, H_q query-head count, and d_h head width. F is fixed dense-equivalent QK/PV work, not a count of the candidate’s actual instructions.",
@@ -357,7 +357,7 @@
     },
     "minference": {
       "label": "Dense-equivalent TFLOPS",
-      "brief": "Dense-equivalent attention work ÷ runtime across 48 cells.",
+      "home_label": "TFLOPS",
       "formula": "F(L) = 8192 × L × (L + 1)\nq_i = median of 3 prompt trials [F(L_i,j) / (10¹² × t_i,j)]\nscore = (∏i=1…48 q_i)^(1/48)",
       "details": [
         "8192 = 2 × 32 query heads × 128 head dimensions. L is each trial’s actual prompt length; F is the work of full dense causal attention, even when the candidate computes a sparse approximation.",
@@ -380,7 +380,7 @@
     },
     "lmcache": {
       "label": "KV bandwidth (GB/s)",
-      "brief": "KV bytes moved ÷ runtime; weighted across transfer types.",
+      "home_label": "GB/s",
       "formula": "P_i = Σwaves [(blocks − skip) × kv × NL × BS × NH × W × 2]\nb_i = P_i / (10⁹ × median of 5 trial durations in seconds)\nG_a = geometric mean of case bandwidths in group a\nscore = G_device^0.55 × G_host^0.15 × G_trace^0.30",
       "details": [
         "P_i is the logical payload of the complete sequence of transfers. NL = layers, BS = tokens per block, NH = heads, W = vector width. Split layout uses kv=2 and W=head width; fused layout uses kv=1 and W=combined KV width. Each element occupies 2 bytes.",
@@ -403,7 +403,7 @@
     },
     "flash-kmeans": {
       "label": "Equivalent TFLOP/s",
-      "brief": "Fixed workload ÷ weighted runtime; higher is faster.",
+      "home_label": "TFLOPS",
       "formula": "F_assign = 2 × B × N × K × D; F_update = B × N × D\nF_full = F_assign + F_update\nL = ∏i=1…14 t_i^w_i; C = ∏i=1…14 (F_i / 10¹²)^w_i\nnative Judge score = L ms (lower is better)\nwebsite score = 1000 × C / L ≈ 4694.344299 / L TFLOP/s",
       "details": [
         "B = batch size, N = points, K = centroids, D = feature dimension. Assignment and update use their respective work counts; combined iterations and deployment cases use F_full. C ≈ 4.694344299 TFLOP is fixed by the scored workload.",
@@ -427,7 +427,7 @@
     },
     "mamba2": {
       "label": "Effective TFLOPS",
-      "brief": "Recurrence-equivalent work ÷ runtime across workloads.",
+      "home_label": "TFLOPS",
       "formula": "F = 4 × B × L × H × d_h × d_s\nq_i = median of 7 trials [F / (10¹² × t)]\nG_f = geometric mean of 6 sequence-length cases in family f\nscore = (G_Mamba-2 × G_Codestral × G_Falcon-H1)^(1/3)",
       "details": [
         "B is batch size, L sequence length, H heads, d_h channels per head, and d_s state dimension. F counts effective recurrent state-update and output-projection work and does not depend on the candidate’s chunk size.",
@@ -450,7 +450,7 @@
     },
     "kvpress": {
       "label": "Output-distribution fidelity",
-      "brief": "KL-based fidelity across 4 families and 3 eviction fractions.",
+      "home_label": "Fidelity",
       "formula": "KL(p ∥ q) = Σ_v p(v) ln[p(v) / q(v)]\nf(i, ρ) = exp[−Σ_t KL(p_full(i,t) ∥ p_compressed(i,t,ρ)) / n_i]\nF(g, ρ) = Σ_{i in family g} f(i, ρ) / |I_g|\nscore = (100 / 3) × Σ_{ρ in {0.5, 0.75, 0.875}} [Π_{g=1…4} F(g, ρ)]^(1/4)",
       "details": [
         "ρ is the fraction of cache positions evicted: 50%, 75%, or 87.5%. Both next-token distributions are evaluated on the same full-cache reference continuation; n_i is its token count.",
@@ -473,7 +473,7 @@
     },
     "kvzip": {
       "label": "Answer-quality retention",
-      "brief": "Mean compressed/full answer quality at 10%, 20%, and 30% KV.",
+      "home_label": "Quality retained (%)",
       "formula": "a(d, κ) = mean_context_rows(mean_questions(native answer score))\nr(d, κ) = a(d, κ) / a(d, 1)\nscore = (100 / 9) × Σ_{κ in {0.1, 0.2, 0.3}} Σ_{g in G} [Σ_{d in D_g} r(d, κ) / |D_g|]",
       "details": [
         "κ is the cache keep fraction. Trusted evaluation keeps the highest-scoring context entries at 10%, 20%, and 30%; a(d, 1) is the positive full-cache reference for dataset d.",
@@ -496,7 +496,7 @@
     },
     "qvg": {
       "label": "Persistent KV compression",
-      "brief": "Geometric mean of two models' BF16/stored-cache byte ratios.",
+      "home_label": "Compression ratio",
       "formula": "R_m = [Σ_{i in cases(m)} Σ_{c in calls(i)} BF16_bytes(m,i,c)] / [Σ_{i in cases(m)} Σ_{c in calls(i)} stored_bytes(m,i,c)]\nscore = √(R_LongCat × R_HY)",
       "details": [
         "Each model's ratio uses byte sums across every compression call in every case, not an average of per-case ratios. The current suite has 6 LongCat and 11 HY-WorldPlay cases.",
@@ -520,7 +520,7 @@
     },
     "eagle3": {
       "label": "Generated-token throughput",
-      "brief": "Geometric mean of generated tokens/s across 6 workload cells.",
+      "home_label": "tokens/s",
       "formula": "u_c = Σ_{i in calls(c)} emitted_tokens_i / Σ_{i in calls(c)} wall_seconds_i\nscore = (Π_{c=1…6} u_c)^(1/6)  tokens/s",
       "details": [
         "Count newly emitted tokens, including a final emitted EOS and excluding prompt tokens and rejected draft-tree nodes. A batched call sums tokens across its requests and counts its wall time once.",
@@ -543,7 +543,7 @@
     },
     "llada": {
       "label": "Useful-token throughput",
-      "brief": "Geometric mean of useful tokens/s across 12 workload rows.",
+      "home_label": "tokens/s",
       "formula": "u_c = Σ_{i in requests(c)} useful_tokens_i / Σ_{i in requests(c)} completion_seconds_i\nscore = (Π_{c=1…12} u_c)^(1/12)  tokens/s",
       "details": [
         "For GSM8K, MATH, and MBPP, truncate at EOS and stop text, remove special tokens, then count retokenized completion text. HumanEval counts non-EOS slots across the full generated buffer. Prompt tokens do not count.",
@@ -566,7 +566,7 @@
     },
     "sdv2": {
       "label": "Latency-weighted FPS",
-      "brief": "Streaming FPS × tail-latency factor; geomean over 12 streams.",
+      "home_label": "Latency-weighted FPS",
       "formula": "v_i = frames_i(chunks 12…last) / [emit_i(last) − push_i(12)]\nℓ_i = p99{emit_i(k) − push_i(k) : k = 12…last}\ns_i = v_i × (ℓ_seed,i / ℓ_i)^(1/4)\nscore = (Π_{i=1…12} s_i)^(1/12)  FPS",
       "details": [
         "The steady-state numerator counts output frames in chunks 12 through the end. Its denominator starts at the controller's push of chunk 12 and ends when the final output is ready on the GPU; it is not the interval between output emissions.",
@@ -589,7 +589,7 @@
     },
     "serving": {
       "label": "Valid tool steps / min",
-      "brief": "All valid tool steps completed in the scored 30-minute window ÷ 30.",
+      "home_label": "Valid steps/min",
       "formula": "V = Σ_{192 workflows} count(tool.returncode exists and T_start ≤ tool_end ≤ T_start + 1800 s)\nscore = 60 × V / 1800 = V / 30  steps/min",
       "details": [
         "A step counts when it has a tool execution return record and its tool-end timestamp falls inside the scored window, including the boundaries. A nonzero tool return code can still count; solving the task or passing its tests is not required.",
