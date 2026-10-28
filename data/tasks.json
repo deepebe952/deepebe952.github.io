@@ -117,8 +117,7 @@
       "gpus": "2×H100",
       "target": "Teacher/student projection and distillation loss",
       "summary": "Generalized knowledge distillation from a frozen Qwen3-4B teacher into a trainable Qwen3-1.7B student, sharded with FSDP. Raise training-step throughput while staying numerically equivalent to TRL's generalized JSD loss. Score is throughput relative to the official TRL step (100 = parity).",
-      "flags": {},
-      "note": "GLM 5.3 Flash stopped at 6.96 h after a watchdog intervention, so its run is shorter than the 24-hour budget."
+      "flags": {}
     },
     {
       "key": "opcd",
@@ -148,8 +147,7 @@
       "gpus": "2×H100 (NVLink)",
       "target": "Online distillation integration and execution",
       "summary": "Re-implement sampled-token on-policy distillation in a Miles checkout where it was removed: a Qwen3-1.7B student samples, a frozen Qwen3-4B teacher scores the same tokens, and the student trains toward the teacher. Score is accuracy points gained per training hour, zero below a 1.6-point gain.",
-      "flags": {},
-      "note": "GPT-6 Astra uses its earlier 24-hour run from cohort h100sxm-five-models-24h-20261011 (started October 18); it was not rerun in the October 21 release cohort. Claude Opus 5.5 used an earlier checkout and images than the other four configurations."
+      "flags": {}
     },
     {
       "key": "alfworld",
@@ -241,8 +239,7 @@
       "gpus": "1×H100",
       "target": "Decode attention over paged KV caches",
       "summary": "A paged-KV grouped-query attention kernel for decode and short-query prefill with FlashAttention's kv-cache semantics, correct over a support domain drawn from FlashAttention, vLLM, FlashInfer and SGLang tests. Written from scratch in Triton.",
-      "flags": {},
-      "note": "DeepSeek V4.1 Flash's run ended at 4.77 h after a GPU driver stall."
+      "flags": {}
     },
     {
       "key": "sageattention",
@@ -322,8 +319,7 @@
       "summary": "The Mamba-2 state-space-dual forward pass in TileLang, as used by Mamba-2, Codestral Mamba, Nemotron-H and Falcon-H1. The agent starts from a correct but deliberately unoptimized four-stage implementation.",
       "flags": {
         "astra": "H"
-      },
-      "note": "GPT-6 Astra's run used a local H100 NVL instead of the cloud H100s used by the other configurations."
+      }
     },
     {
       "key": "kvpress",
@@ -400,8 +396,7 @@
       "gpus": "1×H100",
       "target": "Iterative denoising and cache reuse",
       "summary": "Inference for LLaDA-8B-Instruct, a masked-diffusion language model that generates by iteratively unmasking a token buffer. The starting engine re-evaluates the full model at every step; the agent must raise useful tokens per second while keeping answer quality, determinism and request isolation.",
-      "flags": {},
-      "note": "An earlier, interrupted DeepSeek V4.1 Flash attempt was replaced by a later full-budget run."
+      "flags": {}
     },
     {
       "key": "sdv2",
