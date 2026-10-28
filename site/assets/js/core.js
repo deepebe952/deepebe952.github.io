@@ -54,7 +54,7 @@ window.IX = (() => {
   const UNIT = { TFLOPS: "TFLOPS", "GB/s": "GB/s", "tok/s": "tok/s", FPS: "FPS", "steps/min": "steps/min", Ratio: "×", Fidelity: "pts", "Rel. accuracy": "pts", Score: "" };
   const unitOf = (t) => (t.key === "flash-kmeans" ? "TFLOP/s" : UNIT[t.metric] ?? "");
   function withUnit(t, v, dp) { const u = unitOf(t); if (v == null) return "—"; return u === "×" ? fmt(v, dp) + "×" : u ? `${fmt(v, dp)} ${u}` : fmt(v, dp); }
-  const metricLabel = (t) => ({
+  const metricLabel = (t) => t.metric_info?.label || ({
     TFLOPS: t.key === "flash-kmeans" ? "Equivalent TFLOP/s" : "TFLOPS", Score: "Task score", Ratio: "Compression ratio",
     Fidelity: "Fidelity points", "Rel. accuracy": "Relative accuracy", "tok/s": "Tokens / s", FPS: "Latency-weighted FPS",
     "steps/min": "Valid steps / min", "GB/s": "Bandwidth (GB/s)",

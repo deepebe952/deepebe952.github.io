@@ -32,6 +32,7 @@ site/
   data/behavior.js           generated Section 5 figure bundle
 data/
   tasks.json                 task and model registry
+  task_metrics.json          short metric explanations, formulas, conditions, source provenance
   raw/runs.json              selected dashboard submissions
   tokens.json                paper cost totals and 150 per-task cost records
   behavior_figures.json      Section 5 measurements and source provenance
@@ -66,6 +67,8 @@ The authoritative paper source is `_AI_Infra____New_Template_Version___Zhengyu_H
 Preview with `python3 -m http.server -d site 8000`.
 
 ## Scoring and interaction costs
+
+Every task has a source-checked metric description in `data/task_metrics.json`, based on the latest Overleaf paper's task appendix and the matching release task specifications. The file records the paper archive hash, documentation revision, and source-document hashes. The bundle includes the display content as `task.metric_info`; provenance stays in the source file. Homepage rows show the metric name and a brief calculation, and task details explain the formula, aggregation, baseline, and scoring conditions. Descriptions do not change any measured score, submission, trajectory, or ranking calculation.
 
 The site follows paper Eq. 5. Each model is ranked by its best finite, valid score within each task's time budget; exact ties share the average rank. A run without a valid scored submission receives zero. Its rank score is the mean of `100 × (K − rank) / (K − 1)` over selected tasks, with fixed `K = 6`. All six models cover all 25 tasks. Flash-KMeans latency is converted to equivalent throughput, preserving the ordering. Budget and finiteness checks apply to performance summaries; submission records and status counts retain the original observations.
 

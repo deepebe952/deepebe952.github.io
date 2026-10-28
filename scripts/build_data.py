@@ -3,6 +3,7 @@
 
 Inputs (all under ``data/``):
   tasks.json      task registry: names, levels, metrics, flags, ranking eligibility
+  task_metrics.json  source-checked metric descriptions and calculation details
   raw/runs.json   per-run scores and submissions (scripts/extract_dashboard.py)
   tokens.json     token and turn analysis summary
 
@@ -35,6 +36,11 @@ STATUS_CODE = {"valid": "v", "invalid": "x", "rejected": "r", "infrastructure": 
 
 def load():
     registry = json.loads((ROOT / "data/tasks.json").read_text())
+    metrics = json.loads((ROOT / "data/task_metrics.json").read_text())["tasks"]
+    if set(metrics) != {t["key"] for t in registry["tasks"]}:
+        raise ValueError("Metric descriptions must cover exactly the registered tasks")
+    for task in registry["tasks"]:
+        task["metric_info"] = {k: v for k, v in metrics[task["key"]].items() if k != "sources"}
     raw = json.loads((ROOT / "data/raw/runs.json").read_text())
     tokens = json.loads((ROOT / "data/tokens.json").read_text())
     return registry, raw, tokens
@@ -193,6 +199,7 @@ def compute(registry, raw, tokens) -> dict:
         ranks = average_ranks(scores)
         entry = {k: t[k] for k in ("key", "name", "short", "stage", "level", "budget_h", "metric", "start", "gpus", "target", "summary")}
         entry.update({
+            "metric_info": t["metric_info"],
             "note": t.get("note"),
             "flags": t["flags"],
             "unit": "TFLOP/s (equiv.)" if t["key"] == "flash-kmeans" else (src["metric"] or {}).get("unit"),

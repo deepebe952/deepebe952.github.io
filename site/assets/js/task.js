@@ -34,6 +34,21 @@
     box.replaceChildren(facts);
     if (t.note) box.append(h("div", { class: "note-box" }, h("b", { text: "Note" }), t.note));
 
+    const info = t.metric_info;
+    const metricDetails = $("#t-metric-details");
+    metricDetails.replaceChildren();
+    $("#metric-calculation").hidden = !info;
+    if (info) {
+      metricDetails.append(
+        h("p", { class: "metric-intro", text: `${info.label} · higher is better` }),
+        h("div", { class: "metric-formula", text: info.formula }),
+        ...info.details.map((text) => h("p", { text })));
+      if (info.example) metricDetails.append(h("p", { class: "metric-example", text: info.example }));
+      if (info.conditions.length) metricDetails.append(
+        h("h4", { text: "Scoring conditions" }),
+        h("ul", {}, info.conditions.map((text) => h("li", { text }))));
+    }
+
     const bars = $("#t-bars");
     bars.replaceChildren();
     const max = Math.max(...MODELS.map((m) => t.results[m]?.best ?? 0), 1e-9);

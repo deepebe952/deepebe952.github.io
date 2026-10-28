@@ -302,6 +302,15 @@ table.matrix { width: 100%; min-width: 1000px; border-collapse: collapse; font-s
 .search::placeholder { color: var(--ink-3); }
 
 /* ---------------- task page ---------------- */
+.metric-explanation { font-size: 13px; line-height: 1.7; color: var(--ink-2); }
+.metric-explanation p { margin: 0 0 14px; }
+.metric-explanation .metric-intro { color: var(--ink); font-weight: 500; }
+.metric-formula { margin-bottom: 16px; padding: 12px; border: 1px solid var(--hair); border-radius: 8px; background: var(--panel-2); color: var(--ink); font: 400 12px/1.8 var(--f-mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+.metric-explanation .metric-example { padding-left: 12px; border-left: 2px solid var(--hair-3); }
+.metric-explanation h4 { margin: 20px 0 8px; font-size: 13px; font-weight: 600; color: var(--ink); }
+.metric-explanation ul { margin: 0; padding-left: 18px; }
+.metric-explanation li + li { margin-top: 8px; }
+.metric-explanation > :last-child { margin-bottom: 0; }
 .task-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.55fr); gap: 16px; align-items: start; }
 @media (max-width: 960px) { .task-grid { grid-template-columns: minmax(0, 1fr); } }
 .stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }

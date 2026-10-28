@@ -15,7 +15,7 @@ html[data-theme="dark"] .home-results .card-head .task-detail-hint { color: #ff8
 html[data-theme="dark"] .home-chart-head .task-detail-hint { color: #ff8e8e; }
 .task-result-controls { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px 20px; margin-bottom: 16px; }
 #task-results { display: grid; gap: 12px; }
-.task-result-row { display: grid; grid-template-columns: minmax(190px, 1.55fr) minmax(100px, .85fr) 50px minmax(82px, .7fr) minmax(130px, 1fr) minmax(240px, 1.7fr); grid-template-areas: "info category budget metric winner chart"; align-items: center; gap: 18px; padding: 18px 20px; transition: border-color .15s ease; }
+.task-result-row { display: grid; grid-template-columns: minmax(180px, 1.45fr) minmax(90px, .7fr) 45px minmax(145px, 1.2fr) minmax(110px, .9fr) minmax(240px, 1.7fr); grid-template-areas: "info category budget metric winner chart"; align-items: center; gap: 16px; padding: 18px 20px; transition: border-color .15s ease; }
 .task-result-row[hidden] { display: none; }
 .task-result-row:hover { border-color: var(--hair-3); }
 .task-result-row:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
@@ -26,6 +26,8 @@ html[data-theme="dark"] .home-chart-head .task-detail-hint { color: #ff8e8e; }
 .task-result-category { grid-area: category; }
 .task-result-budget { grid-area: budget; }
 .task-result-metric { grid-area: metric; }
+.metric-name { display: block; color: var(--ink-2); font-weight: 500; line-height: 1.45; }
+.metric-brief { display: block; margin-top: 5px; color: var(--ink-3); font-size: 11px; line-height: 1.5; }
 .task-result-winner { grid-area: winner; }
 .task-result-row .label { display: block; margin-bottom: 8px; font-size: 9px; letter-spacing: .06em; }
 .task-result-category, .task-result-budget, .task-result-metric, .task-result-winner { font-size: 12px; line-height: 1.6; color: var(--ink-2); }
