@@ -151,7 +151,7 @@
     },
     "opcd": {
       "label": "Medical accuracy gain (pp/hour)",
-      "home_label": "Accuracy gain / h",
+      "home_label": "Accuracy gain / training hour",
       "formula": "Δpp = 100 × (mean₃(a_final) − a_base)\nscore = 3600 × Δpp / D, if checks pass and Δpp ≥ 6.5\nscore = 0 otherwise",
       "details": [
         "a_final and a_base are accuracy fractions. Evaluate the final student on 2,436 held-out MedMCQA questions in three seeded repeats with a fixed answer-tag grader, without the privileged medical prompt.",
@@ -174,7 +174,7 @@
     },
     "opd": {
       "label": "Math accuracy gain (pp/hour)",
-      "home_label": "Accuracy gain / h",
+      "home_label": "Accuracy gain / training hour",
       "formula": "Δpp = 100 × (mean₃(a_final) − a_base)\nscore = 3600 × Δpp / D, if checks pass and Δpp ≥ 1.6\nscore = 0 otherwise",
       "details": [
         "a_final and a_base are accuracy fractions. The trained Qwen3-1.7B student is evaluated on 2,000 held-out DAPO-Math problems in three seeded repeats with the fixed math grader.",
@@ -197,7 +197,7 @@
     },
     "alfworld": {
       "label": "Game-success gain (pp/hour)",
-      "home_label": "Success gain / h",
+      "home_label": "Success gain / training hour",
       "formula": "Δpp = 100 × (mean₃(s_final) − s_base)\nscore = 3600 × Δpp / D, if checks pass and Δpp ≥ 15\nscore = 0 otherwise",
       "details": [
         "s_final and s_base are game-success fractions. The final Qwen3-4B policy is evaluated greedily on 1,134 held-out games in three repeats; the separate 140-game public evaluation does not enter the score.",
@@ -220,7 +220,7 @@
     },
     "sd35": {
       "label": "Teacher-gap closure per replay hour",
-      "home_label": "Gap closure / h",
+      "home_label": "Gap closure / replay hour",
       "formula": "c_r = (q_student,r − q_base,r) / (q_teacher,r − q_base,r)\nD = median(D₁, D₂, D₃)\nscore = 3600 × (c_OCR + c_PickScore) / (2 × D), if all gates pass\nscore = 0 otherwise",
       "details": [
         "q is mean quality: normalized edit-distance OCR accuracy on 1,012 prompts, or raw PickScore on 2,040 prompts.",
@@ -243,7 +243,7 @@
     },
     "wan22": {
       "label": "Fixed-workload replays per hour",
-      "home_label": "Replays / h",
+      "home_label": "Replays / hour",
       "formula": "D = median(D₁, D₂, D₃)\nscore = 3600 / D, if checks pass and mean_HPSv3 − h_base ≥ −0.28\nscore = 0 otherwise",
       "details": [
         "D is the median duration in seconds of three hidden replay workloads, each containing 16 prompts × 8 videos. Higher scores mean more completions of this fixed workload per hour.",
