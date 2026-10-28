@@ -7,7 +7,7 @@ site/
   index.html                 paper identity, leaderboard, task map, all task trajectories
   framework.html             Section 3: task definition, Table 2, task execution
   experimental-results.html Section 4: all seven subsections and original Figures 2–8
-  agent-behavior.html        Section 5: requirements, validation, improvement
+  agent-behavior.html        Section 5: requirements, validation, improvement, overall answer
   tasks.html                 compatibility redirect → index.html#results
   trajectories.html#<task>/<model>  run log reached from task details
   task.html#<key>             task details, scores, trajectories, run trace
@@ -29,14 +29,14 @@ site/
   assets/img/institutions/   institution artwork extracted from the paper
   assets/img/experimental-results/  original figure PDFs and vector SVG conversions
   data/infrathon.js          generated results and cost bundle
-  data/behavior.js           generated Section 5 figure bundle
+  data/behavior.js           archived digitized Section 5 figure bundle
 data/
   tasks.json                 task and model registry
   task_metrics.json          short metric explanations, formulas, conditions, source provenance
   raw/runs.json              selected dashboard submissions
   tokens.json                paper cost totals and 150 per-task cost records
   behavior_figures.json      Section 5 measurements and source provenance
-  behavior_original_figures.json  original Overleaf figure PDFs and section mapping
+  behavior_original_figures.json  original PDFs, display SVGs, source hashes, section mapping
   experimental_figures.json  Figures 2–8 source archive, hashes, and display assets
   author_links.json          verified author homepage links; null when unconfirmed
   institution_logos.json     paper logo extraction provenance
@@ -44,7 +44,8 @@ data/
 scripts/
   extract_dashboard.py      dashboard ZIP → selected runs
   build_data.py             results, ranks, summaries → infrathon.js
-  extract_behavior_figures.py  figure JSON → behavior.js; optional PDF extraction
+  extract_behavior_figures.py  archived figure JSON → behavior.js; optional PDF extraction
+  export_behavior_figures.py   original Section 5 PDFs → SVG assets and manifest
   extract_experimental_figures.py  Overleaf figure PDFs → SVG assets and manifest
   extract_paper_distributions.py  archived 41-page manuscript Figure 5 extraction
   check_site.py              local links, anchors, bundle structure, leaked local paths
@@ -62,7 +63,7 @@ python3 scripts/check_site.py
 
 The selected run source is `dashboard-latest-results-20261025.zip`: one selected page per task, with Astra OPD included and Qwen Concurrent agent-22 restored (best score 154.3333). The importer excludes Gemini, the voided LLaDA DeepSeek attempt, and Sol’s local Mamba-2 rerun. It supplements missing Astra OPD from the latest earlier run when needed. Independent final-artifact evaluations remain in raw records and do not determine the leaderboard.
 
-The authoritative paper source is `_AI_Infra____New_Template_Version___Zhengyu_Hu (1).zip` (SHA-256 `732678e3d954a4c605b1961abcdf994ebb22c1cd90b1a49683cd5caf2cd49cf5`), including `main.tex` and the original figure PDFs. To regenerate experimental figure assets, run `python3 scripts/extract_experimental_figures.py /path/to/overleaf.zip` with PyMuPDF installed; `--check` validates the committed assets without re-extracting them.
+The authoritative paper source is `_AI_Infra____New_Template_Version___Zhengyu_Hu (1).zip` (SHA-256 `732678e3d954a4c605b1961abcdf994ebb22c1cd90b1a49683cd5caf2cd49cf5`), including `main.tex` and the original figure PDFs. To regenerate experimental figure assets, run `python3 scripts/extract_experimental_figures.py /path/to/overleaf.zip` with PyMuPDF installed; `--check` validates the committed assets without re-extracting them. Agent Behavior uses `python3 scripts/export_behavior_figures.py /path/to/overleaf.zip`; `--check /path/to/overleaf.zip` additionally verifies source bytes and section mapping without writing files.
 
 Preview with `python3 -m http.server -d site 8000`.
 
@@ -96,10 +97,10 @@ Old Architecture/Method, Results, Behavior/Analysis, and Runs URLs preserve quer
 
 Task detail pages have a visible Back button. Visits from the task list return through browser history; direct or external arrivals fall back to the homepage task rows. Search, stage, level, and highlighted model are saved on the homepage history entry.
 
-Agent Behavior (`agent-behavior.html`) follows Section 5 and current Figures 9–12: task requirements use Figure 9, testing optimizations uses Figures 10–11, and continued improvement uses Figure 12. All panels are interactive UI components, without original-PDF links. `data/behavior_original_figures.json` retains the original extraction and verifies that all four latest archive PDFs are byte-for-byte unchanged. Printed values are transcribed directly; unlabeled points and process ticks are recovered from vector coordinates and labeled approximate. The optional PDF extraction path requires PyMuPDF; normal builds use committed JSON and only Python’s standard library. Tests check printed anchors, the workload ranking reversal, two-process summaries, and bundle freshness. Previous Analysis links redirect to the corresponding question or Experimental Results section.
+Agent Behavior (`agent-behavior.html`) follows all four Section 5 subsections, including Overall Answer and Future directions. It retains the paper’s case narratives: what the agent attempted, what the checks observed, and what happened next. Task requirements use original Figure 9, testing optimizations uses Figures 10–11, and continued improvement uses Figure 12. Each complete figure is a vector-glyph SVG exported directly from its corresponding Overleaf PDF, with an expansion dialog and no raw-PDF links. The additional reading context comes from the paper’s behavior-methods appendix: Figure 10’s five-call check differs from the full-case profiles, Figure 12’s pooled rates weight submissions rather than runs, and the 141-run repeat and 143-run later-record analyses have different inclusion rules. `data/behavior_original_figures.json` records the latest archive and main.tex hashes, subsection mapping, PDF/SVG hashes, and dimensions. The historical digitized data and its checks remain available but no longer render this page. Previous Analysis links and individual panel anchors remain supported.
 
 The default theme is light, with a saved dark-theme preference and a navigation toggle. Charts use shared theme variables and responsive dimensions.
 
 ## Deployment
 
-`.github/workflows/pages.yml` rebuilds both bundles, checks that committed bundles are current, runs data tests and local-reference/JavaScript checks, and deploys `site/` to GitHub Pages after a push to `main`. Pages is configured to use GitHub Actions.
+`.github/workflows/pages.yml` rebuilds both bundles, checks that committed bundles are current, runs data tests, original-figure integrity checks, and local-reference/JavaScript checks, and deploys `site/` to GitHub Pages after a push to `main`. Pages is configured to use GitHub Actions.

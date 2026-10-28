@@ -1,41 +1,78 @@
 {
-  "source_archive": "_AI_Infra____New_Template_Version___Zhengyu_Hu.zip",
-  "conversion": "None: PDFs extracted byte-for-byte from the Overleaf archive.",
+  "source_archive": "_AI_Infra____New_Template_Version___Zhengyu_Hu (1).zip",
+  "source_archive_sha256": "732678e3d954a4c605b1961abcdf994ebb22c1cd90b1a49683cd5caf2cd49cf5",
+  "source_tex": "main.tex",
+  "main_tex_sha256": "790f8a54a4f7a18925e289c180b90abdbbb3a693712752224e9a80d2b948536c",
+  "section": "5",
+  "section_title": "Agent Behavior Analysis",
+  "conversion": "PDFs extracted byte-for-byte from the selected Overleaf ZIP; SVGs exported from their single pages with PyMuPDF text_as_path=True. Text is vector glyph paths; no resampling, data digitization, or redrawing.",
+  "exporter": "scripts/export_behavior_figures.py",
+  "pymupdf_version": "2.0",
+  "dimensions_unit": "pt",
   "figures": [
     {
       "figure": 9,
       "section": "5.1",
+      "section_title": "Do Agents Follow Task Requirements?",
+      "figure_label": "fig:behavior_task_fidelity",
+      "panels": 2,
       "source_member": "images/behavior_task_fidelity.pdf",
       "file": "assets/img/behavior_task_fidelity.pdf",
-      "sha256": "4a6a3c790b31972a1eb33cb8287e32c96bc1d8244326ac718b126dd6122bee22"
+      "sha256": "4a6a3c790b31972a1eb33cb8287e32c96bc1d8244326ac718b126dd6122bee22",
+      "pdf": "assets/img/behavior_task_fidelity.pdf",
+      "svg": "assets/img/behavior_task_fidelity.svg",
+      "pdf_sha256": "4a6a3c790b31972a1eb33cb8287e32c96bc1d8244326ac718b126dd6122bee22",
+      "svg_sha256": "9c9439f5e02488a432d0ade8e72e97bf118e0fcc6d011046a2224fc9893cd260",
+      "width": 489.6,
+      "height": 248.4
     },
     {
       "figure": 10,
       "section": "5.2",
+      "section_title": "Do Agents Correctly Test Their Own Optimizations?",
+      "figure_label": "fig:behavior_execution_mismatch",
+      "panels": 2,
       "source_member": "images/behavior_execution_mismatch.pdf",
       "file": "assets/img/behavior_execution_mismatch.pdf",
-      "sha256": "d7e0188be4c377b156bf681b3701ba156ebe2076d277f8af9e57ecdb4522a50b"
+      "sha256": "d7e0188be4c377b156bf681b3701ba156ebe2076d277f8af9e57ecdb4522a50b",
+      "pdf": "assets/img/behavior_execution_mismatch.pdf",
+      "svg": "assets/img/behavior_execution_mismatch.svg",
+      "pdf_sha256": "d7e0188be4c377b156bf681b3701ba156ebe2076d277f8af9e57ecdb4522a50b",
+      "svg_sha256": "b1ab6fae77471dbb57d120c1d3098b94fe13be8de03d99bcf1418fa67a7e137b",
+      "width": 489.6,
+      "height": 201.6
     },
     {
       "figure": 11,
       "section": "5.2",
+      "section_title": "Do Agents Correctly Test Their Own Optimizations?",
+      "figure_label": "fig:behavior_workload_reversal",
+      "panels": 3,
       "source_member": "images/behavior_workload_reversal.pdf",
       "file": "assets/img/behavior_workload_reversal.pdf",
-      "sha256": "1a19c45719b876dccf26be6eb965b5ba1d582edd5cb06bf64dfdc010a244252b"
+      "sha256": "1a19c45719b876dccf26be6eb965b5ba1d582edd5cb06bf64dfdc010a244252b",
+      "pdf": "assets/img/behavior_workload_reversal.pdf",
+      "svg": "assets/img/behavior_workload_reversal.svg",
+      "pdf_sha256": "1a19c45719b876dccf26be6eb965b5ba1d582edd5cb06bf64dfdc010a244252b",
+      "svg_sha256": "f173ed0efae2ccde1ecc778583d9142350558de2452eca272503b72bd8a13b6c",
+      "width": 489.6,
+      "height": 212.4
     },
     {
       "figure": 12,
       "section": "5.3",
+      "section_title": "Do Agents Keep Improving over Long Horizons?",
+      "figure_label": "fig:behavior_optimization",
+      "panels": 2,
       "source_member": "images/behavior_search.pdf",
       "file": "assets/img/behavior_search.pdf",
-      "sha256": "0f056421671b5e93c3ca3477c573bbabba5c809f07ac01741deea4fdde85eb26"
+      "sha256": "0f056421671b5e93c3ca3477c573bbabba5c809f07ac01741deea4fdde85eb26",
+      "pdf": "assets/img/behavior_search.pdf",
+      "svg": "assets/img/behavior_search.svg",
+      "pdf_sha256": "0f056421671b5e93c3ca3477c573bbabba5c809f07ac01741deea4fdde85eb26",
+      "svg_sha256": "04528a6e499c9bef83499c6101273727c9a893c1bd0b33594053c763f8f39beb",
+      "width": 489.6,
+      "height": 223.2
     }
-  ],
-  "latest_verification": {
-    "archive": "_AI_Infra____New_Template_Version___Zhengyu_Hu (1).zip",
-    "archive_sha256": "732678e3d954a4c605b1961abcdf994ebb22c1cd90b1a49683cd5caf2cd49cf5",
-    "verified_date": "2026-10-28",
-    "source_tex": "main.tex",
-    "verification": "All four Figure 9–12 PDF assets are byte-for-byte identical to the files and SHA-256 values recorded above. Section 5 text and figure numbering are unchanged. The original source_archive records extraction provenance."
-  }
+  ]
 }

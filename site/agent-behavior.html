@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Agent Behavior · Infrathon</title>
-<meta name="description" content="Agent behavior across task requirements, experimental validation, and continued improvement.">
+<meta name="description" content="Evidence from 150 agent runs: task requirements, experimental validation, continued improvement, and the paper’s overall answer.">
 <meta property="og:title" content="Infrathon">
 <meta property="og:description" content="Can frontier models solve long-horizon AI infrastructure tasks? 25 tasks, 6 configurations, 150 runs on H100s.">
 <meta name="theme-color" content="#fafbfd">
@@ -22,67 +22,84 @@
     <div class="crumbs"><a href="index.html">Home</a><span>/</span><span>Agent Behavior</span></div>
     <h1>Agent Behavior Analysis</h1>
     <p class="lede">Can frontier models solve real-world long-horizon AI infra tasks?</p>
+    <p class="behavior-scope">To answer it, we analyze agent behavior through three questions. We analyze trajectories from the 150 runs spanning 25 tasks and six configurations in <a href="experimental-results.html">Experimental Results</a>, inspecting code, tool outputs, feedback, and subsequent decisions.</p>
   </div></header>
   <nav class="subnav" aria-label="Agent Behavior sections"><div class="wrap">
-    <a href="#requirements">Task requirements</a><a href="#validation">Testing optimizations</a><a href="#improvement">Continued improvement</a>
+    <a href="#requirements" aria-current="location">Task requirements</a><a href="#validation">Testing optimizations</a><a href="#improvement">Continued improvement</a><a href="#overall-answer">Overall answer</a>
   </div></nav>
 
   <section class="sec" id="requirements"><div class="wrap">
     <div class="sec-title"><div><h2>Do Agents Follow Task Requirements?</h2><p>Agents sometimes change the required computation or violate explicit constraints, and local checks can miss these violations.</p></div></div>
-    <div class="behavior-pair">
-      <figure class="card behavior-figure" id="figure-9a">
-        <div class="card-head"><div><span class="label">Figure 9a · Claude / ALFWorld</span><h3>Token-wise checks reveal disagreement</h3></div></div>
-        <div class="card-body"><div id="logprob-chart"></div></div>
-        <figcaption>Generated-token log-probabilities versus plain-engine recomputation at fixed weights. First 48 saved episodes of round 2; 19,935–20,979 tokens per setting. Settings generate different token paths. Shading marks breadth one; CD2 means two continuous decode steps.</figcaption>
-      </figure>
-      <figure class="card behavior-figure" id="figure-9b">
-        <div class="card-head"><div><span class="label">Figure 9b · Attn-QAT</span><h3>Tolerance passes miss a contract change</h3></div></div>
-        <div class="card-body"><div class="behavior-legend" id="fixture-legend"></div><div class="behavior-plot" id="fixture-chart"></div><p class="figure-finding">Both pass 11/11 local fixtures. Both are rejected before timing.</p></div>
-        <figcaption>Claude and DeepSeek use the same forbidden denominator substitution. Points show the worst reported error relative to each fixture’s tolerance.</figcaption>
-      </figure>
+    <div class="behavior-analysis">
+      <p><strong>A cheaper implementation can change the required computation.</strong> Four audited runs across three tasks pursue speed by crossing a visible task boundary. DeepSeek’s Wan2.2 implementation emits <code>log_complete</code> before the required background <code>fsync</code> finishes. GLM’s LLaDA implementation replaces a trusted model submodule after a blocked attempt to replace <code>model.forward</code>. In Attn-QAT, both DeepSeek and Claude replace the specified sum of BF16-rounded probabilities with a sum before rounding. Each variant receives an Integrity rejection before benchmarking, followed by revision or rollback. The repeated pattern is optimizing away work or boundaries that define the task itself.</p>
+      <p><strong>Local checks can miss task violations.</strong> The two Attn-QAT variants pass all eleven local edge fixtures despite the forbidden arithmetic change (<a href="#figure-9b">Figure 9b</a>). Other gaps require richer diagnostics. On ALFWorld, Claude initially uses similar aggregate log-probabilities as evidence against bias and adopts a six-draft, breadth-one decoding policy after small checks pass. A later audit recomputes saved generated-token log-probabilities with a plain engine at the same fixed weights. Four breadth-one settings have mean absolute discrepancies of 0.01294–0.01787 nats, versus 0.00236–0.00269 for the displayed controls (<a href="#figure-9a">Figure 9a</a>). The agent first widens the tree, then withdraws speculative decoding after further diagnostics.</p>
+      <p><strong>State across calls creates a related gap.</strong> Astra’s grouped Wgrad candidate passes 40 public edge checks and nine formal gates, but a legal shape transition later produces NaNs: its compiled-cache key omits tile width. Adding that component repairs the tested transitions. These successful self-audits show why validation must cover the task’s numerical and state semantics.</p>
     </div>
+    <figure class="card behavior-figure" id="figure-9">
+      <span class="figure-anchor" id="figure-9a"></span><span class="figure-anchor" id="figure-9b"></span>
+      <div class="card-head"><div><span class="label">Figure 9</span><h3>Narrow validation can miss the required computation.</h3></div><button class="figure-expand" type="button" data-expand-figure aria-label="Expand Figure 9">Expand figure ↗</button></div>
+      <p class="figure-scroll-hint">Swipe or scroll to see the full figure →</p>
+      <div class="paper-figure-scroll" tabindex="0" aria-label="Figure 9; scroll horizontally on a small screen"><img src="assets/img/behavior_task_fidelity.svg" width="490" height="248" alt="Panel a compares saved rollout token log-probabilities with plain-engine recomputation for Claude on ALFWorld: breadth-one settings show larger discrepancies than the displayed controls. Panel b shows Claude and DeepSeek passing all eleven local Attn-QAT fixtures despite a forbidden denominator change and rejection before timing." decoding="async"></div>
+      <figcaption><strong>(a) ALFWorld:</strong> rollout token log-probabilities versus plain-engine recomputation at fixed weights, using the first 48 saved episodes of round 2. Settings generate different token paths. Shading marks breadth one; CD2 means two continuous decode steps. <strong>(b) Attn-QAT:</strong> both runs pass all eleven local fixtures despite the same forbidden denominator substitution; both are rejected before timing. Values come from logged local diagnostics.</figcaption>
+    </figure>
   </div></section>
 
   <section class="sec" id="validation"><div class="wrap">
     <div class="sec-title"><div><h2>Do Agents Correctly Test Their Own Optimizations?</h2><p>Agents sometimes test a different configuration from the one they intend to evaluate, or use workloads that omit constraints crucial to the optimization.</p></div></div>
-    <div class="behavior-pair">
-      <figure class="card behavior-figure" id="figure-10a">
-        <div class="card-head"><div><span class="label">Figure 10a · GLM / Attn-QAT</span><h3>Source and microbenchmark disagree</h3></div></div>
-        <div class="card-body"><div class="behavior-legend repair-legend"></div><div class="behavior-plot" id="latency-chart"></div></div>
-        <figcaption>Public-runner latency on the same input before and after correcting source tile constants. Open circles show a second pre-repair measurement.</figcaption>
-      </figure>
-      <figure class="card behavior-figure" id="figure-10b">
-        <div class="card-head"><div><span class="label">Figure 10b · DeepSeek / LLaDA</span><h3>A fast path silently falls back</h3></div></div>
-        <div class="card-body"><div class="behavior-legend repair-legend"></div><div class="behavior-plot" id="launches-chart"></div></div>
-        <figcaption>GPU launches for the same decoding case before and after repairing cache-key normalization. Numerical checks pass in both states.</figcaption>
-      </figure>
+    <div class="behavior-analysis">
+      <p><strong>Experiments can execute the wrong configuration.</strong> Qwen’s Mamba-2 sweep varies tuning parameters while a shape-keyed cache reuses the original execution plan. In a separate Mamba-2 run, GLM tunes a function shadowed by a later definition, then attributes measurements to the inactive variant. Sol’s sparse-MLA prefetch variants dispatch ordinary assembly; one variant still passes all 334 public edge cases. These experiments measure a different code path from the one being tuned.</p>
+      <p><a href="#figure-10">Figure 10</a> shows two consequences. GLM’s Attn-QAT microbenchmark and public runner use different tile configurations. Aligning them reduces public forward latency from 74.23 to 25.75 ms, with backward latency nearly unchanged. DeepSeek’s LLaDA implementation redundantly executes kernels because of inconsistent cache keys. In a separate five-call test, repairing the mismatch reduces launches from ten to five. Both cases show a mismatch between the intended experiment and the implementation that actually runs.</p>
     </div>
-    <figure class="card behavior-figure workload-figure" id="figure-11">
-      <div class="card-head"><div><span class="label">Figure 11 · DeepSeek / Flash-KMeans</span><h3>A proxy workload can reverse an optimization decision</h3></div><div class="behavior-legend" id="split-legend"></div></div>
-      <div class="card-body workload-panels" id="workload-panels"></div>
-      <figcaption>Update-kernel latency under balanced and assignment-produced labels. Dots show the median across two fresh processes; ticks show each process median. B, N, K, D: batch size, points, clusters, feature dimension.</figcaption>
+    <figure class="card behavior-figure" id="figure-10">
+      <span class="figure-anchor" id="figure-10a"></span><span class="figure-anchor" id="figure-10b"></span>
+      <div class="card-head"><div><span class="label">Figure 10</span><h3>Correct outputs can conceal an incorrectly executed experiment.</h3></div><button class="figure-expand" type="button" data-expand-figure aria-label="Expand Figure 10">Expand figure ↗</button></div>
+      <p class="figure-scroll-hint">Swipe or scroll to see the full figure →</p>
+      <div class="paper-figure-scroll" tabindex="0" aria-label="Figure 10; scroll horizontally on a small screen"><img src="assets/img/behavior_execution_mismatch.svg" width="490" height="202" alt="Panel a shows GLM’s Attn-QAT forward latency falling from 74.23 to 25.75 milliseconds after correcting source constants, while backward latency barely changes. Panel b shows DeepSeek’s LLaDA full-case kernel launch counts halving after a cache-key repair, including residual-and-normalization launches from 10,458 to 5,229." loading="lazy" decoding="async"></div>
+      <figcaption><strong>(a) GLM/Attn-QAT:</strong> public-runner medians on the same input before and after correcting source constants. Open markers show a second pre-repair measurement on the same public input. <strong>(b) DeepSeek/LLaDA:</strong> profiles of the same decoding case before and after repairing cache-key normalization. Numerical checks pass in both states. These full-case profiles are distinct from the separate five-call test described above.</figcaption>
+    </figure>
+    <div class="behavior-analysis">
+      <p><strong>A convenient proxy can omit the decisive workload constraint.</strong> DeepSeek selects a Flash-KMeans update strategy using balanced synthetic labels, then observes a regression with labels produced by assignment. Its subsequent controlled comparison reverses the one-split/four-split ranking on a large shape: 1.745 versus 2.341 ms under balanced labels, but 8.020 versus 3.695 ms under assignment-produced labels (<a href="#figure-11">Figure 11a</a>). The additional shapes retain the ranking or leave the leaders close.</p>
+      <p>Claude’s LMCache microbenchmark hides an allocation constraint: it uses one large pinned allocation, while integrated transfers span separately pinned chunks. Merged transfers error and fall back, so the agent withdraws the optimization.</p>
+    </div>
+    <figure class="card behavior-figure" id="figure-11">
+      <div class="card-head"><div><span class="label">Figure 11</span><h3>A proxy workload can reverse an optimization decision.</h3></div><button class="figure-expand" type="button" data-expand-figure aria-label="Expand Figure 11">Expand figure ↗</button></div>
+      <p class="figure-scroll-hint">Swipe or scroll to see the full figure →</p>
+      <div class="paper-figure-scroll" tabindex="0" aria-label="Figure 11; scroll horizontally on a small screen"><img src="assets/img/behavior_workload_reversal.svg" width="490" height="212" alt="Three Flash-KMeans workloads compare update-kernel latency under balanced and assignment-produced labels. In panel a, one split wins on balanced labels but four splits win on assignment-produced labels; the other shapes retain the ranking or leave the leaders close. Lower latency is better." loading="lazy" decoding="async"></div>
+      <figcaption><strong>DeepSeek/Flash-KMeans:</strong> update split counts under balanced and assignment-produced labels. Dots show the median across two fresh processes; ticks show each process median. Panel (a) reverses the ranking; (b) and (c) retain the other tested shapes. B, N, K, D denote batch size, points, clusters, and feature dimension. Values are update-kernel latencies.</figcaption>
     </figure>
   </div></section>
 
   <section class="sec" id="improvement"><div class="wrap">
     <div class="sec-title"><div><h2>Do Agents Keep Improving over Long Horizons?</h2><p>Agents achieve late gains, yet some declare completion too early or seek higher scores by rerunning unchanged candidates.</p></div></div>
-    <div class="behavior-pair">
-      <figure class="card behavior-figure" id="figure-12a">
-        <div class="card-head"><div><span class="label">Figure 12a</span><h3>Gains follow a completion statement</h3></div></div>
-        <div class="card-body" id="completion-gains"></div>
-        <figcaption>Three completion–continuation sequences with code changes and higher valid scores. Bars share a 0–30% gain scale.</figcaption>
-      </figure>
-      <figure class="card behavior-figure" id="figure-12b">
-        <div class="card-head"><div><span class="label">Figure 12b</span><h3>Repetition grows in a subset of runs</h3></div></div>
-        <div class="card-body" id="repeat-comparison"></div>
-        <figcaption>The same 141 full-budget runs in both halves, including all submission statuses. A repeat resubmits an earlier implementation in the same run.</figcaption>
-      </figure>
+    <div class="behavior-analysis">
+      <p><strong>Completion judgments can underestimate the remaining opportunity.</strong> Three audited runs spanning operators, modules, and systems announce completion before a stop hook requires continuation. All subsequently change the implementation and improve their valid within-budget score: GLM/SageAttention by 24.8%, Claude/GKD by 3.1%, and DeepSeek/SD3.5 by 14.0% (<a href="#figure-12a">Figure 12a</a>).</p>
+      <p><strong>More submissions need not mean more implementation progress.</strong> Across 2,941 identifiable submissions (of 2,966), 377 revisit prior candidate content in the same run, spanning 54 runs and 21 tasks. A repeat matches any preceding identifiable content in the same run, including returns to a candidate after other candidates.</p>
+      <p>Among 141 full-budget runs observed in both halves, the pooled repeat fraction rises from 4.8% to 19.9%. This is concentrated: 43 runs increase, 88 tie, and ten decrease; the number with a majority of repeats rises from two to 18 (<a href="#figure-12b">Figure 12b</a>).</p>
     </div>
-    <details class="notes behavior-sources"><summary>Figure data</summary><p>Figures 9–12 follow Section 5 of the paper. Printed values are transcribed directly. Unlabeled points in Figure 9b, the open markers in Figure 10a, and Figure 11’s points and ticks are recovered from PDF vector coordinates and shown as approximate values.</p></details>
+    <figure class="card behavior-figure" id="figure-12">
+      <span class="figure-anchor" id="figure-12a"></span><span class="figure-anchor" id="figure-12b"></span>
+      <div class="card-head"><div><span class="label">Figure 12</span><h3>Completion judgments and activity counts are imperfect progress signals.</h3></div><button class="figure-expand" type="button" data-expand-figure aria-label="Expand Figure 12">Expand figure ↗</button></div>
+      <p class="figure-scroll-hint">Swipe or scroll to see the full figure →</p>
+      <div class="paper-figure-scroll" tabindex="0" aria-label="Figure 12; scroll horizontally on a small screen"><img src="assets/img/behavior_search.svg" width="490" height="223" alt="Panel a shows higher valid scores after completion statements and subsequent code changes in GLM/SageAttention, Claude/GKD, and DeepSeek/SD3.5. Panel b compares repeated-content submission fractions for the same 141 full-budget runs: runs with mostly repeats increase from two in the first half to eighteen in the second half." loading="lazy" decoding="async"></div>
+      <figcaption><strong>(a)</strong> Three completion–continuation sequences contain code changes followed by higher valid scores. <strong>(b)</strong> Repeated-content submission fractions in each budget half for the same 141 runs, including all statuses. The pooled percentages weight submissions equally; they are not the percentage of runs. First and second halves refer to each task’s nominal 12- or 24-hour budget.</figcaption>
+    </figure>
+    <div class="behavior-analysis">
+      <p><strong>Context distinguishes useful remeasurement from seeking a higher draw.</strong> Claude/ORPO interleaves candidates with controls to investigate noise. DeepSeek/ORPO explicitly continues “lottery rounds,” with all 43 second-half submissions revisiting prior content. Qwen/grouped FP8 GEMM calculates the chance of exceeding the tracked maximum and opts to “keep fishing for a higher best”; 26 of its 30 second-half submissions repeat content. Other repeated evaluations in this run compare candidates.</p>
+      <p>Later records remain common: 131 of 143 full-budget runs with an early valid score improve later; only nine obtain all later records by remeasuring already-valid content. This later-record analysis requires a valid score in the first half; the 141-run repeat comparison requires identifiable submissions in both halves.</p>
+    </div>
+  </div></section>
+
+  <section class="sec" id="overall-answer"><div class="wrap">
+    <div class="sec-title"><div><h2>Overall Answer</h2></div></div>
+    <div class="behavior-analysis">
+      <p>Frontier models can find valid, high-performing solutions, but progress over long runs remains uneven. The results show gains across operators, modules, and systems (<a href="experimental-results.html">Experimental Results</a>), often continuing late into the budget. The three analyses identify recurring obstacles to further progress: violations of task requirements, conclusions drawn from mismatched experiments, and premature completion or repeated scoring in place of implementation changes.</p>
+      <h3>Future directions</h3>
+      <p>First, agents should retain task constraints across revisions and check the numerical and state invariants affected by each change. Second, they should verify which code and configuration actually ran, and test proposed gains under representative workloads. Third, they should use experiment histories to identify unresolved bottlenecks and decide whether to make a new change, confirm a gain, or stop.</p>
+    </div>
   </div></section>
 </main>
+<dialog class="behavior-figure-dialog" id="figure-dialog" aria-labelledby="figure-dialog-title"><div class="figure-dialog-head"><h2 id="figure-dialog-title">Figure</h2><button type="button" id="figure-dialog-close" aria-label="Close expanded figure">Close ×</button></div><div class="figure-dialog-body" tabindex="0" aria-label="Expanded figure; scroll horizontally to inspect"><img id="figure-dialog-image" alt=""></div></dialog>
 <script src="data/infrathon.js"></script>
-<script src="data/behavior.js"></script>
 <script src="assets/js/core.js"></script>
 <script src="assets/js/agent-behavior.js"></script>
 </body>

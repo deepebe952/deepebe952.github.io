@@ -18,7 +18,7 @@ class BehaviorFigures(unittest.TestCase):
         self.assertEqual([DATA[f"fig{n}"]["page"] for n in DATA["figure_numbers"]], [15, 16, 16, 17])
         html = (ROOT / "site/agent-behavior.html").read_text()
         labels = re.findall(r'class="label">Figure (\d+)([ab]?)', html)
-        self.assertEqual(labels, [("9", "a"), ("9", "b"), ("10", "a"), ("10", "b"), ("11", ""), ("12", "a"), ("12", "b")])
+        self.assertEqual(labels, [("9", ""), ("10", ""), ("11", ""), ("12", "")])
 
     def test_contract_figures(self):
         rows = DATA["fig9"]["logprob"]
