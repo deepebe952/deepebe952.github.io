@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Infrathon</title>
-<meta name="description" content="Infrathon benchmarks frontier models on 25 long-horizon AI infrastructure tasks across training and inference, from GPU kernels to RL training loops and serving engines.">
+<meta name="description" content="In this work, we study whether frontier models can sustain progress on real-world AI infrastructure optimization over long horizons.">
 <meta property="og:title" content="Infrathon">
 <meta property="og:description" content="Can frontier models solve long-horizon AI infrastructure tasks? 25 tasks, 6 configurations, 150 runs on H100s.">
 <meta name="theme-color" content="#fafbfd">
@@ -18,13 +18,9 @@
 </head>
 <body data-page="index">
 <main>
-  <nav class="subnav" aria-label="Homepage sections"><div class="wrap">
-    <a href="#overview">Overview</a><a href="#task-definition">Task Definition</a><a href="#task-execution">Task Execution</a><a href="#findings">Key Findings</a>
-  </div></nav>
   <section class="hero" id="overview">
     <div class="wrap">
       <h1 class="paper-title"><span>Infrathon: Benchmarking Language Agents</span><span class="paper-subtitle">for Real-World, Long-Horizon AI Infra Optimization</span></h1>
-      <p class="home-lede">A benchmark of 25 real AI infrastructure tasks where agents iterate on code, tests, and performance for 12–24 hours.</p>
       <div class="paper-team">
         <div class="authors" role="group" aria-label="Authors, in paper order">
           <ul class="author-row">
@@ -82,60 +78,56 @@
           <button class="resource-button" type="button" disabled title="Coming soon" aria-label="HuggingFace: coming soon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6c0-4 16-4 16 0v12c0 4-16 4-16 0z M4 6c0 4 16 4 16 0 M4 12c0 4 16 4 16 0"/></svg>HuggingFace</button>
         </div>
         <p class="resource-status">Coming soon</p>
-        <div class="home-actions"><a class="btn primary" href="framework.html">Explore the framework →</a><a class="btn" href="experimental-results.html">Experimental results →</a></div>
       </div>
     </div>
   </section>
 
 
-  <section class="sec home-introduction"><div class="wrap">
-    <div class="home-prose">
-      <h2>Sustained optimization across the AI infrastructure stack</h2>
-      <p>Making AI systems faster requires repeated implementation, profiling, and validation. A change must preserve correctness, obey numerical and hardware constraints, and improve performance on the actual workload.</p>
-      <p><strong>Infrathon studies whether language agents can sustain this process over long horizons.</strong> Its tasks span training and inference, from GPU kernels and KV-cache policies to complete training loops and serving systems. Agents develop candidates with public tests and receive correctness and performance feedback from private tests.</p>
-    </div>
-    <dl class="home-facts" aria-label="Benchmark at a glance">
-      <div><dt>25</dt><dd>real infrastructure tasks</dd></div><div><dt>6</dt><dd>model configurations</dd></div><div><dt>150</dt><dd>main-experiment runs</dd></div><div><dt>10,000+</dt><dd>GPU-hours across experiments</dd></div>
-    </dl>
+  <nav class="subnav" aria-label="Homepage sections"><div class="wrap">
+    <a href="#introduction">Introduction</a><a href="#task-definition">Task Definition</a><a href="#task-execution">Task Execution</a><a href="#findings">Results</a>
+  </div></nav>
+
+  <section class="sec home-reading" id="introduction"><div class="wrap">
+    <h2>Introduction</h2>
+    <!-- Formal Abstract, main.tex:700; original sentences, split into paragraphs. -->
+    <p data-paper-source="abstract">In this work, we study whether frontier models can sustain progress on real-world AI infrastructure optimization over long horizons. Existing evaluations often focus on specific components or shorter optimization budgets, leaving sustained optimization across the infrastructure stack underexplored.</p>
+    <p data-paper-source="abstract">To address this gap, we introduce Infrathon, a benchmark of 25 tasks spanning operators, interacting modules, and complete training or serving workflows. Infrathon supports iterative implementation, profiling, and validation under numerical and hardware constraints, with private task-specific tests. We evaluate six models across 150 runs with 12- or 24-hour budgets and a total budget of over 10,000 GPU-hours.</p>
   </div></section>
 
-  <section class="sec" id="task-definition"><div class="wrap">
-    <div class="sec-title"><div><h2>Task Definition</h2><p>10 training tasks and 15 inference tasks, organized by what the agent can change.</p></div></div>
-    <div class="home-cards">
-      <article class="card home-level"><span class="label">11 tasks · 12 hours</span><h3>Operators</h3><p>Optimize individual computation or data-movement primitives.</p><p class="home-example">Quantized attention, grouped GEMM, and KV block transfer.</p></article>
-      <article class="card home-level"><span class="label">5 tasks · 24 hours</span><h3>Modules</h3><p>Improve a functional component within a fixed workflow.</p><p class="home-example">Training objectives, KV eviction and scoring, and KV compression.</p></article>
-      <article class="card home-level"><span class="label">9 tasks · 24 hours</span><h3>Systems</h3><p>Optimize complete loops, pipelines, or serving orchestration.</p><p class="home-example">Online distillation, video generation, and concurrent agent serving.</p></article>
-    </div>
-    <p class="home-prose">Every task specifies a workspace, public tests, private tests, resources, and a time budget. The budget includes tool execution and feedback waits.</p>
-    <p><a class="link" href="framework.html#task-inventory">See all 25 tasks and the task specification →</a></p>
+  <section class="sec home-reading" id="task-definition"><div class="wrap">
+    <h2>Task Definition</h2>
+    <!-- Section 3.1, main.tex:806,814,816,818. -->
+    <p data-paper-source="task-definition">We organize the <strong>25 tasks</strong> in Infrathon by application stage (training or inference), then by optimization level according to their editable scope. <strong>Operator-level</strong> tasks target computational or data-movement primitives; <strong>module-level</strong> tasks target functional components within fixed workflows, such as training objectives or KV policies; and <strong>system-level</strong> tasks target training or generation loops, cross-stage pipelines, and serving orchestration. <a href="framework.html#task-inventory">Table 2</a> details the 10 training and 15 inference tasks.</p>
+    <p data-paper-source="task-definition">Each task starts from a workspace <var>W</var>, which supplies initial code or an interface to implement, together with the editable scope. The agent develops candidate solutions using public tests <var>P</var>, comprising visible cases and a public runner for correctness checks and profiling.</p>
+    <p data-paper-source="task-definition">The private tests <var>E</var> specify test cases, task-specific checks, the scoring objective and its direction, and permitted feedback. The Judge environment returns private test results without exposing private test cases or scoring code to the agent.</p>
+    <p data-paper-source="task-definition">Development and evaluation run under task-specific resources <var>R</var>, specifying hardware allocation and the software runtime. The framework permits a time budget <var>T ∈ (0, ∞]</var>, where <var>T = ∞</var> denotes execution without a preset wall-clock deadline. For the experiments in this paper, we set <var>T = 12</var> hours for operator-level tasks and <var>T = 24</var> hours for module- and system-level tasks, including tool execution and feedback waits.</p>
+    <p class="home-section-link"><a href="framework.html#definition">Task definition and inventory →</a></p>
   </div></section>
 
-  <section class="sec" id="task-execution"><div class="wrap">
-    <div class="sec-title"><div><h2>Task Execution</h2><p>A feedback loop separates candidate development from private evaluation.</p></div></div>
-    <figure class="framework-figure">
-      <a class="framework-art" href="framework.html" aria-label="Explore the Infrathon framework">
-        <img src="assets/img/framework.svg" width="1214" height="514" alt="Infrathon framework: tasks share a workspace, public tests, private tests, resources, and time budget. Candidates move from the Work environment through the Controller to the Judge; feedback guides further optimization.">
+  <section class="sec home-reading" id="task-execution"><div class="wrap">
+    <h2>Task Execution</h2>
+    <!-- Section 3.2, main.tex:900; Figure 1 caption, main.tex:799. -->
+    <p data-paper-source="task-execution">As shown in Figure 1(b), our task execution framework consists of three components: the <strong>Work environment</strong>, the <strong>Controller</strong>, and the <strong>Judge environment</strong>.</p>
+    <figure class="home-paper-figure">
+      <a href="framework.html#overview" aria-label="View the full framework description">
+        <img src="assets/img/framework.svg" width="1214" height="514" alt="Infrathon framework: a common task definition and the feedback loop between the Work environment, the Controller, and the Judge environment.">
       </a>
-      <figcaption>The paper’s framework: a shared task definition and a repeated development–evaluation loop.</figcaption>
+      <figcaption data-paper-source="framework-caption"><strong>Infrathon framework.</strong> (a) Training and inference tasks across three optimization levels share a common specification. (b) The feedback loop between the Work environment, the Controller, and the Judge environment supports continued optimization without a fixed horizon limit; experiments use 12-hour or 24-hour budgets.</figcaption>
     </figure>
-    <div class="home-cards home-loop">
-      <article><h3>Work environment</h3><p>The agent edits candidates, runs public correctness checks, and profiles performance.</p></article>
-      <article><h3>Controller</h3><p>Snapshots the candidate and checks task rules and the allowed editable scope.</p></article>
-      <article><h3>Judge environment</h3><p>Runs private tests and returns validity checks, scores, and permitted diagnostics.</p></article>
-    </div>
-    <p class="home-prose">The agent uses this feedback to continue optimizing. Stop hooks and session recovery sustain execution through the experimental budget; the framework also supports runs without a preset deadline.</p>
-    <p><a class="link" href="framework.html#execution">Read how execution and evaluation work →</a></p>
+    <!-- Section 3.2 excerpts, main.tex:903,918,934,941,915. -->
+    <p data-paper-source="task-execution">In the Work environment, the agent develops and tests candidates using the task workspace <var>W</var>, public tests <var>P</var>, and resources <var>R</var>.</p>
+    <p data-paper-source="task-execution">The trusted Controller manages candidate submissions, including task-specific limits and cooldowns. For each submission, it snapshots the files allowed by <var>W</var> and coordinates an integrity check before forwarding the candidate to the Judge environment.</p>
+    <p data-paper-source="task-execution">The Judge environment runs the private tests <var>E</var> on candidate snapshots that pass the Controller's integrity check, using the task-specific hardware and runtime specified by <var>R</var>. The result returns to the agent in the Work environment, allowing it to diagnose failures, revise or roll back its implementation, and submit another candidate within the time budget.</p>
+    <p data-paper-source="task-execution">A stop hook prompts further work when an agent attempts to finish. Session recovery resumes eligible exits in the same session and workspace. Both mechanisms use the original run deadline.</p>
+    <p class="home-section-link"><a href="framework.html#execution">Task execution →</a></p>
   </div></section>
 
-  <section class="sec" id="findings"><div class="wrap">
-    <div class="sec-title"><div><h2>Key Findings</h2><p>Final performance, time to improve, and reliable testing tell different parts of the story.</p></div></div>
-    <div class="home-cards">
-      <article class="card home-finding"><span class="home-number">17 / 25</span><h3>Strong overall results, task-specific winners</h3><p>Claude leads on 17 tasks, Astra on six, and Sol and Qwen on one each. The best model still depends on the workload.</p><a class="link" href="experimental-results.html#leaderboard">Main results →</a></article>
-      <article class="card home-finding"><span class="home-number">25% → 50%</span><h3>Evaluation time changes the ranking</h3><p>Astra leads at a quarter of the time budget; Claude leads at the halfway point. Short evaluations can give a different model ordering.</p><a class="link" href="experimental-results.html#ranking-budget">Rankings over time →</a></article>
-      <article class="card home-finding"><span class="home-number">131 / 143</span><h3>Many runs improve in the second half</h3><p>Of full-budget runs with a midpoint score, 91.6% improve later. Gains range from small refinements to larger advances.</p><a class="link" href="experimental-results.html#second-half">Later performance gains →</a></article>
-    </div>
-    <div class="home-behavior"><h3>Valid improvements still require reliable experiments</h3><p>Task violations, unrepresentative tests, premature completion, and repeated evaluation of unchanged candidates can limit progress.</p><a class="link" href="agent-behavior.html">Explore Agent Behavior →</a></div>
-    <div class="home-actions"><a class="btn primary" href="experimental-results.html">Read the experimental results →</a><a class="btn" href="tasks.html">Explore task results →</a></div>
+  <section class="sec home-reading" id="findings"><div class="wrap">
+    <h2>Experimental Results</h2>
+    <!-- Formal Abstract, main.tex:700; remaining original sentences. -->
+    <p data-paper-source="abstract">Claude Opus 5.5 achieves the best final performance on 17 tasks and GPT-6 Astra on six. We find that model rankings depend on the evaluation horizon: Astra leads overall at 25% of the budget, while Claude leads at 50%. Moreover, 131 of 143 full-budget runs with midpoint scores improve during the second half, showing that shorter evaluations can miss further optimization gains.</p>
+    <p data-paper-source="abstract">We further analyze agent trajectories and identify task violations, unreliable testing, premature completion, and repeated evaluation of unchanged candidates as barriers to continued improvement. Infrathon provides a testbed for developing agents that reliably improve AI infrastructure and for supporting future research on recursive self-improvement.</p>
+    <p class="home-section-link"><a href="experimental-results.html">Experimental results →</a><a href="agent-behavior.html">Agent behavior analysis →</a></p>
   </div></section>
   <div class="wrap" style="padding-bottom:32px">
     <details class="notes" id="cite">

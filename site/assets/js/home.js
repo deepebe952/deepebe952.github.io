@@ -20,7 +20,7 @@
     }
     if (hash === "cite") citation.open = true;
     sectionLinks.forEach((link) => {
-      if (link.getAttribute("href") === "#" + (hash || "overview")) link.setAttribute("aria-current", "location");
+      if (link.getAttribute("href") === "#" + (!hash || hash === "overview" ? "introduction" : hash)) link.setAttribute("aria-current", "location");
       else link.removeAttribute("aria-current");
     });
   }
