@@ -105,7 +105,7 @@
     },
     "orpo": {
       "label": "Training speedup",
-      "home_label": "100 × speedup",
+      "home_label": "Speedup",
       "formula": "u = completion-target tokens / Σ₁₀_steps max(t_rank1, t_rank2)\nr_row = median₄_pairs(u_candidate / u_TRL)\nscore = 100 × (r₁ × r₂ × r₃ × r₄ × r₅)^(1/5)",
       "details": [
         "u is completion-target tokens/s across both ranks over ten timed optimizer steps. Each step charges the slower rank; warm-up is excluded.",
@@ -128,7 +128,7 @@
     },
     "gkd": {
       "label": "Training speedup",
-      "home_label": "100 × speedup",
+      "home_label": "Speedup",
       "formula": "u = completion-target tokens / Σ₁₀_steps max(t_rank1, t_rank2)\nr_row = median₄_pairs(u_candidate / u_TRL)\nscore = 100 × (r₁ × r₂ × r₃ × r₄ × r₅)^(1/5)",
       "details": [
         "u counts shifted answer-prediction targets across both ranks, including answer EOS and excluding prompt/padding. Ten complete steps are timed, charging the slower rank per step.",
