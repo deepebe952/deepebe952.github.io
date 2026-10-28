@@ -1,0 +1,99 @@
+{
+  "source": "_AI_Infra____New_Template_Version___Zhengyu_Hu (1).zip",
+  "source_sha256": "732678e3d954a4c605b1961abcdf994ebb22c1cd90b1a49683cd5caf2cd49cf5",
+  "main_tex_sha256": "790f8a54a4f7a18925e289c180b90abdbbb3a693712752224e9a80d2b948536c",
+  "method": "Original one-page figure PDFs from Overleaf, converted to SVG with vector glyphs; no resampling or data digitization.",
+  "figures": [
+    {
+      "figure": 2,
+      "section": "4.1",
+      "anchor": "leaderboard",
+      "source_member": "images/rank_performance.pdf",
+      "panels": 6,
+      "pdf": "assets/img/experimental-results/rank_performance.pdf",
+      "svg": "assets/img/experimental-results/rank_performance.svg",
+      "pdf_sha256": "5c4b7513e788eb7adeb9e082d7296433fdc71a396ecf17e68fc3d6cfa2d65eda",
+      "svg_sha256": "f7e4f264f5e7dc098c9e4bb7c15f539af19e52539a36a91d8766ca0ec3f247e8",
+      "width": 486.0,
+      "height": 309.6
+    },
+    {
+      "figure": 3,
+      "section": "4.2",
+      "anchor": "results",
+      "source_member": "images/task_trajectories.pdf",
+      "panels": 12,
+      "pdf": "assets/img/experimental-results/task_trajectories.pdf",
+      "svg": "assets/img/experimental-results/task_trajectories.svg",
+      "pdf_sha256": "363efef4a635ccda55001ff6459ef7cdcde39cc95c23d7455f70931114496ef3",
+      "svg_sha256": "76782c8746c6d378efc745b09a0044b7c7b41914b8ed4b4961451826e601be4f",
+      "width": 486.0,
+      "height": 540.0
+    },
+    {
+      "figure": 4,
+      "section": "4.3",
+      "anchor": "long-vs-short",
+      "source_member": "images/long_vs_short_runs.pdf",
+      "panels": 12,
+      "pdf": "assets/img/experimental-results/long_vs_short_runs.pdf",
+      "svg": "assets/img/experimental-results/long_vs_short_runs.svg",
+      "pdf_sha256": "861510ddd6cdeed28fce55108ba4766d93ba4cf06397171eb52aeb53f4031b08",
+      "svg_sha256": "b7fe3d472f1eddf5c86ba5b833c7e5eb6f7a16c7a5e2816dca2ee9888eefb918",
+      "width": 491.6341,
+      "height": 556.072
+    },
+    {
+      "figure": 5,
+      "section": "4.4",
+      "anchor": "ranking-budget",
+      "source_member": "images/ranking_variability.pdf",
+      "panels": 3,
+      "pdf": "assets/img/experimental-results/ranking_variability.pdf",
+      "svg": "assets/img/experimental-results/ranking_variability.svg",
+      "pdf_sha256": "63f7d68b8e57b6cf3b4505e6cdd7c998a89f60cf23f437a5cfc3483025ac7828",
+      "svg_sha256": "0429a33b46f121f018b8ea7d1d8526ed7d27256a70536812cfff7c19274ae0c5",
+      "width": 527.0604,
+      "height": 218.186
+    },
+    {
+      "figure": 6,
+      "section": "4.5",
+      "anchor": "first-score",
+      "source_member": "images/first_scored_submission.pdf",
+      "panels": 3,
+      "pdf": "assets/img/experimental-results/first_scored_submission.pdf",
+      "svg": "assets/img/experimental-results/first_scored_submission.svg",
+      "pdf_sha256": "fe42bda075e87123be440ac4ead20acd2cefca755b837055d916394088c17895",
+      "svg_sha256": "46b771b9fe4ecae8147190bcab948ba23f03fbe394ac3d93b75637bf35b4fe20",
+      "width": 517.7029,
+      "height": 262.5937
+    },
+    {
+      "figure": 7,
+      "section": "4.6",
+      "anchor": "second-half",
+      "source_member": "images/second_half_gains.pdf",
+      "panels": 3,
+      "pdf": "assets/img/experimental-results/second_half_gains.pdf",
+      "svg": "assets/img/experimental-results/second_half_gains.svg",
+      "pdf_sha256": "45809c3df7524ebcbc5004fb071d43096a7f592ce71ef0d2858f23c7ecbbcdf2",
+      "svg_sha256": "f0131adf32872ec5ffd32ce2fc5a80d994d17c7643827746cdbf71a19147f053",
+      "width": 527.9691,
+      "height": 257.93
+    },
+    {
+      "figure": 8,
+      "section": "4.7",
+      "anchor": "interactions",
+      "source_member": "images/token_turn_cost.pdf",
+      "panels": 2,
+      "pdf": "assets/img/experimental-results/token_turn_cost.pdf",
+      "svg": "assets/img/experimental-results/token_turn_cost.svg",
+      "pdf_sha256": "222b58590dd3556423fc4167dd9b8ebe9f053262998e68f0109f0ced93e29e09",
+      "svg_sha256": "2caab1c0dc1cbffa3f0e54cc8849cb712507061e8514bf66eaca10e79bb95a1b",
+      "width": 496.4923,
+      "height": 197.27
+    }
+  ]
+}

@@ -1,7 +1,8 @@
-"""Independent checks against Figures 2, 7, 14 and Eq. 5 of the 49-page paper.
+"""Independent checks against Eq. 5 and published score/cost measurements.
 
-Figure 14 costs are printed values: token cells are rounded to thousands;
-action cells are integer counts. They are not a fresh tokenizer pass.
+Costs were extracted from Figures 7 and 14 of the 49-page paper and verified
+against Figures 8 and 15 in the latest Overleaf archive. Token cells are rounded
+to thousands; action cells are integer counts, not a fresh tokenizer pass.
 """
 import json
 import sys
@@ -48,6 +49,12 @@ class PaperRankingAudit(unittest.TestCase):
 
 
 class PaperTokenAudit(unittest.TestCase):
+    def test_first_score_action_medians_match_section45(self):
+        # Latest main.tex Section 4.5: median actions before matched scored feedback.
+        # The October 25 highlight had 253 for Qwen; the current paper reports 248.
+        self.assertEqual(TOKENS["highlights"]["first_actions_sol"], 71)
+        self.assertEqual(TOKENS["highlights"]["first_actions_qwen"], 248)
+
     def test_every_primary_run_has_a_cost_record(self):
         records = TOKENS["per_task"]
         self.assertEqual(set(records), {t["key"] for t in REGISTRY["tasks"]})

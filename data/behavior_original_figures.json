@@ -30,5 +30,12 @@
       "file": "assets/img/behavior_search.pdf",
       "sha256": "0f056421671b5e93c3ca3477c573bbabba5c809f07ac01741deea4fdde85eb26"
     }
-  ]
+  ],
+  "latest_verification": {
+    "archive": "_AI_Infra____New_Template_Version___Zhengyu_Hu (1).zip",
+    "archive_sha256": "732678e3d954a4c605b1961abcdf994ebb22c1cd90b1a49683cd5caf2cd49cf5",
+    "verified_date": "2026-10-28",
+    "source_tex": "main.tex",
+    "verification": "All four Figure 9–12 PDF assets are byte-for-byte identical to the files and SHA-256 values recorded above. Section 5 text and figure numbering are unchanged. The original source_archive records extraction provenance."
+  }
 }

@@ -331,7 +331,7 @@ window.IX = (() => {
   }
 
   /* ---------- chrome ---------- */
-  const PAGES = [["experimental-results.html", "Experimental Results"], ["agent-behavior.html", "Agent Behavior"], ["tasks.html", "Task Results"]];
+  const PAGES = [["framework.html", "Framework"], ["experimental-results.html", "Experimental Results"], ["agent-behavior.html", "Agent Behavior"], ["tasks.html", "Task Results"]];
   function chrome() {
     const page = document.body.dataset.page;
     const activePage = ["task", "trajectories"].includes(page) ? "tasks" : page;
@@ -343,10 +343,19 @@ window.IX = (() => {
       h("nav", { class: "nav-links", "aria-label": "Pages" }, PAGES.map(([href, label]) => h("a", { href, "aria-current": href === `${activePage}.html` ? "page" : null, text: label }))),
       h("div", { class: "nav-right" }, h("button", { id: "theme-toggle", class: "pill theme-toggle", type: "button", onclick: () => window.InfrathonTheme.toggle(), "aria-label": "Switch to dark theme", "aria-pressed": "false", text: "☾ Dark" }))));
     document.body.prepend(nav);
+    const sectionNav = document.querySelector(".subnav");
+    const measureNavigation = () => {
+      document.documentElement.style.setProperty("--nav-height", `${nav.getBoundingClientRect().height}px`);
+      document.documentElement.style.setProperty("--section-nav-height", `${sectionNav?.getBoundingClientRect().height || 0}px`);
+    };
+    measureNavigation();
+    const navigationObserver = new ResizeObserver(measureNavigation);
+    navigationObserver.observe(nav);
+    if (sectionNav) navigationObserver.observe(sectionNav);
     window.InfrathonTheme.sync();
     const foot = h("footer", { class: "site" }, h("div", { class: "wrap" },
       h("a", { class: "brand", href: "index.html" }, logo.cloneNode(true), "Infrathon"),
-      h("nav", { "aria-label": "Footer" }, h("a", { href: "index.html#cite", text: "Citation" }), h("a", { href: "index.html#framework", text: "Framework" }))));
+      h("nav", { "aria-label": "Footer" }, h("a", { href: "index.html#cite", text: "Citation" }), h("a", { href: "framework.html", text: "Framework" }))));
     document.body.append(foot);
   }
 

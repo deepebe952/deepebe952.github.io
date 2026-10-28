@@ -1,0 +1,56 @@
+/* Paper Section 4: seven result questions, original figures, native exploration. */
+body[data-page="experimental-results"] .page-head { padding-bottom: 30px; }
+body[data-page="experimental-results"] .sec-title h2 { font-size: clamp(23px, 2.6vw, 31px); }
+.experiment-setup { display: flex; flex-wrap: wrap; gap: 10px 24px; margin-top: 24px; font-size: 12px; color: var(--ink-3); }
+.experiment-setup strong { font-weight: 500; color: var(--ink-2); }
+.experiment-analysis { max-width: 94ch; margin: 0 0 25px; }
+.experiment-analysis p { color: var(--ink-2); font-size: 14px; line-height: 1.8; margin: 0 0 12px; }
+.experiment-analysis p:last-child { margin-bottom: 0; }
+.experiment-figure { margin: 0 0 22px; min-width: 0; }
+.experiment-figure .card-head { gap: 16px; flex-wrap: wrap; }
+.experiment-figure .card-head .label { display: block; margin-bottom: 6px; font-size: 10px; }
+.experiment-figure figcaption, .experiment-native-figure > figcaption { padding: 16px 20px; border-top: 1px solid var(--hair); color: var(--ink-3); font-size: 12px; line-height: 1.7; }
+.paper-figure-scroll { overflow-x: auto; background: #fff; padding: 20px; scrollbar-width: thin; }
+.paper-figure-scroll img { display: block; width: 100%; min-width: 700px; height: auto; }
+.paper-figure-scroll:focus-visible { outline: 2px solid var(--ink-2); outline-offset: -3px; }
+.figure-expand { border: 1px solid var(--hair-2); border-radius: 6px; background: var(--panel); color: var(--ink-2); font: inherit; font-size: 11px; padding: 7px 10px; cursor: pointer; white-space: nowrap; }
+.figure-expand:hover { background: var(--panel-2); color: var(--ink); }
+.figure-expand:focus-visible { outline: 2px solid var(--ink-2); outline-offset: 3px; }
+.experiment-native-figure { margin: 0; }
+.experiment-figure-title { margin: 0 0 18px; }
+.experiment-figure-title .label { display: block; margin-bottom: 7px; font-size: 10px; }
+.experiment-figure-title h3 { margin: 0; font-size: 17px; font-weight: 500; }
+.experiment-native-figure > figcaption { margin-top: 20px; padding-inline: 0; }
+.selected-task-stage { margin-top: 26px; }
+.selected-task-stage-title { margin: 0 0 12px; font-size: 15px; font-weight: 500; }
+.selected-task-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.selected-task { display: block; min-width: 0; overflow: hidden; padding: 16px 12px 8px; }
+.selected-task:hover { border-color: var(--hair-3); }
+.selected-task-title { padding-inline: 2px; min-height: 53px; }
+.selected-task-title .label { display: block; font-size: 9px; margin-bottom: 6px; }
+.selected-task h5 { margin: 0; font-size: 12px; line-height: 1.4; font-weight: 500; }
+.selected-task .chart-unit { margin: 6px 3px 2px; font-size: 10px; }
+.selected-task svg { display: block; width: 100%; height: auto; }
+.experiment-source-note { margin-top: 16px; }
+.experiment-figure-dialog { width: min(1400px, 94vw); max-width: none; max-height: 92dvh; padding: 0; border: 1px solid var(--hair-2); border-radius: 12px; color: var(--ink); background: var(--panel); }
+.experiment-figure-dialog::backdrop { background: rgb(0 0 0 / .65); }
+.figure-dialog-head { position: sticky; top: 0; z-index: 1; display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 16px 20px; background: var(--panel); border-bottom: 1px solid var(--hair); }
+.figure-dialog-head h2 { margin: 0; font-size: 15px; line-height: 1.5; font-weight: 500; }
+.figure-dialog-head button { font: inherit; font-size: 12px; background: var(--panel-2); color: var(--ink); padding: 8px 12px; border: 1px solid var(--hair-2); border-radius: 6px; white-space: nowrap; cursor: pointer; }
+.figure-dialog-body { padding: 20px; overflow: auto; background: #fff; }
+.figure-dialog-body img { display: block; width: 100%; min-width: 900px; height: auto; }
+@media (max-width: 860px) {
+  .selected-task-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .experiment-setup { gap: 9px 16px; }
+}
+@media (max-width: 560px) {
+  .selected-task-grid { grid-template-columns: minmax(0, 1fr); }
+  .selected-task-title { min-height: 0; }
+  .selected-task h5 { font-size: 14px; }
+  .selected-task .chart-unit { margin-top: 12px; }
+  .experiment-analysis p { font-size: 13px; }
+  .paper-figure-scroll { padding: 12px; }
+  .experiment-figure figcaption { padding: 14px; }
+  .figure-dialog-head { padding: 12px; gap: 10px; }
+  .figure-dialog-head h2 { font-size: 12px; }
+}

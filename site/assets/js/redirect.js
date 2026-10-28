@@ -5,7 +5,7 @@
   const maps = {
     architecture: {
       ranking: "experimental-results.html#score-notes", tokens: "experimental-results.html#score-notes",
-      configs: "experimental-results.html#leaderboard", cite: "index.html#cite"
+      configs: "experimental-results.html#leaderboard", cite: "index.html#cite", architecture: "framework.html#overview"
     },
     results: { cite: "index.html#cite" }
   };

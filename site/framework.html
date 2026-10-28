@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Framework · Infrathon</title>
+<meta name="description" content="The Infrathon framework: task definitions, the 25-task inventory, and the Work–Controller–Judge feedback loop.">
+<meta property="og:title" content="Infrathon">
+<meta property="og:description" content="Can frontier models solve long-horizon AI infrastructure tasks? 25 tasks, 6 configurations, 150 runs on H100s.">
+<meta name="theme-color" content="#fafbfd">
+<script src="assets/js/theme.js"></script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23060709'/%3E%3Cpath d='M7 22h4v-8h4v5h4V9h4v10h3' fill='none' stroke='%23ededef' stroke-width='2.4'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/css/site.css">
+<link rel="stylesheet" href="assets/css/framework.css">
+</head>
+<body data-page="framework">
+<main>
+  <header class="page-head"><div class="wrap">
+    <div class="crumbs"><a href="index.html">Home</a><span>/</span><span>Framework</span></div>
+    <h1>Framework</h1>
+    <p class="lede">A shared task specification and a Work–Controller–Judge feedback loop for continued optimization.</p>
+  </div></header>
+  <nav class="subnav" aria-label="Framework sections"><div class="wrap">
+    <a href="#overview">Overview</a><a href="#definition">Task Definition</a><a href="#execution">Task Execution</a>
+  </div></nav>
+
+  <section class="sec" id="overview"><div class="wrap">
+    <div class="sec-title"><div><h2>Overview</h2><p>Task Definition sets the problem and its constraints. Task Execution connects development, submission checks, and private evaluation.</p></div></div>
+    <figure class="framework-figure" id="framework">
+      <a class="framework-art" href="assets/img/framework.pdf" target="_blank" rel="noopener" aria-label="Open the original Infrathon framework figure as a PDF">
+        <img src="assets/img/framework.svg" width="1214" height="514" alt="Infrathon framework. Training and inference tasks at operator, module, and system levels share a workspace, public tests, private tests, resources, and a time budget. The agent develops candidates in Work; the Controller checks submissions; the Judge returns private validation and performance results for continued optimization.">
+      </a>
+      <figcaption><b>Figure 1.</b> A shared specification across training and inference, coupled to a Work–Controller–Judge feedback loop. The framework supports execution without a fixed horizon limit; experiments use 12-hour or 24-hour budgets.</figcaption>
+    </figure>
+  </div></section>
+
+  <section class="sec" id="definition"><div class="wrap">
+    <div class="sec-title"><div><h2>Task Definition</h2><p>Infrathon covers 10 training and 15 inference tasks. Within each stage, the editable scope determines the optimization level.</p></div></div>
+    <div class="framework-levels">
+      <article class="card"><div class="card-body"><h3>Operators</h3><p>Computational or data-movement primitives, such as attention, GEMM, and KV transfers.</p><span class="chip"><span data-framework-level-count="operator">11</span> tasks · 12 h each</span></div></article>
+      <article class="card"><div class="card-body"><h3>Modules</h3><p>Functional components inside fixed workflows, including training objectives and KV cache policies.</p><span class="chip"><span data-framework-level-count="module">5</span> tasks · 24 h each</span></div></article>
+      <article class="card"><div class="card-body"><h3>Systems</h3><p>Training or generation loops, pipelines across stages, and serving orchestration.</p><span class="chip"><span data-framework-level-count="system">9</span> tasks · 24 h each</span></div></article>
+    </div>
+
+    <div class="framework-block" id="protocol">
+      <h3>A common task specification</h3>
+      <p class="framework-equation" aria-label="A task consists of workspace, public tests, private tests, resources, and time budget">τ = (W, P, E, R, T)</p>
+      <dl class="architecture-key">
+        <div><dt><span class="key-symbol">W</span>Workspace</dt><dd>The starting code or interface to implement, together with the files and behavior the agent is allowed to change.</dd></div>
+        <div><dt><span class="key-symbol">P</span>Public tests</dt><dd>Visible test cases and a public runner for local correctness checks and profiling. These diagnostics guide candidate development.</dd></div>
+        <div><dt><span class="key-symbol">E</span>Private tests</dt><dd>Hidden cases, task-specific checks, the scoring objective and its direction, and permitted feedback. Private cases and scoring code remain inaccessible to the agent.</dd></div>
+        <div><dt><span class="key-symbol">R</span>Resources</dt><dd>The hardware allocation and software runtime used for development and evaluation.</dd></div>
+        <div><dt><span class="key-symbol">T</span>Time budget</dt><dd>Wall-clock time, including agent interaction, tool execution, and feedback waits. Experiments allow 12 h for operators and 24 h for modules and systems. The framework also supports T = ∞, with no preset deadline.</dd></div>
+      </dl>
+    </div>
+
+    <div class="card framework-block" id="task-inventory">
+      <div class="card-head"><div><span class="label">Table 2</span><h3>Task inventory</h3><p id="inventory-summary">All 25 tasks, grouped by application stage and optimization level. Select a task to open its details and results.</p></div></div>
+      <div class="scroll-x" role="region" aria-label="Task inventory" tabindex="0">
+        <table class="data framework-inventory" id="framework-inventory">
+          <caption class="sr-only">Infrathon task inventory: optimization level, task, optimization target, and wall-clock budget.</caption>
+          <thead><tr><th scope="col">Level</th><th scope="col">Task</th><th scope="col">Optimization target</th><th scope="col" class="n">Budget</th></tr></thead>
+        </table>
+      </div>
+      <div class="card-foot">Budgets cover agent interaction, tool execution, and feedback waits.</div>
+    </div>
+  </div></section>
+
+  <section class="sec" id="execution"><div class="wrap">
+    <div class="sec-title"><div><h2>Task Execution</h2><p>Candidates move from the Work environment through the Controller to the Judge. Feedback returns to Work to guide the next revision.</p></div></div>
+    <ol class="framework-flow">
+      <li class="card"><div class="card-body">
+        <h3>Work environment</h3>
+        <p>The model and its tools act together: inspect files, edit code, profile, run public tests, save candidates, and request private evaluation.</p>
+        <p>Each action and observation joins the agent-visible history. Tool outputs, local diagnostics, and permitted feedback guide revisions or rollbacks. Private test cases and scoring code remain hidden.</p>
+      </div></li>
+      <li class="card"><div class="card-body">
+        <h3>Controller</h3>
+        <p>The trusted Controller snapshots allowed files and manages submission limits and cooldowns. An agent checks the snapshot against task instructions and editable scope; the Controller verifies the cited evidence before rejecting it.</p>
+        <p>Accepted snapshots go to the Judge. An integrity rejection returns a reason and no performance score. Explicit saves and accepted submissions are recorded with timestamps.</p>
+      </div></li>
+      <li class="card"><div class="card-body">
+        <h3>Judge environment</h3>
+        <p>Private tests run on accepted snapshots using the task’s allocated hardware and runtime. Validation can require exact outputs, numerical tolerances, or downstream quality thresholds.</p>
+        <p>Performance follows the task objective, such as latency, training throughput, or serving throughput. Memory use is measured when the task imposes a resource constraint.</p>
+      </div></li>
+    </ol>
+
+    <div class="framework-block">
+      <h3>Feedback closes the loop</h3>
+      <p class="framework-copy">The Judge returns a task-specific score, an execution and validation status, and permitted diagnostics. Validation failures and infrastructure errors have distinct statuses. Both private results and integrity-rejection feedback return to Work, where the agent can diagnose, revise, roll back, and submit again.</p>
+      <dl class="framework-feedback">
+        <div><dt>Score</dt><dd>The task’s performance result.</dd></div>
+        <div><dt>Status</dt><dd>Execution and validation outcome.</dd></div>
+        <div><dt>Diagnostics</dt><dd>Feedback permitted by the task specification.</dd></div>
+      </dl>
+    </div>
+    <div class="framework-block framework-continuation">
+      <h3>Continued execution</h3>
+      <p>A stop hook prompts further work when the agent attempts to finish. Session recovery resumes eligible exits in the same session and workspace. Both use the original run deadline, so continuation does not reset the time budget.</p>
+      <p>The interaction loop has no fixed upper horizon in the framework. The reported experiments stop at their 12-hour or 24-hour deadline.</p>
+    </div>
+  </div></section>
+</main>
+<script src="data/infrathon.js"></script>
+<script src="assets/js/core.js"></script>
+<script src="assets/js/framework.js"></script>
+</body>
+</html>

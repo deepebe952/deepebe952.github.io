@@ -16,5 +16,15 @@
     "pdf": "assets/img/framework.pdf",
     "svg": "assets/img/framework.svg"
   },
-  "conversion": "Original PDF extracted byte-for-byte from the Overleaf archive. SVG exported with PyMuPDF, text converted to vector paths, original geometry and colors retained, and the PDF white page background made explicit."
+  "conversion": "Original PDF extracted byte-for-byte from the Overleaf archive. SVG exported with PyMuPDF, text converted to vector paths, original geometry and colors retained, and the PDF white page background made explicit.",
+  "latest_verification": {
+    "archive": "_AI_Infra____New_Template_Version___Zhengyu_Hu (1).zip",
+    "archive_sha256": "732678e3d954a4c605b1961abcdf994ebb22c1cd90b1a49683cd5caf2cd49cf5",
+    "verified_date": "2026-10-28",
+    "source_tex": "main.tex",
+    "source_tex_line": 798,
+    "source_member": "images/ultrainfrabench_framework.pdf",
+    "source_member_sha256": "9d304e4470a82262afd30641ab9d4723e79c319e2e3ea60f7f3336825c21fdc3",
+    "verification": "Latest archive PDF is byte-for-byte identical to the original extracted framework.pdf. Section 3, the caption, and Figure 1 numbering are unchanged. Original extraction and compiled-paper references above are retained as historical provenance."
+  }
 }

@@ -25,6 +25,8 @@
   --w: 1200px;
   --gutter: clamp(16px, 4vw, 40px);
   --r: 12px;
+  --nav-height: 61px;
+  --section-nav-height: 0px;
 }
 
 :root[data-theme="dark"] {
@@ -51,7 +53,7 @@
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; scroll-padding-top: 76px; }
+html { scroll-behavior: smooth; scroll-padding-top: calc(env(safe-area-inset-top, 0px) + var(--nav-height) + var(--section-nav-height) + 16px); }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 body {
   margin: 0; background: var(--bg); color: var(--ink);
@@ -332,12 +334,11 @@ dl.facts { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 9px 1
 .key i.infra { background: transparent; border-left: 2px dotted var(--ink-3); width: 0; }
 
 /* ---------------- analysis page ---------------- */
-.subnav { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 60px); z-index: 20; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--hair); }
+.subnav { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--nav-height)); z-index: 20; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--hair); }
 .subnav .wrap { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; height: 46px; align-items: center; }
 .subnav a { font-size: 13.5px; color: var(--ink-3); padding: 6px 10px; border-radius: 7px; white-space: nowrap; }
 .subnav a:hover { color: var(--ink); background: var(--panel-2); }
 .subnav a[aria-current="page"], .subnav a[aria-current="location"] { color: var(--ink); background: var(--panel-3); }
-body[data-page="index"] main [id] { scroll-margin-top: 46px; }
 .cat-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 @media (max-width: 900px) { .cat-grid { grid-template-columns: minmax(0, 1fr); } }
 .cat { padding: 14px 16px 10px; }
@@ -499,11 +500,9 @@ html[data-theme="dark"] .task-detail-hint { color: #ff8e8e; }
 .theme-toggle:hover { border-color: var(--hair-3); color: var(--ink); }
 @media (max-width: 600px) {
   .nav .wrap { flex-wrap: wrap; height: auto; padding-block: 10px 8px; gap: 7px 12px; }
-  .nav-links { order: 3; width: 100%; }
+  .nav-links { order: 3; width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .nav-links a { font-size: 12.5px; padding: 6px 10px; }
   .nav-right { margin-left: auto; }
-  .subnav { top: calc(env(safe-area-inset-top, 0px) + 95px); }
-  html { scroll-padding-top: 110px; }
 }
 
 /* All tasks in the same three-column, two-stage structure as the task map. */
