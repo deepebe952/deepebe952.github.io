@@ -6,10 +6,10 @@ Paper website for **Infrathon: Benchmarking Language Agents for Real-World, Long
 site/
   index.html                 paper identity, leaderboard, task map, all task trajectories
   framework.html             Section 3: task definition, Table 2, task execution
-  experimental-results.html Section 4: time-allocation and interaction studies, Figures 4–8
+  experimental-results.html Section 4: all seven subsections and original Figures 2–8
   agent-behavior.html        Section 5: requirements, validation, improvement
-  tasks.html                 Task Results → Tasks: searchable task catalogue
-  trajectories.html#<task>/<model>  Task Results → Trajectories: submission logs
+  tasks.html                 compatibility redirect → index.html#results
+  trajectories.html#<task>/<model>  run log reached from task details
   task.html#<key>             task details, scores, trajectories, run trace
   architecture.html         compatibility redirect → framework.html#overview
   method.html                compatibility redirect → framework.html#overview
@@ -22,8 +22,8 @@ site/
   assets/css/experimental-results.css  experimental figures and expansion dialog
   assets/css/agent-behavior.css  behavior figure components
   assets/js/core.js          shared data access, rank math, charts, navigation
-  assets/js/home.js          homepage notes, citation, and legacy anchors
-  assets/js/home-results.js  leaderboard, task map, and all 25 task trajectories
+  assets/js/home.js          homepage scoring notes and legacy anchors
+  assets/js/home-results.js  leaderboard, task map, filterable task rows with trajectories
   assets/js/experimental-results.js  figure expansion and section navigation
   assets/js/<page>.js        page rendering
   assets/img/institutions/   institution artwork extracted from the paper
@@ -81,17 +81,17 @@ The retained first-score distributions come from the October 25, 41-page manuscr
 
 The homepage (`index.html`) follows the paper title and author order, with 18 names in three desktop rows (5 / 7 / 6), 16 verified homepage links, numbered affiliations, and eight unlinked logos. Author rows wrap within their groups on narrow screens. Affiliation numbers and logo order follow the latest author-supplied reference: Washington, Ai2, Penn, Pyromind, Stanford, RadixArk, UT Austin, Northwestern. Zheyuan Xiao is affiliated with Washington. Seven logos preserve the PDF’s vector paths; Pyromind uses its original transparent image. `data/institution_logos.json` records the original PDF hash and extraction positions, not the display order. Paper, Code, Docker, and HuggingFace buttons are explicitly marked coming soon until public URLs are supplied.
 
-The brand opens Home; the top-level navigation links are Framework (`framework.html`), Experimental Results (`experimental-results.html`), Agent Behavior (`agent-behavior.html`), and Task Results (`tasks.html`). Task Results has Tasks (`tasks.html`) and Trajectories (`trajectories.html`) subviews; both and task details keep Task Results active in the main navigation. Task detail URLs remain `task.html#<key>`.
+The brand opens Home; the top-level navigation links are Framework (`framework.html`), Experimental Results (`experimental-results.html`), and Agent Behavior (`agent-behavior.html`). There is no Task Results tab or standalone trajectory navigation. Task detail URLs remain `task.html#<key>`; their per-model Run log links open `trajectories.html#<task>/<model>`. The log page stays scoped to that task, supports switching models, and provides a return link to its task page. The global all-runs directory is removed.
 
-Home keeps the paper title, three author rows, institutions, and resource links, followed directly by a filterable leaderboard, a full-width task map, and trajectories for all 25 tasks. There is no homepage subsection bar or Introduction/Task Definition/Task Execution prose. The map and curves use the same two-stage, three-level grouping. Each map tile and trajectory card opens its task detail page. The leaderboard omits mean-relative performance and bootstrap first-place probability; visible output tokens are totals across the selected main runs, explicitly excluding reasoning traces. Scoring and token definitions are collapsed at `#score-notes`; Citation is collapsed at `#cite`.
+Home keeps the paper title in two equally sized lines, three author rows, institutions, and resource links, followed by a filterable leaderboard, a full-width task map, and 25 task rows. Each row pairs the task name and optimization target with its category, budget, metric, best configuration, and a compact trajectory chart. Rows omit Start and All six columns, open task details, and stack their content on small screens. Stage, level, and search filters share saved history state with the selected model highlight; filtering hides existing rows without rebuilding charts. The leaderboard omits mean-relative performance and bootstrap first-place probability; visible output tokens are totals across the selected main runs, explicitly excluding reasoning traces. Scoring and token definitions remain collapsed at `#score-notes`. The homepage citation block and shared site footer are removed.
 
 Framework follows Section 3: original Figure 1; Section 3.1's W/P/E/R/T definitions and complete Table 2 inventory; Section 3.2's Work/Controller/Judge feedback loop, integrity checks, private evaluation, and continuation mechanisms. `data/framework_figure.json` records the original extraction and verifies that the latest archive's figure is unchanged. Inventory rows link to task details.
 
-Experimental Results contains the remaining five Section 4 studies in paper order: One Long Run versus Multiple Short Runs, Ranking Variation with Time Budget, Cost to the First Scored Submission, Performance Gains in the Second Half, and Token and Interaction Counts Across All Tasks. Figures 4–8 accompany their analysis, including the latest two-model time-allocation comparison. Original figure assets retain their vector geometry. The leaderboard and task trajectories live only on Home; the page links back to them. Full task details and submission histories remain under Task Results. Homepage curves carry the best known valid score through the full task budget, as on the task detail pages; they are not a reproduction of the paper’s selected 12-task Figure 3.
+Experimental Results follows all seven Section 4 subsections, beginning with Main Results and Optimization Trajectories. Every section uses the paper's original corresponding vector image (Figures 2–8), with figure expansion, and retains its analysis. The interactive leaderboard and 25 task rows remain on Home. The paper's original Figure 3 shows 12 illustrative tasks through recorded run endpoints; homepage and task-detail charts carry best known scores through the full task budget.
 
-Old Architecture/Method, Results, Behavior/Analysis, and Runs URLs are redirect stubs, preserving query strings and routing old sections to their canonical pages. Homepage framework/definition/execution anchors open Framework; leaderboard, scoring notes, task map, and task results now resolve on Home. Experimental Results links to those moved sections redirect to the corresponding homepage anchors, including stage and level selections. Legacy Architecture `#ranking`/`#tokens` open homepage scoring notes, and `#configs` opens its leaderboard. Citation links return to `index.html#cite`. Task and run-selection hashes remain unchanged.
+Old Architecture/Method, Results, Behavior/Analysis, and Runs URLs preserve queries and route to their canonical pages. The former Tasks page redirects to `index.html#results`. Experimental Results `#leaderboard`/`#results` now refer to its restored paper sections; `#score-notes`/`#map` open the homepage components. Legacy stage/level trajectory anchors fall back to the homepage task rows. Legacy citation anchors open the homepage overview. Run deep links retain their task/model selection; an unscoped log URL returns to the homepage task list.
 
-Task detail pages have a visible Back button. Visits from another site page return through browser history; direct or external arrivals go to Tasks. Task filters and search text are saved on their history entry so returning restores the list without applying old filters to a new visit.
+Task detail pages have a visible Back button. Visits from the task list return through browser history; direct or external arrivals fall back to the homepage task rows. Search, stage, level, and highlighted model are saved on the homepage history entry.
 
 Agent Behavior (`agent-behavior.html`) follows Section 5 and current Figures 9–12: task requirements use Figure 9, testing optimizations uses Figures 10–11, and continued improvement uses Figure 12. All panels are interactive UI components, without original-PDF links. `data/behavior_original_figures.json` retains the original extraction and verifies that all four latest archive PDFs are byte-for-byte unchanged. Printed values are transcribed directly; unlabeled points and process ticks are recovered from vector coordinates and labeled approximate. The optional PDF extraction path requires PyMuPDF; normal builds use committed JSON and only Python’s standard library. Tests check printed anchors, the workload ranking reversal, two-process summaries, and bundle freshness. Previous Analysis links redirect to the corresponding question or Experimental Results section.
 

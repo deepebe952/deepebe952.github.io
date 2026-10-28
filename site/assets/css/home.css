@@ -2,7 +2,7 @@
 body[data-page="index"] .hero .wrap { gap: 22px; padding-top: clamp(32px, 4vw, 48px); padding-bottom: 28px; }
 body[data-page="index"] .home-results { padding-block: 30px; }
 body[data-page="index"] .home-results + .home-results { border-top: 0; }
-.home-results h2 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -.015em; }
+.home-results h2 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -.015em; }
 .home-results .card-head { flex-wrap: wrap; gap: 8px 20px; }
 .home-results .card-head .task-detail-hint { margin: 0; font-size: 12.5px; color: #bd3333; }
 html[data-theme="dark"] .home-results .card-head .task-detail-hint { color: #ff8e8e; }
@@ -11,12 +11,36 @@ html[data-theme="dark"] .home-results .card-head .task-detail-hint { color: #ff8
 .home-results .die-legend { padding: 0 22px 18px; }
 .home-chart-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px 20px; margin-bottom: 18px; }
 .home-chart-head p { margin: 6px 0 0; color: var(--ink-3); font-size: 13px; }
-.home-results .results-stage-title { font-size: 17px; }
-.home-results .result-category-head h4 { font-size: 13px; }
-.home-results .result-category-head span { font-size: 10px; }
-.home-results .result-task { transition: border-color .15s ease; }
-.home-results .result-task:hover { border-color: var(--hair-3); }
-.home-results .result-task:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.home-chart-head .task-detail-hint { color: #bd3333; }
+html[data-theme="dark"] .home-chart-head .task-detail-hint { color: #ff8e8e; }
+.task-result-controls { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px 20px; margin-bottom: 16px; }
+#task-results { display: grid; gap: 12px; }
+.task-result-row { display: grid; grid-template-columns: minmax(190px, 1.55fr) minmax(100px, .85fr) 50px minmax(82px, .7fr) minmax(130px, 1fr) minmax(240px, 1.7fr); grid-template-areas: "info category budget metric winner chart"; align-items: center; gap: 18px; padding: 18px 20px; transition: border-color .15s ease; }
+.task-result-row[hidden] { display: none; }
+.task-result-row:hover { border-color: var(--hair-3); }
+.task-result-row:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.task-result-row > * { min-width: 0; }
+.task-result-info { grid-area: info; }
+.task-result-info h3 { margin: 0; font-size: 16px; line-height: 1.4; font-weight: 600; letter-spacing: -.015em; }
+.task-result-info .target { margin: 8px 0 0; color: var(--ink-3); font-size: 12px; line-height: 1.6; }
+.task-result-category { grid-area: category; }
+.task-result-budget { grid-area: budget; }
+.task-result-metric { grid-area: metric; }
+.task-result-winner { grid-area: winner; }
+.task-result-row .label { display: block; margin-bottom: 8px; font-size: 9px; letter-spacing: .06em; }
+.task-result-category, .task-result-budget, .task-result-metric, .task-result-winner { font-size: 12px; line-height: 1.6; color: var(--ink-2); }
+.task-result-score { display: block; margin-top: 3px; font-variant-numeric: tabular-nums; }
+.task-result-chart { grid-area: chart; }
+.task-result-chart svg { display: block; width: 100%; height: auto; }
+.task-result-count { margin: 16px 0 0; color: var(--ink-3); font-size: 12px; }
+@media (max-width: 1100px) {
+  .task-result-row { grid-template-columns: repeat(4, minmax(0, 1fr)) 280px; grid-template-areas: "info info info info chart" "category budget metric winner chart"; gap: 16px; }
+}
+@media (max-width: 760px) {
+  .task-result-row { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: "info info" "category budget" "metric winner" "chart chart"; padding: 18px; }
+  .task-result-chart { width: 100%; max-width: 420px; margin-inline: auto; }
+  .task-result-row .label { margin-bottom: 3px; }
+}
 .home-results .notes { margin-top: 12px; }
 .home-results .notes p { max-width: 100ch; line-height: 1.7; }
 .home-results .lb th { font-size: 10px; letter-spacing: .035em; }
@@ -27,4 +51,5 @@ html[data-theme="dark"] .home-results .card-head .task-detail-hint { color: #ff8
   .home-results .die-legend { padding: 0 14px 14px; }
   .home-results .card-head { padding-inline: 14px; }
   .home-results .lb-controls { padding-inline: 14px; }
+  .home-results h2 { font-size: 20px; }
 }

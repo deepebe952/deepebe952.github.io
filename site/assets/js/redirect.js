@@ -5,9 +5,9 @@
   const maps = {
     architecture: {
       ranking: "index.html#score-notes", tokens: "index.html#score-notes",
-      configs: "index.html#leaderboard", cite: "index.html#cite", architecture: "framework.html#overview"
+      configs: "index.html#leaderboard", cite: "index.html#overview", architecture: "framework.html#overview"
     },
-    results: { cite: "index.html#cite", leaderboard: "index.html#leaderboard", "score-notes": "index.html#score-notes", map: "index.html#map", results: "index.html#results" }
+    results: { cite: "index.html#overview", "score-notes": "index.html#score-notes", map: "index.html#map" }
   };
   const mapped = maps[script.dataset.redirectGroup]?.[location.hash.slice(1)];
   const url = new URL(mapped || script.dataset.target, location.href);

@@ -331,10 +331,10 @@ window.IX = (() => {
   }
 
   /* ---------- chrome ---------- */
-  const PAGES = [["framework.html", "Framework"], ["experimental-results.html", "Experimental Results"], ["agent-behavior.html", "Agent Behavior"], ["tasks.html", "Task Results"]];
+  const PAGES = [["framework.html", "Framework"], ["experimental-results.html", "Experimental Results"], ["agent-behavior.html", "Agent Behavior"]];
   function chrome() {
     const page = document.body.dataset.page;
-    const activePage = ["task", "trajectories"].includes(page) ? "tasks" : page;
+    const activePage = page;
     const logo = s("svg", { width: 22, height: 22, viewBox: "0 0 32 32", "aria-hidden": "true" });
     s("rect", { x: 1, y: 1, width: 30, height: 30, rx: 8, fill: "none", stroke: C.hair2 }, logo);
     s("path", { d: "M7 22h4v-8h4v5h4V9h4v10h3", fill: "none", stroke: C.ink, "stroke-width": 2.2, "stroke-linejoin": "round" }, logo);
@@ -353,10 +353,6 @@ window.IX = (() => {
     navigationObserver.observe(nav);
     if (sectionNav) navigationObserver.observe(sectionNav);
     window.InfrathonTheme.sync();
-    const foot = h("footer", { class: "site" }, h("div", { class: "wrap" },
-      h("a", { class: "brand", href: "index.html" }, logo.cloneNode(true), "Infrathon"),
-      h("nav", { "aria-label": "Footer" }, h("a", { href: "index.html#cite", text: "Citation" }), h("a", { href: "framework.html", text: "Framework" }))));
-    document.body.append(foot);
   }
 
   function wireTabs(btnA, btnB, panelA, panelB) {

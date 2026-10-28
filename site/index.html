@@ -115,24 +115,19 @@
   </div></section>
 
   <section class="sec home-results" id="results"><div class="wrap">
-    <div class="home-chart-head"><div><h2>Results by task</h2><p>Best valid score over time · all 25 tasks. Select a model to highlight its curves.</p></div><a class="more" href="tasks.html">Task details →</a></div>
+    <div class="home-chart-head"><div><h2>Results by task</h2><p>Each task and its optimization trajectory. Select a model to highlight its curves.</p></div><p class="task-detail-hint">Click a task to see its details →</p></div>
+    <div class="task-result-controls">
+      <div class="toolbar">
+        <span class="tool"><span class="tool-label">Stage</span><span class="seg" id="f-stage"></span></span>
+        <span class="tool"><span class="tool-label">Level</span><span class="seg" id="f-level"></span></span>
+      </div>
+      <label class="sr-only" for="f-q">Search tasks</label>
+      <input class="search" id="f-q" type="search" placeholder="Search tasks" autocomplete="off">
+    </div>
     <div class="legend" id="results-legend" aria-label="Highlight a model"></div>
     <div id="task-results"></div>
+    <p class="task-result-count" id="task-foot" role="status"></p>
   </div></section>
-
-  <div class="wrap" style="padding-bottom:32px">
-    <details class="notes" id="cite">
-      <summary>Citation</summary>
-      <p>The paper is under review.</p>
-      <pre class="mono" style="margin:0;font-size:12.5px;line-height:1.7;color:var(--ink-2);overflow-x:auto">@misc{infrathon2026,
-  title = {Infrathon: Benchmarking Language Agents for
-           Real-World, Long-Horizon AI Infra Optimization},
-  author = {Zhengyu Hu and Zheyuan Xiao and Yike Wang and Haoyu Wang and Hamish Ivison and Yuetai Li and Niqi Lyu and Kevin Ding and Shu Yang and Zhichen Zeng and Jiaxin Pei and Banghua Zhu and Pradeep Dasigi and Dan Roth and Hannaneh Hajishirzi and Kaize Ding and Teng Xiao and Radha Poovendran},
-  year  = {2026},
-  note  = {Under review}
-}</pre>
-    </details>
-  </div>
 </main>
 <script src="data/infrathon.js"></script>
 <script src="assets/js/core.js"></script>

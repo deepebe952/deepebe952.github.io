@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Trajectories · Task Results · Infrathon</title>
-<meta name="description" content="Every Infrathon run, submission by submission: scores, failed checks, integrity rejections and infrastructure failures.">
+<title>Run log · Infrathon</title>
+<meta name="description" content="An Infrathon task's run log: scores, failed checks, integrity rejections and infrastructure failures for the selected configuration.">
 <meta property="og:title" content="Infrathon">
 <meta property="og:description" content="Can frontier models solve long-horizon AI infrastructure tasks? 25 tasks, 6 configurations, 150 runs on H100s.">
 <meta name="theme-color" content="#fafbfd">
@@ -18,20 +18,18 @@
 <body data-page="trajectories">
 <main>
   <header class="page-head"><div class="wrap">
-    <div class="crumbs"><a href="index.html">Home</a><span>/</span><span>Task Results</span></div>
-    <h1>Task Results</h1>
-    <p class="lede" id="r-lede">Submission histories for all 150 runs. Select a task and model to explore its scores.</p>
+    <a class="btn primary task-back" id="r-back" href="index.html#results">← Back to task</a>
+    <div class="crumbs"><a href="index.html">Home</a><span>/</span><a href="index.html#results">Tasks</a><span>/</span><a id="r-tasklink" href="index.html#results">Task</a><span>/</span><span>Run log</span></div>
+    <h1>Run log</h1>
+    <p class="lede" id="r-lede">Scores and submission history for the selected task and configuration.</p>
   </div></header>
-  <nav class="subnav" aria-label="Task results views"><div class="wrap"><a href="tasks.html">Tasks</a><a href="trajectories.html" aria-current="page">Trajectories</a></div></nav>
   <section class="sec"><div class="wrap stack" id="explorer">
     <div class="card">
       <div class="card-head">
         <div class="run-controls">
-          <label class="sr-only" for="r-task">Task</label>
-          <select class="select" id="r-task"></select>
+          <span class="tool-label">Configuration</span>
           <span class="seg" id="r-model"></span>
         </div>
-        <a class="more link" id="r-tasklink" href="tasks.html">Task page</a>
       </div>
       <div class="kpis" id="r-kpis"></div>
       <div class="card-body">
@@ -39,12 +37,6 @@
         <div class="trace-keys" style="margin-top:8px"><span class="key"><i></i>line: best so far · dots: scored submissions</span><span class="key"><i class="bad"></i>failed checks / rejected</span><span class="key"><i class="infra"></i>infrastructure failure</span></div>
       </div>
       <div class="log"><table class="data" id="r-log"></table></div>
-    </div>
-    <div class="card">
-      <div class="card-head"><div><h3>All runs</h3><p>Click a row to open its submission log. Click a column header to sort.</p></div>
-        <div class="toolbar"><span class="seg" id="all-model"></span><label class="sr-only" for="all-q">Filter runs by task</label><input class="search" id="all-q" type="search" placeholder="Filter by task" autocomplete="off"></div></div>
-      <div class="scroll-x" style="max-height:640px;overflow:auto"><table class="data" id="all-runs" style="min-width:1080px"></table></div>
-      <div class="card-foot" id="all-foot"></div>
     </div>
   </div></section>
 </main>

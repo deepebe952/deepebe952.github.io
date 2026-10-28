@@ -21,13 +21,32 @@
   <header class="page-head"><div class="wrap">
     <div class="crumbs"><a href="index.html">Home</a><span>/</span><span>Experimental Results</span></div>
     <h1>Experimental Results</h1>
-    <p class="lede">Time allocation, ranking stability, first-score cost, late gains, and interaction across six frontier model configurations.</p>
-    <p class="experiment-home-links"><a class="link" href="index.html#leaderboard">Leaderboard</a><span aria-hidden="true">·</span><a class="link" href="index.html#results">Task trajectories</a></p>
+    <p class="lede">Final performance, optimization trajectories, time allocation, and interaction across six frontier model configurations.</p>
     <div class="experiment-setup" aria-label="Experimental setup"><span><strong>150</strong> task–model runs</span><span><strong>H100 NVL</strong> · 94 GB per GPU</span><span><strong>12 h</strong> operators · <strong>24 h</strong> modules and systems</span><span><strong>max</strong> reasoning effort for all models</span></div>
   </div></header>
   <nav class="subnav" aria-label="Experimental results sections"><div class="wrap">
-    <a href="#long-vs-short" aria-current="location">Long vs. Short Runs</a><a href="#ranking-budget">Rankings over Time</a><a href="#first-score">First Scored Submission</a><a href="#second-half">Second-Half Gains</a><a href="#interactions">Tokens &amp; Actions</a>
+    <a href="#leaderboard" aria-current="location">Main Results</a><a href="#results">Optimization Trajectories</a><a href="#long-vs-short">Long vs. Short Runs</a><a href="#ranking-budget">Rankings over Time</a><a href="#first-score">First Scored Submission</a><a href="#second-half">Second-Half Gains</a><a href="#interactions">Tokens &amp; Actions</a>
   </div></nav>
+
+  <section class="sec" id="leaderboard"><div class="wrap">
+    <div class="sec-title"><div><h2>Main Results</h2><p>Claude leads overall; task-specific strengths remain important.</p></div></div>
+    <div class="experiment-analysis"><p>149 of the 150 runs produce valid scored submissions. GLM on Wan2.2 has no submission and receives zero. Claude wins 17 tasks, Astra six, and Sol and Qwen one each. Claude’s wins cover nine operators, two modules, and six systems.</p><p>The three inference-module tasks have different winners: Sol on kvpress, Astra on KVzip, and Claude on Quant-VideoGen. Astra leads that group with a rank score of 86.7, versus Claude’s 80.0. Qwen leads concurrent agent serving at 154.33 valid steps/min, ahead of Claude’s 151.17.</p></div>
+    <figure class="card experiment-figure" id="figure-2">
+      <div class="card-head"><div><span class="label">Figure 2</span><h3>Rank-based final performance across all 25 tasks</h3></div><button class="figure-expand" type="button" data-expand-figure aria-label="Expand Figure 2">Expand figure ↗</button></div>
+      <div class="paper-figure-scroll" tabindex="0" aria-label="Figure 2; scroll horizontally on a small screen"><img src="assets/img/experimental-results/rank_performance.svg" width="486" height="310" alt="Six panels compare mean rank scores for all six models, grouped by training or inference and operator, module, or system level." decoding="async"></div>
+      <figcaption>Mean rank scores use each run’s best valid performance within its budget. Every configuration is included in every task group; labels give the group sizes. Higher is better.</figcaption>
+    </figure>
+  </div></section>
+
+  <section class="sec" id="results"><div class="wrap">
+    <div class="sec-title"><div><h2>Optimization Trajectories</h2><p>Long plateaus can still end in meaningful improvement.</p></div><a class="more" href="index.html#results">Explore all 25 tasks →</a></div>
+    <div class="experiment-analysis"><p>Among 147 full-budget runs with scored submissions, 49 set a new record after spending at least a quarter of their budget without one; 28 of those records improve the preceding best by more than 1%. Recent score stagnation alone can therefore be a misleading stopping signal.</p><p>Qwen’s Quant-VideoGen run first scores at 10.19 hours and later reaches 8.34× compression. Sol reaches its best KVzip score of 94.39 at 5.76 hours; its next 29 submissions never improve it. A delayed result and continued activity without improvement can look similar until the histories are examined.</p></div>
+    <figure class="card experiment-figure" id="figure-3">
+      <div class="card-head"><div><span class="label">Figure 3</span><h3>72 trajectories across 12 illustrative tasks</h3></div><button class="figure-expand" type="button" data-expand-figure aria-label="Expand Figure 3">Expand figure ↗</button></div>
+      <div class="paper-figure-scroll" tabindex="0" aria-label="Figure 3; scroll horizontally on a small screen"><img src="assets/img/experimental-results/task_trajectories.svg" width="486" height="540" alt="Twelve panels show best-so-far scores for six models on two tasks from each training or inference and operator, module, or system group. Columns show optimization levels; the first two rows show training and the last two show inference." loading="lazy" decoding="async"></div>
+      <figcaption>Two tasks from each stage and optimization level, in the paper’s order. Columns show operators, modules, and systems; rows 1–2 show training and rows 3–4 inference. Curves show the best valid private-test score up to each submission, from the first score through the recorded run endpoint within the budget. Higher is better; Flash-KMeans uses a logarithmic throughput axis.</figcaption>
+    </figure>
+  </div></section>
 
   <section class="sec" id="long-vs-short"><div class="wrap">
     <div class="sec-title"><div><h2>One Long Run versus Multiple Short Runs</h2><p>Independent restarts are competitive on some operators; longer runs help complete workflows.</p></div></div>

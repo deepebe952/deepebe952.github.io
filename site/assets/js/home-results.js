@@ -123,28 +123,63 @@
     }
   })();
 
-  /* ---------------- six task categories ---------------- */
+  /* ---------------- task rows and filters ---------------- */
   const results = $("#task-results"), legend = $("#results-legend");
-  if (!results || !legend) return;
+  const stageControl = $("#f-stage"), levelControl = $("#f-level"), search = $("#f-q"), count = $("#task-foot");
+  if (!results || !legend || !stageControl || !levelControl || !search || !count) return;
+
+  const saved = history.state?.infrathonTasks;
+  const taskFilter = {
+    stage: ["all", ...STAGES].includes(saved?.stage) ? saved.stage : "all",
+    level: ["all", ...LEVELS].includes(saved?.level) ? saved.level : "all",
+    q: typeof saved?.q === "string" ? saved.q : ""
+  };
+  const highlight = MODELS.includes(saved?.highlight) ? saved.highlight : null;
   results.replaceChildren();
   legend.replaceChildren();
   X.makeLegend(legend);
-  for (const stage of STAGES) {
-    const block = h("section", { class: "results-stage", "aria-labelledby": `results-${stage}` },
-      h("h3", { id: `results-${stage}`, class: "results-stage-title", text: cap(stage) }));
-    const grid = h("div", { class: "results-grid" });
-    for (const level of LEVELS) {
-      const tasks = X.filterTasks(D.tasks, stage, level);
-      const group = h("section", { class: "result-category", "data-stage": stage, "data-level": level, "aria-labelledby": `results-${stage}-${level}` },
-        h("div", { class: "result-category-head" }, h("h4", { id: `results-${stage}-${level}`, text: cap(level) + "s" }), h("span", { text: `${tasks.length} tasks · ${level === "operator" ? 12 : 24} h` })));
-      for (const task of tasks) {
-        group.append(h("a", { class: "card mult result-task", href: X.taskHref(task.key), "data-task": task.key },
-          h("h5", { text: task.name }),
-          h("div", { class: "chart-unit", text: `${unitOf(task) || "score"} ↑${task.key === "flash-kmeans" ? " · log scale" : ""}` }),
-          X.trajChart(task, { W: 340, H: 180, logY: task.key === "flash-kmeans" })));
-      }
-      grid.append(group);
-    }
-    block.append(grid); results.append(block);
+
+  // Construct each chart once; filtering only changes row visibility, so the
+  // shared chart focus listeners and selected model remain intact.
+  const taskRows = D.tasks.map((task) => {
+    const winner = task.winner;
+    const row = h("a", { class: "card task-result-row", href: X.taskHref(task.key), id: `task-result-${task.key}`, "data-task": task.key, "data-stage": task.stage, "data-level": task.level },
+      h("div", { class: "task-result-info" }, h("h3", { text: task.name }), h("p", { class: "target", text: task.target })),
+      h("div", { class: "task-result-category" }, h("span", { class: "label", text: "Category" }), h("span", { text: `${cap(task.stage)} · ${cap(task.level)}` })),
+      h("div", { class: "task-result-budget" }, h("span", { class: "label", text: "Budget" }), h("b", { text: `${task.budget_h} h` })),
+      h("div", { class: "task-result-metric" }, h("span", { class: "label", text: "Metric" }), h("span", { text: X.metricLabel(task) })),
+      h("div", { class: "task-result-winner" }, h("span", { class: "label", text: "Top configuration" }), X.who(winner, MODEL[winner].short), h("span", { class: "task-result-score", text: withUnit(task, task.results[winner].best) })),
+      h("div", { class: "task-result-chart" }, X.trajChart(task, { W: 300, H: 160, logY: task.key === "flash-kmeans" })));
+    results.append(row);
+    return { task, row };
+  });
+  const empty = h("p", { class: "task-results-empty muted", role: "status", text: "No task matches these filters." });
+  results.append(empty);
+  if (highlight) X.setFocus(highlight);
+
+  function saveTaskState() {
+    const active = legend.querySelector('button[aria-pressed="true"]');
+    history.replaceState({ ...history.state, infrathonTasks: { ...taskFilter, highlight: active?.dataset.m || null } }, "");
   }
+  function renderTaskRows() {
+    const query = taskFilter.q.trim().toLowerCase();
+    let visible = 0;
+    for (const { task, row } of taskRows) {
+      const matches = (taskFilter.stage === "all" || task.stage === taskFilter.stage)
+        && (taskFilter.level === "all" || task.level === taskFilter.level)
+        && (!query || `${task.name} ${task.target} ${task.summary}`.toLowerCase().includes(query));
+      row.hidden = !matches;
+      if (matches) visible++;
+    }
+    empty.hidden = visible > 0;
+    count.textContent = `${visible} of ${D.tasks.length} tasks.`;
+    X.hideTip();
+    saveTaskState();
+  }
+  X.seg(stageControl, [["all", "All"], ...STAGES.map((stage) => [stage, cap(stage), D.tasks.filter((task) => task.stage === stage).length])], taskFilter.stage, (stage) => { taskFilter.stage = stage; renderTaskRows(); });
+  X.seg(levelControl, [["all", "All"], ...LEVELS.map((level) => [level, cap(level), D.tasks.filter((task) => task.level === level).length])], taskFilter.level, (level) => { taskFilter.level = level; renderTaskRows(); });
+  search.value = taskFilter.q;
+  search.addEventListener("input", () => { taskFilter.q = search.value; renderTaskRows(); });
+  legend.addEventListener("click", saveTaskState);
+  renderTaskRows();
 })();

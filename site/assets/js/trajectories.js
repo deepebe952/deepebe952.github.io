@@ -1,35 +1,34 @@
-/* Trajectories: per-run submission log (trajectories.html#<task>/<model>) and a sortable table of all runs. */
+/* Task-specific run log: trajectories.html#<task>/<model>. */
 (() => {
   "use strict";
   const X = window.IX;
   if (!X) return;
-  const { D, MODELS, MODEL, TASK, STAGES, LEVELS, h, $, cap, fmt, withUnit } = X;
+  const { MODELS, MODEL, TASK, h, $, fmt, withUnit } = X;
   const STATUS = { v: "scored", x: "failed checks", r: "rejected by integrity review", n: "infrastructure failure", w: "waiting" };
 
-  $("#r-lede").textContent = `${D.summary.n_runs} runs and ${D.summary.n_submissions.toLocaleString("en-US")} judged submissions. Select a task and configuration to explore its scores and submission history.`;
-
-  const sel = $("#r-task");
-  for (const stg of STAGES) {
-    const og = h("optgroup", { label: cap(stg) });
-    for (const lv of LEVELS) for (const t of D.tasks.filter((x) => x.stage === stg && x.level === lv)) og.append(h("option", { value: t.key, text: `${t.name} · ${lv}` }));
-    sel.append(og);
-  }
-  const state = { task: "eagle3", model: "claude" };
+  const state = { task: null, model: null };
   function parse() {
-    const [k, m] = decodeURIComponent(location.hash.slice(1)).split("/");
-    if (TASK[k]) state.task = k;
-    if (m && MODELS.includes(m)) state.model = m;
-    if (!TASK[state.task].results[state.model]) state.model = MODELS.find((x) => TASK[state.task].results[x]);
+    let key, model;
+    try { [key, model] = decodeURIComponent(location.hash.slice(1)).split("/"); }
+    catch { return false; }
+    const task = Object.hasOwn(TASK, key) ? TASK[key] : null;
+    if (!task) return false;
+    state.task = key;
+    state.model = MODELS.includes(model) && task.results[model] ? model
+      : task.results.claude ? "claude" : MODELS.find((m) => task.results[m]);
+    return !!state.model;
   }
   const go = () => history.replaceState(null, "", `#${state.task}/${state.model}`);
-  sel.addEventListener("change", () => { state.task = sel.value; if (!TASK[state.task].results[state.model]) state.model = MODELS.find((x) => TASK[state.task].results[x]); go(); renderRun(); });
 
   function renderRun() {
     const t = TASK[state.task], r = t.results[state.model];
-    sel.value = t.key;
+    document.title = `Run log · ${t.name} · ${MODEL[state.model].short} · Infrathon`;
+    $("#r-lede").textContent = `${t.name} · ${MODEL[state.model].name}`;
     X.seg($("#r-model"), MODELS.filter((m) => t.results[m]).map((m) => [m, MODEL[m].short]), state.model, (v) => { state.model = v; go(); renderRun(); });
     $("#r-tasklink").href = X.taskHref(t.key);
-    $("#r-tasklink").textContent = `${t.name} task page`;
+    $("#r-tasklink").textContent = t.name;
+    $("#r-back").href = X.taskHref(t.key);
+    $("#r-back").setAttribute("aria-label", `Back to task: ${t.name}`);
     const c = r.counts;
     const k = [
       [r.best == null ? "—" : withUnit(t, r.best), `best during run${r.flag ? ` [${r.flag}]` : ""}${t.ranks[state.model] ? ` · rank ${X.ordinal(Math.round(t.ranks[state.model]))}` : ""}`],
@@ -59,41 +58,32 @@
     log.append(tb);
   }
 
-  /* ---------- all runs ---------- */
-  const rows = D.tasks.flatMap((t) => Object.entries(t.results).map(([m, r]) => ({
-    t, m, task: t.name, model: MODEL[m].name, best: r.best, rank: t.ranks[m], at: r.best_at_h,
-    first: r.first_valid_h, scored: r.counts.valid, failed: r.counts.invalid, rejected: r.counts.rejected, infra: r.counts.infrastructure + r.counts.waiting, len: r.elapsed_h,
-  })));
-  const COLS = [["task", "Task"], ["model", "Configuration"], ["best", "Best during run"], ["rank", "Rank"], ["at", "Best at (h)"], ["first", "First valid (h)"], ["scored", "Scored"], ["failed", "Failed"], ["rejected", "Rejected"], ["infra", "Infra"], ["len", "Run length (h)"]];
-  const sort = { key: null, dir: 1 };
-  const filt = { model: "all", q: "" };
-  X.seg($("#all-model"), [["all", "All"], ...MODELS.map((m) => [m, MODEL[m].short])], "all", (v) => { filt.model = v; renderAll(); });
-  $("#all-q").addEventListener("input", (e) => { filt.q = e.target.value.trim().toLowerCase(); renderAll(); });
-  function renderAll() {
-    const tbl = $("#all-runs");
-    tbl.replaceChildren(h("thead", {}, h("tr", {}, COLS.map(([k, label], i) => {
-      const th = h("th", { scope: "col", class: `sortable${i > 1 ? " n" : ""}`, tabindex: 0, "aria-sort": sort.key === k ? (sort.dir > 0 ? "ascending" : "descending") : null, text: label + (sort.key === k ? (sort.dir > 0 ? " ↑" : " ↓") : "") });
-      const act = () => { sort.dir = sort.key === k ? -sort.dir : i > 1 && k !== "rank" ? -1 : 1; sort.key = k; renderAll(); };
-      th.addEventListener("click", act); th.addEventListener("keydown", (e) => { if (e.key === "Enter") act(); });
-      return th;
-    }))));
-    let list = rows.filter((r) => (filt.model === "all" || r.m === filt.model) && (!filt.q || r.task.toLowerCase().includes(filt.q)));
-    if (sort.key) list = [...list].sort((a, b) => { const x = a[sort.key], y = b[sort.key]; if (x == null) return 1; if (y == null) return -1; return (typeof x === "string" ? x.localeCompare(y) : x - y) * sort.dir; });
-    const tb = h("tbody");
-    for (const r of list) {
-      const open = () => { state.task = r.t.key; state.model = r.m; go(); renderRun(); $("#explorer").scrollIntoView({ behavior: X.reduceMotion ? "auto" : "smooth" }); };
-      tb.append(h("tr", { class: "rowlink", tabindex: 0, onclick: open, onkeydown: (e) => { if (e.key === "Enter") open(); } },
-        h("td", { text: r.task }), h("td", {}, X.who(r.m, MODEL[r.m].short)),
-        h("td", { class: "n", text: fmt(r.best) }), h("td", { class: "n", text: X.ordinal(Math.round(r.rank)) }),
-        h("td", { class: "n", text: r.at == null ? "—" : fmt(r.at, 2) }), h("td", { class: "n", text: r.first == null ? "—" : fmt(r.first, 2) }),
-        h("td", { class: "n", text: r.scored }), h("td", { class: "n", text: r.failed }), h("td", { class: "n", text: r.rejected }), h("td", { class: "n", text: r.infra }),
-        h("td", { class: "n", text: fmt(r.len, 1) })));
+  function renderFromHash() {
+    if (!parse()) {
+      const home = new URL("index.html#results", location.href);
+      home.search = location.search;
+      location.replace(home.href);
+      return;
     }
-    tbl.append(tb);
-    $("#all-foot").textContent = `${list.length} of ${rows.length} runs. Failed: the candidate did not pass the task's checks. Rejected: blocked by the integrity review before benchmarking. Infra: the evaluation infrastructure failed and the submission was not scored.`;
+    renderRun();
   }
-  parse();
-  renderRun();
-  renderAll();
-  window.addEventListener("hashchange", () => { parse(); renderRun(); });
+  renderFromHash();
+  const entryTask = state.task;
+  const referrer = document.referrer ? new URL(document.referrer) : null;
+  function backToTask(event) {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    // Browsers normally omit the referrer's fragment; the entry hash identifies
+    // the task whose Run log link opened this page. Keep that return destination
+    // only while viewing the same task, including after model changes.
+    const cameFromTask = referrer?.origin === location.origin
+      && referrer.pathname === new URL("task.html", location.href).pathname
+      && (!referrer.hash || referrer.hash === `#${entryTask}`);
+    if (cameFromTask && state.task === entryTask && history.length > 1) {
+      event.preventDefault();
+      history.back();
+    }
+  }
+  $("#r-back").addEventListener("click", backToTask);
+  $("#r-tasklink").addEventListener("click", backToTask);
+  window.addEventListener("hashchange", renderFromHash);
 })();

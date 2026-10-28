@@ -6,9 +6,11 @@
   const { D, MODELS, MODEL, COLOR, TASK, h, $, cap, fmt, withUnit, metricLabel, ordinal } = X;
 
   $("#task-back").addEventListener("click", () => {
-    const cameFromSite = document.referrer && new URL(document.referrer).origin === location.origin;
-    if (cameFromSite && history.length > 1) history.back();
-    else location.assign("tasks.html");
+    const referrer = document.referrer ? new URL(document.referrer) : null;
+    const cameFromSite = referrer?.origin === location.origin;
+    const cameFromLog = /\/(?:trajectories|runs)\.html$/.test(referrer?.pathname || "");
+    if (cameFromSite && !cameFromLog && history.length > 1) history.back();
+    else location.assign("index.html#results");
   });
 
   function render() {
