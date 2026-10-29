@@ -331,17 +331,17 @@ window.IX = (() => {
   }
 
   /* ---------- chrome ---------- */
-  const PAGES = [["framework.html", "Framework"], ["experimental-results.html", "Experimental Results"], ["agent-behavior.html", "Agent Behavior"]];
+  const PAGES = [["framework.html", "Framework"], ["experimental-results.html", "Experimental Results"], ["agent-behavior.html", "Agent Behavior"], ["docs.html", "Docs"]];
   function chrome() {
     const page = document.body.dataset.page;
-    const activePage = page;
+    const activePage = page === "task" ? "docs" : page;
     const logo = s("svg", { width: 22, height: 22, viewBox: "0 0 32 32", "aria-hidden": "true" });
     s("rect", { x: 1, y: 1, width: 30, height: 30, rx: 8, fill: "none", stroke: C.hair2 }, logo);
     s("path", { d: "M7 22h4v-8h4v5h4V9h4v10h3", fill: "none", stroke: C.ink, "stroke-width": 2.2, "stroke-linejoin": "round" }, logo);
     const nav = h("header", { class: "nav" }, h("div", { class: "wrap" },
       h("a", { class: "brand", href: "index.html", "aria-label": "Infrathon home", "aria-current": page === "index" ? "page" : null }, logo, "Infrathon"),
       h("nav", { class: "nav-links", "aria-label": "Pages" }, PAGES.map(([href, label]) => h("a", { href, "aria-current": href === `${activePage}.html` ? "page" : null, text: label }))),
-      h("div", { class: "nav-right" }, h("button", { id: "theme-toggle", class: "pill theme-toggle", type: "button", onclick: () => window.InfrathonTheme.toggle(), "aria-label": "Switch to dark theme", "aria-pressed": "false", text: "☾ Dark" }))));
+      h("div", { class: "nav-right" }, h("a", { class: "nav-community", href: "https://discord.gg/k9geNtHek", target: "_blank", rel: "noopener noreferrer", text: "Discord ↗" }), h("button", { id: "theme-toggle", class: "pill theme-toggle", type: "button", onclick: () => window.InfrathonTheme.toggle(), "aria-label": "Switch to dark theme", "aria-pressed": "false", text: "☾ Dark" }))));
     document.body.prepend(nav);
     const sectionNav = document.querySelector(".subnav");
     const measureNavigation = () => {

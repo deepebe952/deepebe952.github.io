@@ -1,0 +1,78 @@
+/* Documentation: navigation, article, and on-page contents. */
+.docs-layout { display: grid; grid-template-columns: 210px minmax(0, 820px) 160px; gap: 36px; max-width: 1440px; margin: 0 auto; padding: 42px 32px 70px; align-items: start; }
+.docs-sidebar, .docs-toc { position: sticky; top: calc(var(--nav-height) + 24px); max-height: calc(100dvh - var(--nav-height) - 48px); overflow-y: auto; scrollbar-width: thin; font-size: 14px; }
+.docs-sidebar .search { width: 100%; margin-bottom: 22px; background: var(--panel); }
+.docs-nav-heading { margin: 24px 10px 8px; font-size: 13px; font-weight: 600; color: var(--ink); }
+.docs-nav-heading:first-child { margin-top: 0; }
+.docs-sidebar a { display: block; padding: 7px 10px; margin-block: 2px; color: var(--ink-2); line-height: 1.5; border-radius: 6px; }
+.docs-sidebar a:hover { background: var(--panel-2); color: var(--ink); }
+.docs-sidebar a[aria-current="page"], .docs-sidebar a[aria-current="location"] { background: color-mix(in srgb, var(--m-sol) 9%, var(--bg)); color: var(--m-sol); font-weight: 500; }
+.docs-sidebar details { margin-top: 14px; }
+.docs-sidebar summary { padding: 5px 10px; color: var(--ink); font-weight: 500; font-size: 13px; cursor: pointer; }
+.docs-sidebar details a { margin-left: 8px; font-size: 13px; }
+.docs-toc h2 { margin: 0 0 12px; font-size: 13px; font-weight: 500; letter-spacing: 0; }
+.docs-toc a { display: block; margin: 0 0 11px; padding-left: 12px; border-left: 1px solid var(--hair); color: var(--ink-3); font-size: 13px; line-height: 1.5; }
+.docs-toc a[aria-current="location"] { border-color: var(--m-sol); color: var(--m-sol); }
+.doc-article { min-width: 0; }
+.doc-header { padding-bottom: 24px; }
+.doc-header .crumbs { margin-bottom: 18px; font-size: 13px; }
+.doc-header h1 { margin: 0; font-size: clamp(28px, 3vw, 36px); line-height: 1.22; font-weight: 600; }
+.doc-header .lede { margin: 16px 0 0; font-size: 17px; line-height: 1.7; color: var(--ink-2); }
+.doc-section { padding-top: 24px; margin-bottom: 32px; }
+.doc-section > h2 { margin: 0 0 18px; font-size: 24px; font-weight: 600; line-height: 1.3; }
+.doc-section > h3, #t-setup > h3 { margin: 25px 0 12px; font-size: 18px; font-weight: 600; }
+.doc-section p, .doc-section li { color: var(--ink-2); font-size: 16px; line-height: 1.75; }
+.doc-section p { margin: 0 0 16px; }
+.doc-section ul, .doc-section ol { margin: 12px 0 20px; padding-left: 22px; }
+.doc-section li + li { margin-top: 6px; }
+.doc-section code { font-family: var(--f-mono); font-size: .85em; overflow-wrap: anywhere; }
+.doc-meta { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 20px 0 0; color: var(--ink-3); font-size: 13px; }
+.doc-code { position: relative; margin: 18px 0 24px; border: 1px solid var(--hair-2); border-radius: 9px; background: var(--panel-2); }
+.doc-code pre { margin: 0; padding: 42px 18px 18px; overflow: auto; font: 400 13px/1.7 var(--f-mono); color: var(--ink); }
+.doc-code code { font: inherit; white-space: pre; overflow-wrap: normal; }
+.copy-code { position: absolute; top: 8px; right: 10px; border: 0; background: none; color: var(--ink-3); cursor: pointer; font-size: 12px; padding: 3px 5px; }
+.copy-code:hover { color: var(--ink); }
+.docs-menu-button { display: none; }
+.doc-resource-links { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0 8px; }
+.doc-resource-links a { border: 1px solid var(--hair-2); padding: 7px 14px; border-radius: 6px; font-size: 14px; }
+.doc-resource-links a:hover { border-color: var(--m-sol); color: var(--m-sol); }
+.doc-resource-status { color: var(--ink-3); font-size: 13px; margin: 0; }
+.doc-section .doc-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.doc-table th, .doc-table td { padding: 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--hair); }
+.doc-table th { font-weight: 500; color: var(--ink); background: var(--panel-2); }
+.doc-table td { color: var(--ink-2); }
+.doc-callout { margin: 18px 0; padding: 2px 0 2px 18px; border-left: 3px solid var(--hair-2); }
+.doc-task-id { color: var(--ink-3); font-size: 12px; overflow-wrap: anywhere; }
+.doc-article .task-back { margin: 0 0 18px; height: auto; padding: 0; border: 0; background: none; color: var(--ink-3); font-size: 13px; cursor: pointer; }
+.doc-article .metric-explanation { padding: 0; font-size: 15px; }
+.doc-article .metric-formula { font-size: 13px; padding: 16px; }
+.doc-article .metric-explanation p, .doc-article .metric-explanation li { font-size: 15px; }
+.doc-article .metric-explanation h4 { font-size: 16px; }
+.doc-article .card-head p, .doc-article .card-foot { font-size: 13px; line-height: 1.6; }
+.doc-article .doc-results { display: grid; gap: 18px; }
+.doc-article .doc-results .card { min-width: 0; }
+.doc-article .pager { margin-top: 32px; font-size: 14px; }
+.doc-article .facts { margin: 0; }
+.docs-empty { padding: 8px 10px; color: var(--ink-3); font-size: 13px; }
+@media (max-width: 1200px) {
+  .docs-layout { grid-template-columns: 200px minmax(0, 1fr); gap: 28px; padding-inline: 24px; }
+  .docs-toc { display: none; }
+}
+@media (max-width: 800px) {
+  .docs-layout { display: block; padding: 20px 20px 48px; }
+  .docs-menu-button { display: inline-flex; border: 1px solid var(--hair-2); background: var(--panel); border-radius: 6px; padding: 7px 12px; margin-bottom: 24px; cursor: pointer; font-size: 14px; }
+  .docs-sidebar { display: none; position: static; max-height: 55dvh; margin: 0 0 26px; padding: 14px; border: 1px solid var(--hair); border-radius: 8px; }
+  .docs-nav-open .docs-sidebar { display: block; }
+  .doc-section > h2 { font-size: 22px; }
+  .doc-section p, .doc-section li { font-size: 15px; }
+  .doc-header .lede { font-size: 16px; }
+}
+
+.docs-mobile-contents { display: none; margin-bottom: 20px; font-size: 14px; color: var(--ink-2); }
+.docs-mobile-contents summary { cursor: pointer; }
+.docs-mobile-contents nav { display: flex; flex-wrap: wrap; gap: 8px 18px; padding-top: 12px; }
+.docs-mobile-contents a[aria-current="location"] { color: var(--m-sol); font-weight: 500; }
+.metric-details summary { cursor: pointer; color: var(--ink); font-size: 15px; }
+.metric-details .metric-explanation { padding-top: 18px; }
+@media (max-width: 1200px) { .docs-mobile-contents { display: block; } }
+.docs-sidebar a[hidden], .docs-sidebar details[hidden], .docs-empty[hidden] { display: none; }

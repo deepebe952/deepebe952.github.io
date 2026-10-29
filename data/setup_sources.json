@@ -1,0 +1,134 @@
+{
+  "project": "ultrainfrabench-release",
+  "revision": "ae21f8a6a8abf9470e089d3fed20e3d3ef459871",
+  "sources": [
+    {
+      "path": "scripts/infrathon/release/public/README.md",
+      "sha256": "75ea554702c21e0ee292b842ca3746bb3f9b652c5a1fd271e48b1567b5ccd27d",
+      "public_export_path": "README.md"
+    },
+    {
+      "path": "scripts/infrathon/release/public/docs/HOST_PREREQUISITES.md",
+      "sha256": "5a910d69ffebd435214cfb8668e00930d7c9b088bd0083237d393af6edd8d20c",
+      "public_export_path": "docs/HOST_PREREQUISITES.md"
+    },
+    {
+      "path": "scripts/infrathon/README.md",
+      "sha256": "43c17d8f21ce6a39e14afa18c804cdecab5e8e39196323c82b70538de1fdbd09"
+    },
+    {
+      "path": "scripts/infrathon/registry.json",
+      "sha256": "58e30eb5bfd2aa2cece886abdd3b240e3efacbf7138d5d8dfce4e0a1f3458af2"
+    },
+    {
+      "path": "scripts/infrathon/tasks.json",
+      "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+    },
+    {
+      "path": "scripts/infrathon/assets.py",
+      "sha256": "d427226c34ffb242eeb198c7103e135d931c89363441df7d4b2410a3a8f892cc"
+    },
+    {
+      "path": "scripts/infrathon/images.sh",
+      "sha256": "390894ccbd1941c934d49b33ece27e6cae8f2ef96089d942722a5faa5a819274"
+    },
+    {
+      "path": "scripts/infrathon/pull_images.sh",
+      "sha256": "fba75ad54f3bbd5d626bc091c15a81d225afdfd3ca8347b7fad18b228c0ac7ea"
+    },
+    {
+      "path": "scripts/infrathon/release/export_public.py",
+      "sha256": "c802a1398bf41d825193ba8a51796339cbea99bc94b783c5efaf2e8c2bf255a7"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "93e45e0ee26c65bf782047d07635593af8846b4c5a58f558922948a0c3752846"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "b05f4727ffe0c5348441126d3f9ef4ae7c49cc6f158f95070c0ecb081690cd61"
+    },
+    {
+      "path": "README.md",
+      "sha256": "85cc287bc90545a4a69c71116d783b19e7e86023e587d692851e536e988bac0e"
+    },
+    {
+      "path": "docs/GETTING_STARTED.md",
+      "sha256": "ce29d06156d6b68c75ffff15105a6b4826721f487d8487755d2e45221891bd2d"
+    },
+    {
+      "path": "docs/ARCHITECTURE.md",
+      "sha256": "25a2dbd3f759a7838939c694707470e12f226ca6c599774c749faf7bdcf47e3f"
+    },
+    {
+      "path": "docs/VERSION_STORE.md",
+      "sha256": "ea451c355ad809eee48cfc7b69dca68e155588b51cd2c87d3d54e3cd881c9138"
+    },
+    {
+      "path": "docs/LLM_JUDGE.md",
+      "sha256": "66faa111f1bb3f70b188ac49da81820da58d8acd894e91a76cd674d6f33c9ea4"
+    },
+    {
+      "path": "launch/common.sh",
+      "sha256": "595fc8f639a86103c256c078d881e7561cd287fa9cb94229b834cb949ee559c2"
+    },
+    {
+      "path": "launch/build-agent-runtime.sh",
+      "sha256": "700d73b89a43ae9ec3da95a63c2c5ff7a90c40683b1976b3a7e2a7feb11b3977"
+    },
+    {
+      "path": "launch/standalone-fp8/run.sh",
+      "sha256": "f73847a30db9d16db2ee38ebaaa069ec86387eea170eca300f9e3ca8ed174e9d"
+    },
+    {
+      "path": "launch/mlsysforge.env.example",
+      "sha256": "f89caa30025c86e19f3f81294ff1a9e1016b40426f44545e287ee1b33ab38465"
+    },
+    {
+      "path": "scripts/infrathon/release/public/launch/mlsysforge.env.example",
+      "sha256": "f0dd1e14c77acd85e7136a8bbbc9923d5985ee25234b9ac7e6d7c24edee1430f",
+      "public_export_path": "launch/mlsysforge.env.example"
+    },
+    {
+      "path": "tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/images/published.json",
+      "sha256": "114b82e0075f6deb32589727e7411a215cba89019e24fec54063d9a3acf3b905"
+    },
+    {
+      "path": "tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/assets/manifest.json",
+      "sha256": "bd1b7cdb8a1d22fccf1c345238ec09a0fb787e1f7c9ad41e6233e6fe48ffad42"
+    },
+    {
+      "path": "tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/assets/fetch.sh",
+      "sha256": "a634bf9f1241f35be6afae75f06f09ab98b518ec0015a4244e5a76b1a68fe543"
+    },
+    {
+      "path": "tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/scripts/build_images.sh",
+      "sha256": "bc21902bcd606b42431660c4e84dd24062b5b4db9742f4eff27e5368ee7ae3c7"
+    },
+    {
+      "path": "tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/scripts/eval_archive.sh",
+      "sha256": "2cf2e7833edce85d0c1aac7ceb2c6189b18f2607480459f1d4e3c43e4dfeb113"
+    },
+    {
+      "path": "tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/scripts/run_fixed_budget.sh",
+      "sha256": "2cf95c0469ea78ca4725791493eb6d7b11b90e41fb1d72ee4c90dd5bf22d121d"
+    },
+    {
+      "path": "tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/tasks/standalone_dynamic_grouped_fp8_h100_scratch_v3.json",
+      "sha256": "54a75bbcb9f03cde0bb1aee064050ea15f228af7be476f2a32feaa943df56320"
+    },
+    {
+      "path": "tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/README.md",
+      "sha256": "88f2ef14c46ba5c8ff01410a0a7b22d765fde5d1f6ff26252bcbdeb7879663bb"
+    },
+    {
+      "path": "sforge/harness/evolve_scripts.py",
+      "sha256": "a4e3dd5954023b6c1d8eb5e0d8b91d6b52c1f5b4d159b904c92fe771c842a67a"
+    }
+  ],
+  "mock_resources": {
+    "code": "https://example.com/infrathon/code",
+    "containers": "https://example.com/infrathon/containers",
+    "data": "https://example.com/infrathon/data"
+  }
+}

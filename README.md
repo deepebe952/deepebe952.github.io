@@ -10,7 +10,8 @@ site/
   agent-behavior.html        Section 5: requirements, validation, improvement, overall answer
   tasks.html                 compatibility redirect → index.html#results
   trajectories.html#<task>/<model>  run log reached from task details
-  task.html#<key>             task details, scores, trajectories, run trace
+  docs.html                  installation, assets, Docker, launchers, outputs
+  task.html#<key>/<section>   task guide, evaluation, scores, trajectories, run trace
   architecture.html         compatibility redirect → framework.html#overview
   method.html                compatibility redirect → framework.html#overview
   results.html               compatibility redirect → experimental-results.html
@@ -21,18 +22,23 @@ site/
   assets/css/framework.css   framework definitions and task inventory
   assets/css/experimental-results.css  experimental figures and expansion dialog
   assets/css/agent-behavior.css  behavior figure components
+  assets/css/docs.css        documentation sidebar, article, contents, code blocks
   assets/js/core.js          shared data access, rank math, charts, navigation
   assets/js/home.js          homepage scoring notes and legacy anchors
   assets/js/home-results.js  leaderboard, task map, filterable task rows with trajectories
   assets/js/experimental-results.js  figure expansion and section navigation
+  assets/js/docs.js          task search, shared documentation navigation, command copying
   assets/js/<page>.js        page rendering
   assets/img/institutions/   institution artwork extracted from the paper
   assets/img/experimental-results/  original figure PDFs and vector SVG conversions
   data/infrathon.js          generated results and cost bundle
+  data/docs.js               generated guides for all 25 tasks
   data/behavior.js           archived digitized Section 5 figure bundle
 data/
   tasks.json                 task and model registry
   task_metrics.json          short metric explanations, formulas, conditions, source provenance
+  task_guides.json           task objectives, workspace, resources, workflow, source hashes
+  setup_sources.json         setup documentation sources and mock release URLs
   raw/runs.json              selected dashboard submissions
   tokens.json                paper cost totals and 150 per-task cost records
   behavior_figures.json      Section 5 measurements and source provenance
@@ -44,6 +50,7 @@ data/
 scripts/
   extract_dashboard.py      dashboard ZIP → selected runs
   build_data.py             results, ranks, summaries → infrathon.js
+  build_docs.py             task guides → docs.js
   extract_behavior_figures.py  archived figure JSON → behavior.js; optional PDF extraction
   export_behavior_figures.py   original Section 5 PDFs → SVG assets and manifest
   extract_experimental_figures.py  Overleaf figure PDFs → SVG assets and manifest
@@ -56,6 +63,7 @@ scripts/
 ```bash
 python3 scripts/extract_dashboard.py /path/to/dashboard-results.zip
 python3 scripts/build_data.py
+python3 scripts/build_docs.py
 python3 scripts/extract_behavior_figures.py
 python3 -m unittest discover -s tests -v
 python3 scripts/check_site.py
@@ -85,7 +93,7 @@ The retained first-score distributions come from the October 25, 41-page manuscr
 
 The homepage (`index.html`) follows the paper title and author order, with 18 names in three desktop rows (5 / 7 / 6), 16 verified homepage links, numbered affiliations, and eight unlinked logos. Author rows wrap within their groups on narrow screens. Affiliation numbers and logo order follow the latest author-supplied reference: Washington, Ai2, Penn, Pyromind, Stanford, RadixArk, UT Austin, Northwestern. Zheyuan Xiao is affiliated with Washington. Seven logos preserve the PDF’s vector paths; Pyromind uses its original transparent image. `data/institution_logos.json` records the original PDF hash and extraction positions, not the display order. Paper, Code, Docker, and HuggingFace buttons are explicitly marked coming soon until public URLs are supplied.
 
-The brand opens Home; the top-level navigation links are Framework (`framework.html`), Experimental Results (`experimental-results.html`), and Agent Behavior (`agent-behavior.html`). There is no Task Results tab or standalone trajectory navigation. Task detail URLs remain `task.html#<key>`; their per-model Run log links open `trajectories.html#<task>/<model>`. The log page stays scoped to that task, supports switching models, and provides a return link to its task page. The global all-runs directory is removed.
+The brand opens Home; the top-level navigation links are Framework (`framework.html`), Experimental Results (`experimental-results.html`), Agent Behavior (`agent-behavior.html`), and Docs (`docs.html`). Discord links to the author-provided invite. There is no Task Results tab or standalone trajectory navigation. Task detail URLs remain `task.html#<key>` and support `/<section>` anchors; their per-model Run log links open `trajectories.html#<task>/<model>`. The log page stays scoped to that task, supports switching models, and provides a return link to its task page. The global all-runs directory is removed.
 
 Home keeps the paper title in two equally sized lines, three author rows, institutions, and resource links, followed by a filterable leaderboard, a full-width task map, and 25 task rows. Each row pairs the task name and optimization target with its category, budget, metric, best configuration, and a compact trajectory chart. Rows omit Start and All six columns, open task details, and stack their content on small screens. Stage, level, and search filters share saved history state with the selected model highlight; filtering hides existing rows without rebuilding charts. The leaderboard omits mean-relative performance and bootstrap first-place probability; visible output tokens are totals across the selected main runs, explicitly excluding reasoning traces. Scoring and token definitions remain collapsed at `#score-notes`. The homepage citation block and shared site footer are removed.
 
@@ -99,8 +107,18 @@ Task detail pages have a visible Back button. Visits from the task list return t
 
 Agent Behavior (`agent-behavior.html`) follows all four Section 5 subsections, including Overall Answer and Future directions. It retains the paper’s case narratives: what the agent attempted, what the checks observed, and what happened next. Task requirements use original Figure 9, testing optimizations uses Figures 10–11, and continued improvement uses Figure 12. Each complete figure is a vector-glyph SVG exported directly from its corresponding Overleaf PDF, with an expansion dialog and no raw-PDF links. The additional reading context comes from the paper’s behavior-methods appendix: Figure 10’s five-call check differs from the full-case profiles, Figure 12’s pooled rates weight submissions rather than runs, and the 141-run repeat and 143-run later-record analyses have different inclusion rules. `data/behavior_original_figures.json` records the latest archive and main.tex hashes, subsection mapping, PDF/SVG hashes, and dimensions. The historical digitized data and its checks remain available but no longer render this page. Previous Analysis links and individual panel anchors remain supported.
 
-The default theme is light, with a saved dark-theme preference and a navigation toggle. Charts use shared theme variables and responsive dimensions.
+The default theme is white, with Inter body text, a saved dark-theme preference, and a navigation toggle. Charts use shared theme variables and responsive dimensions.
+
+## Documentation
+
+The setup guide follows the release scripts and `scripts/infrathon/release/public/` overlay. It covers host requirements, the Python environment, agent runtime, asset fetching, image pulls, candidate history, launching a kernel task, and submission outputs. Public Code, Docker, and Dataset URLs currently use author-approved `example.com` placeholders, with one release-status line. Replace these URLs in `site/docs.html` and `data/setup_sources.json` when published.
+
+All 25 task pages share Overview, Workspace, Requirements, Run this task, Evaluation, and Results sections, a searchable task sidebar, page contents, and copyable commands. Evaluation introduces the metric; the expandable Score calculation contains its formula, aggregation, and validation conditions. The original score charts and per-model run logs remain under Results. The sidebar and contents collapse on mobile.
+
+`data/task_guides.json` records each task's release documents, launcher, and source hashes. `data/setup_sources.json` records the setup sources and release revision. Current launcher defaults determine the documented GPU allocation. Miles uses its task-specific `run.env` template; Concurrent serving includes its backend and baseline prerequisites. `scripts/build_docs.py` checks registry coverage and emits only display fields into `site/data/docs.js`.
+
+Setup commands were checked against the release code and launcher help. The candidate-history example was exercised in temporary stores. Docker pulls, image builds, and GPU runs have not been executed as part of the website update.
 
 ## Deployment
 
-`.github/workflows/pages.yml` rebuilds both bundles, checks that committed bundles are current, runs data tests, original-figure integrity checks, and local-reference/JavaScript checks, and deploys `site/` to GitHub Pages after a push to `main`. Pages is configured to use GitHub Actions.
+`.github/workflows/pages.yml` rebuilds the results, documentation, and archived behavior bundles, checks that committed bundles are current, runs data tests, original-figure integrity checks, and local-reference/JavaScript checks, and deploys `site/` to GitHub Pages after a push to `main`. Pages is configured to use GitHub Actions.

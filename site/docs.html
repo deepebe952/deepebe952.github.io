@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Setup guide · Infrathon</title>
+<meta name="description" content="Install Infrathon, prepare Docker images and task assets, and run an agent.">
+<meta property="og:title" content="Infrathon">
+<meta property="og:description" content="Can frontier models solve long-horizon AI infrastructure tasks? 25 tasks, 6 configurations, 150 runs on H100s.">
+<meta name="theme-color" content="#ffffff">
+<script src="assets/js/theme.js"></script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23060709'/%3E%3Cpath d='M7 22h4v-8h4v5h4V9h4v10h3' fill='none' stroke='%23ededef' stroke-width='2.4'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/css/site.css">
+<link rel="stylesheet" href="assets/css/docs.css">
+</head>
+<body data-page="docs">
+<div class="docs-layout">
+  <button class="docs-menu-button" id="docs-menu" aria-expanded="false" aria-controls="docs-sidebar">☰ Documentation</button>
+  <aside class="docs-sidebar" id="docs-sidebar"><label class="sr-only" for="docs-search">Find a task</label><input class="search" id="docs-search" type="search" placeholder="Find a task…"><nav id="docs-nav" aria-label="Documentation"></nav></aside>
+  <main class="doc-article" id="main-content">
+    <header class="doc-header"><div class="crumbs"><a href="index.html">Home</a><span>/</span><span>Docs</span></div><h1>Setup guide</h1><p class="lede">Install the harness, prepare a task, and run an agent.</p>
+      <div class="doc-resource-links"><a href="https://example.com/infrathon/code" data-mock-resource>Code ↗</a><a href="https://example.com/infrathon/containers" data-mock-resource>Docker ↗</a><a href="https://example.com/infrathon/data" data-mock-resource>Dataset ↗</a></div><p class="doc-resource-status">Release links coming soon.</p>
+    </header>
+    <details class="docs-mobile-contents"><summary>On this page</summary><nav id="docs-mobile-toc"></nav></details>
+    <section class="doc-section" id="requirements"><h2>Requirements</h2>
+      <ul><li>Linux x86-64, Docker 24+, and the NVIDIA Container Toolkit.</li><li>An H100 NVL or H100 SXM host. The example below uses one GPU for Work and one for Judge.</li><li><code>uv</code>, <code>git</code>, <code>jq</code>, <code>flock</code>, <code>rsync</code>, <code>patch</code>, <code>curl</code>, and <code>sha256sum</code>.</li><li>Credentials for your agent’s model provider.</li></ul>
+      <p>GPU allocation and model downloads are listed on each task page.</p>
+      <p>Set Docker’s default runtime to <code>nvidia</code> and check GPU access:</p>
+      <div class="doc-code"><pre><code>sudo nvidia-ctk runtime configure --runtime=docker --set-as-default
+sudo systemctl restart docker
+docker info --format '{{.DefaultRuntime}}'
+docker run --rm -e NVIDIA_VISIBLE_DEVICES=all \
+  nvidia/cuda:12.8.1-base-ubuntu24.04 nvidia-smi -L</code></pre></div>
+    </section>
+    <section class="doc-section" id="installation"><h2>Installation</h2>
+      <p>From the release checkout, install the Python environment and the agent runtime:</p>
+      <div class="doc-code"><pre><code>uv sync --frozen --dev --python 3.12
+uv pip install --python .venv/bin/python numpy==2.5.2
+uv pip install --python .venv/bin/python \
+  --index-url https://download.pytorch.org/whl/cpu torch==2.14.1
+launch/build-agent-runtime.sh --agent codex
+.venv/bin/sforge --help</code></pre></div>
+      <h3>Configuration</h3>
+      <div class="doc-code"><pre><code>cp launch/mlsysforge.env.example launch/mlsysforge.env</code></pre></div>
+      <p>Edit <code>launch/mlsysforge.env</code> with your model credentials and local asset paths. For this first run, leave <code>SFORGE_VERSION_STORE_ROOT</code> unset and set <code>SFORGE_VERSION_STORE_OPTIONAL=1</code> to retain submission archives without a separate candidate-history store. Then load the file:</p>
+      <div class="doc-code"><pre><code>set -a
+. launch/mlsysforge.env
+set +a</code></pre></div>
+      <div class="scroll-x"><table class="doc-table"><thead><tr><th>Setting</th><th>Purpose</th></tr></thead><tbody>
+        <tr><td><code>INFRATHON_ASSETS_ROOT</code></td><td>Task models and data. Defaults to <code>~/.cache/infrathon/assets</code>.</td></tr>
+        <tr><td><code>INFRATHON_HARDWARE</code></td><td><code>h100-94gb-400w</code> or <code>h100-80gb-700w</code>; detected from GPU 0 when unset.</td></tr>
+        <tr><td><code>CODEX_AUTH_JSON_PATH</code></td><td>Agent authentication file.</td></tr>
+        <tr><td><code>MODEL_API_BASE_URL</code><br><code>MODEL_API_KEY_FILE</code></td><td>Model endpoint and key file for a custom provider.</td></tr>
+      </tbody></table></div>
+    </section>
+    <section class="doc-section" id="assets"><h2>Models and data</h2>
+      <p>This example uses Dynamic grouped FP8 GEMM, a kernel task. Select the task, fetch its assets, and verify the download:</p>
+      <div class="doc-code"><pre><code>TASK=standalone-dynamic-grouped-fp8-h100-v3-scratch
+TASK_DIR="tasks/latest/$TASK"
+"$TASK_DIR/assets/fetch.sh"
+.venv/bin/python scripts/infrathon/assets.py check "$TASK"</code></pre></div>
+      <p>Each task’s <code>assets/manifest.json</code> lists its models, data, and file hashes. To use an existing local copy of the release dataset, set <code>INFRATHON_ASSETS_SOURCE</code> before fetching.</p>
+    </section>
+    <section class="doc-section" id="containers"><h2>Docker images</h2>
+      <p>Pull the task’s Work and Judge images and complete the local setup:</p>
+      <div class="doc-code"><pre><code>INFRATHON_PULL=1 bash "$TASK_DIR/scripts/build_images.sh"</code></pre></div>
+      <p>The script runs <code>docker pull</code> for the digests in <code>images/published.json</code>, assigns the local image tags, and installs the evaluator assets. To build the images from source:</p>
+      <div class="doc-code"><pre><code>bash "$TASK_DIR/scripts/build_images.sh"</code></pre></div>
+      <p>Miles and MInference use <code>scripts/infrathon/pull_images.sh</code>; their task pages show the corresponding command.</p>
+    </section>
+    <section class="doc-section" id="history"><h2>Candidate history</h2><p>Miles and Concurrent serving use a store for candidate versions. With <code>TASK_DIR</code> set to your task, initialize and register it:</p><details class="metric-details"><summary>Initialize the store</summary><div class="doc-code"><pre><code>export SFORGE_VERSION_STORE_ROOT=&quot;$PWD/../infrathon-version-store&quot;
+.venv/bin/python - &quot;$SFORGE_VERSION_STORE_ROOT&quot; &quot;$TASK_DIR&quot; &lt;&lt;&#x27;PY&#x27;
+import json, sys, uuid
+from pathlib import Path
+from sforge.harness.version_store import VersionStore
+root, task = (Path(p).expanduser().resolve() for p in sys.argv[1:])
+specs = list((task / &quot;tasks&quot;).glob(&quot;*.json&quot;))
+assert len(specs) == 1, &quot;Expected one task definition&quot;
+task_id = json.loads(specs[0].read_text())[&quot;task_id&quot;]
+root.mkdir(parents=True, exist_ok=True)
+marker = root / &quot;.sforge-version-store.json&quot;
+if not marker.exists():
+    marker.write_text(json.dumps({&quot;schema_version&quot;: 1,
+        &quot;kind&quot;: &quot;sforge-version-store&quot;, &quot;store_id&quot;: uuid.uuid4().hex}) + &quot;\n&quot;)
+VersionStore.open(root)
+folder = root / &quot;tasks&quot; / task.name
+(folder / &quot;runs&quot;).mkdir(parents=True, exist_ok=True)
+path = folder / &quot;task.json&quot;
+record = {&quot;schema_version&quot;: 1, &quot;task_directory&quot;: task.name, &quot;task_id&quot;: task_id}
+if path.exists():
+    assert json.loads(path.read_text()) == record, &quot;Existing registration differs&quot;
+else:
+    path.write_text(json.dumps(record) + &quot;\n&quot;)
+assert VersionStore.open(root).supports_task(task_id)
+print(&quot;Registered&quot;, task_id, &quot;in&quot;, root)
+PY
+.venv/bin/sforge versions --version-store-root &quot;$SFORGE_VERSION_STORE_ROOT&quot; --verify</code></pre></div></details><p>For Miles, copy the printed absolute path into <code>SFORGE_VERSION_STORE_ROOT</code> in the task’s <code>run.env</code>. For Concurrent serving, keep this variable exported in the launch shell. Register each task once in the same store.</p></section>
+    <section class="doc-section" id="run"><h2>Run a task</h2>
+      <p>Start a 12-hour run. Replace <code>MODEL_ID</code> and the authentication path with your provider settings.</p>
+      <div class="doc-code"><pre><code>launch/standalone-fp8/run.sh \
+  --model MODEL_ID --effort max --hours 12 \
+  --work-gpu 0 --judge-gpu 1 \
+  --auth /path/to/auth.json</code></pre></div>
+      <p>For a one-GPU run, replace the two GPU options with <code>--shared-gpu --gpu 0</code>. Work pauses while Judge evaluates a submission.</p>
+      <h3>Submit a candidate</h3>
+      <p>Inside the running Work environment, run the task’s public tests, then submit the current implementation:</p>
+      <div class="doc-code"><pre><code>sforge-submit --details
+sforge-submit --list</code></pre></div>
+      <p>The first command submits a candidate and returns feedback. The second lists previous submissions.</p>
+      <p>Choose a task in the sidebar for its workspace, resources, and launcher.</p>
+    </section>
+    <section class="doc-section" id="outputs"><h2>Results and logs</h2>
+      <p>Runs are saved under <code>outputs/&lt;task-directory&gt;/runs/&lt;run-id&gt;/</code>.</p>
+      <div class="scroll-x"><table class="doc-table"><thead><tr><th>File</th><th>Contents</th></tr></thead><tbody>
+        <tr><td><code>sforge-run.log</code></td><td>Agent run log.</td></tr>
+        <tr><td><code>&lt;task-id&gt;/submissions/agent-N/report.json</code></td><td>Score, validation results, and feedback.</td></tr>
+        <tr><td><code>&lt;task-id&gt;/submissions/agent-N/submission.tar.gz</code></td><td>Submitted source code.</td></tr>
+        <tr><td><code>&lt;task-id&gt;/final_archive.tar.gz</code></td><td>Workspace at the end of the run.</td></tr>
+        <tr><td><code>completion.json</code></td><td>Run status and final-evaluation location.</td></tr>
+      </tbody></table></div>
+      <p>For setup questions, join <a href="https://discord.gg/k9geNtHek" target="_blank" rel="noopener noreferrer">Discord</a>.</p>
+    </section>
+  </main>
+  <aside class="docs-toc" aria-label="On this page"><h2>On this page</h2><nav id="docs-toc-links"></nav></aside>
+</div>
+<script src="data/infrathon.js"></script>
+<script src="assets/js/core.js"></script>
+<script src="assets/js/docs.js"></script>
+</body>
+</html>

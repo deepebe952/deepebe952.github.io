@@ -77,7 +77,7 @@
     // only while viewing the same task, including after model changes.
     const cameFromTask = referrer?.origin === location.origin
       && referrer.pathname === new URL("task.html", location.href).pathname
-      && (!referrer.hash || referrer.hash === `#${entryTask}`);
+      && (!referrer.hash || referrer.hash.split("/")[0] === `#${entryTask}`);
     if (cameFromTask && state.task === entryTask && history.length > 1) {
       event.preventDefault();
       history.back();

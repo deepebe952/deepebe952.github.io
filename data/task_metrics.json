@@ -45,7 +45,7 @@
         "B is batch size, H is the number of heads, S_q/S_k are query/key lengths, and d_h is head size. Durations are in seconds; the doubled forward term models activation recomputation.",
         "Each case uses seven timed trials. Forward and backward time are combined within each trial before taking the median throughput.",
         "G is the geometric mean of case TFLOPS within a family. Four scored cells cover Wan13B (two cells), LTX2 (one), and Kandinsky5 (one); the three families receive equal weight.",
-        "The score is raw effective TFLOPS, with no seed-speed denominator. Required scheduling and synchronization are timed; reference computation and checks are not."
+        "Timing includes required scheduling and synchronization and excludes reference computation and validation."
       ],
       "conditions": [
         "Preserve the prescribed NVFP4 fake quantization; outputs and input gradients must pass the FP32-reference accuracy checks.",
@@ -67,7 +67,7 @@
         "M and N are output matrix dimensions; K_g is the actual reduction length of group g, freshly drawn for each trial. Durations are in seconds.",
         "Each case uses five trials; time is the larger of synchronized host-wall and CUDA-event time, including the complete grouped computation and output writes.",
         "G_coarse is the geometric mean of four scored coarse-group cases; G_fine uses three fine-group cases. Each family contributes half of the final score.",
-        "The score is raw effective TFLOPS. The 160 additional correctness cases carry no performance weight; there is no reference-speed denominator or minimum-throughput gate."
+        "The 160 additional cases check correctness."
       ],
       "conditions": [
         "Grouped FP8 scaling and accumulation into the existing FP32 gradient must satisfy the dequantized high-precision and BF16 reference checks.",
@@ -88,8 +88,7 @@
       "details": [
         "M_local is the number of input tokens on each rank, top_k is experts selected per token, K is the input width, and N is the output width per rank. F counts useful matrix work on one rank.",
         "Each case uses seven trials and charges the slower rank. Times are in seconds and include all-gather, expert scatter, grouped matrix multiplication, and required synchronization.",
-        "G_heavy is the geometric mean of two scored cases; G_moderate uses three. The two families receive equal weight, so the five cases are not equally weighted.",
-        "The score is raw effective TFLOPS per rank. It has no seed-speed denominator; communication-overlap diagnostics do not enter the score."
+        "G_heavy is the geometric mean of two scored cases; G_moderate uses three. The two families receive equal weight."
       ],
       "conditions": [
         "All five scored cells and eight correctness-only fixtures must satisfy FP32/BF16-reference accuracy and complete-write checks.",
@@ -111,11 +110,11 @@
         "u is completion-target tokens/s across both ranks over ten timed optimizer steps. Each step charges the slower rank; warm-up is excluded.",
         "Five held-out TL;DR sequence-length/batch-size workloads each use four counterbalanced candidate/reference pairs. Take each row’s median ratio, then the equally weighted geometric mean across rows.",
         "The official TRL reference is remeasured on the same GPU pair in the same evaluation, with matching initial model state and workload.",
-        "Timing includes forward, ORPO loss, backward, communication, and full-parameter optimizer update. The score is dimensionless: 100 is parity; 150 is 1.5× aggregate throughput."
+        "Timing includes forward, ORPO loss, backward, communication, and full-parameter optimizer update. A score of 100 denotes reference parity."
       ],
       "conditions": [
         "Loss trajectories, auxiliary outputs, gradients, optimizer states, and nonzero parameter updates must pass reference-relative checks.",
-        "Peak-memory and all required execution/protocol checks must pass; a failed required check makes the result invalid."
+        "Peak-memory, execution, and protocol checks must pass."
       ],
       "sources": [
         {
@@ -124,7 +123,7 @@
           "paper": "Appendix A: Training: Module Tasks / Qwen3 ORPO; eq:training_step_throughput and eq:orpo_metric"
         }
       ],
-      "example": "A score of 150 means 1.5× the official TRL reference throughput after the stated per-row and cross-row aggregation."
+      "example": "A score of 150 means 1.5× the official TRL reference throughput."
     },
     "gkd": {
       "label": "Training speedup",
@@ -138,7 +137,7 @@
       ],
       "conditions": [
         "Loss, auxiliary outputs, gradients, and student updates must pass reference checks, including varied masks, biases, mixtures, and temperatures.",
-        "The teacher must remain frozen and memory/execution checks must pass. Failed required checks are invalid; a correct implementation may score below 100."
+        "The teacher must remain frozen, and memory and execution checks must pass."
       ],
       "sources": [
         {
@@ -147,7 +146,7 @@
           "paper": "Appendix A: Training: Module Tasks / Qwen3 GKD; eq:training_step_throughput and eq:gkd_metric"
         }
       ],
-      "example": "A displayed score of 194.8 means about 1.948× the official TRL reference throughput under this aggregation, or a 94.8% throughput increase; it does not mean 194.8 tokens/s."
+      "example": "A score of 194.8 means 1.948× the official TRL reference throughput, a 94.8% increase."
     },
     "opcd": {
       "label": "Medical accuracy gain (pp/hour)",
@@ -156,13 +155,12 @@
       "details": [
         "a_final and a_base are accuracy fractions. Evaluate the final student on 2,436 held-out MedMCQA questions in three seeded repeats with a fixed answer-tag grader, without the privileged medical prompt.",
         "The frozen original-model baseline is approximately 22.7285% accuracy, measured with the same evaluation protocol.",
-        "D is audited training seconds from first student generation through final weight publication, including learning and excluding model loading and authorized evaluator-audit overhead.",
-        "The score measures accuracy percentage points gained per training hour, using the improvement over the original model."
+        "D is audited training seconds from first student generation through final weight publication, including learning and excluding model loading and authorized evaluator-audit overhead."
       ],
       "conditions": [
         "The mean accuracy improvement must be at least 6.5 percentage points.",
         "The objective, teacher probabilities, gradients, sample usage, and trained/published/evaluated weight consistency must pass the required correctness and provenance checks.",
-        "A failed candidate check or quality gate gives score 0; evaluator/infrastructure failure gives no valid score."
+        "Candidate or quality failures score 0; evaluator or infrastructure failures yield no valid score."
       ],
       "sources": [
         {
@@ -180,12 +178,12 @@
         "a_final and a_base are accuracy fractions. The trained Qwen3-1.7B student is evaluated on 2,000 held-out DAPO-Math problems in three seeded repeats with the fixed math grader.",
         "The frozen original-model baseline is approximately 25.9333% accuracy under the same evaluation protocol. MATH-500 is reported separately and does not enter the score.",
         "D is audited training seconds from first student generation through final weight publication, including learning and excluding model loading and authorized evaluator-audit overhead.",
-        "The score measures math-accuracy percentage points gained per training hour. The frozen Qwen3-4B teacher supplies token-level feedback during training."
+        "The frozen Qwen3-4B teacher supplies token-level feedback during training."
       ],
       "conditions": [
         "The mean accuracy improvement must be at least 1.6 percentage points.",
         "Student/teacher probabilities, sampled-token loss and gradients, sample usage, and weight publication must pass the required correctness and provenance checks.",
-        "A failed candidate check or quality gate gives score 0; evaluator/infrastructure failure gives no valid score."
+        "Candidate or quality failures score 0; evaluator or infrastructure failures yield no valid score."
       ],
       "sources": [
         {
@@ -202,13 +200,12 @@
       "details": [
         "s_final and s_base are game-success fractions. The final Qwen3-4B policy is evaluated greedily on 1,134 held-out games in three repeats; the separate 140-game public evaluation does not enter the score.",
         "The frozen original-model baseline is approximately 25.1617% success, measured with the same evaluation protocol.",
-        "D is audited training seconds from first training generation through final weight publication, including environment rollouts and learning, excluding model loading and authorized evaluator-audit overhead.",
-        "The score measures success-rate percentage points gained per training hour. It is uncapped and has no reference-time normalization."
+        "D is audited training seconds from first training generation through final weight publication, including environment rollouts and learning, excluding model loading and authorized evaluator-audit overhead."
       ],
       "conditions": [
         "The mean success-rate improvement must be at least 15 percentage points.",
         "Environment actions/rewards, token probabilities, advantages, optimizer updates, sample-to-update consistency, and published/evaluated weights must pass the required checks.",
-        "A failed candidate check or quality gate gives score 0; evaluator/infrastructure failure gives no valid score."
+        "Candidate or quality failures score 0; evaluator or infrastructure failures yield no valid score."
       ],
       "sources": [
         {
@@ -225,7 +222,7 @@
       "details": [
         "q is mean quality: normalized edit-distance OCR accuracy on 1,012 prompts, or raw PickScore on 2,040 prompts.",
         "Frozen original/teacher pairs are approximately (0.110282, 0.741047) for OCR and (19.911913, 21.597927) for PickScore. Both route closures have equal weight.",
-        "Closure 1 means reaching the teacher’s quality and may be exceeded. It is a fraction, not a percentage; the score unit is closure per replay hour.",
+        "Closure 1 matches teacher quality; higher values exceed it. The score measures gap closure per replay hour.",
         "D is median seconds across three hidden replays. Quality uses the verified real training run’s final LoRA; replay timing excludes the separate quality evaluation."
       ],
       "conditions": [
@@ -249,7 +246,7 @@
         "D is the median duration in seconds of three hidden replay workloads, each containing 16 prompts × 8 videos. Higher scores mean more completions of this fixed workload per hour.",
         "Replay timing includes reading, reward computation, policy-probability recomputation, training, logging, and weight publication. Model loading, video generation, and separate quality evaluation are excluded.",
         "The verified training run’s final model is evaluated on 61 evaluation prompts × three seed groups. Each video reward averages 0.1 × HPSv3 frame preference over frames 0, 4, and 8.",
-        "The frozen original-model mean reward h_base is approximately 0.789132. Quality is a pass/fail gate; it is not multiplied into the throughput score."
+        "The frozen original-model mean reward h_base is approximately 0.789132."
       ],
       "conditions": [
         "Mean HPSv3 evaluation reward must be no more than 0.28 below the frozen original-model mean.",
@@ -268,10 +265,10 @@
       "home_label": "TFLOPS",
       "formula": "F = 2 × N × K × Σg M_g\nq_i = median of 5 trials [F / (10¹² × t)]\nG_masked = GM(16 masked cases); G_psum = GM(16 packed cases)\nscore = √(G_masked × G_psum)",
       "details": [
-        "M_g is the actual valid row count of expert g; N is output width and K is the reduction dimension. Padded rows do not add useful work.",
+        "M_g is the actual valid row count of expert g; N is output width and K is the reduction dimension.",
         "Each trial uses fresh row counts. Throughput is computed before taking the five-trial median, so changing work per trial is respected.",
         "t is max(synchronized host-wall seconds, CUDA-event seconds), including dispatch, scaling, GEMM, output conversion, writes, and completion synchronization. Input preparation, reference checks, warm-up, and decoy calls are excluded.",
-        "GM(x₁,…,xₙ) = (∏x_i)^(1/n). Cases are equal-weight within each layout, then the two layouts are equal-weight. This is not total work divided by total suite time or speedup against a baseline."
+        "GM(x₁,…,xₙ) = (∏x_i)^(1/n). Cases are equal-weight within each layout, then the two layouts are equal-weight."
       ],
       "conditions": [
         "All 32 scored cases and 158 correctness-only cases must pass the applicable validity gates.",
@@ -291,10 +288,10 @@
       "home_label": "TFLOPS",
       "formula": "A_s = S_q × k\nF = 2 × H_q × A_s × (d_qk + 512)\nq_i = median of 7 trials [F / (10¹² × t)]\nscore = (G_V3.2 × G_V4-Flash × G_V4-Pro)^(1/3)",
       "details": [
-        "S_q is query length, k the selected keys per query in scored cases, H_q query-head count, and d_qk query/key width. Values have width 512. F counts selected interactions, not dense context-length attention.",
-        "G_V3.2, G_V4-Flash, and G_V4-Pro are geometric means of 5, 4, and 4 case throughputs. The three geometry families receive equal weight, rather than weighting all 13 cases equally.",
+        "S_q is query length, k the selected keys per query in scored cases, H_q query-head count, and d_qk query/key width. Values have width 512. F counts selected query–key interactions.",
+        "G_V3.2, G_V4-Flash, and G_V4-Pro are geometric means of 5, 4, and 4 case throughputs. The three geometry families receive equal weight.",
         "t is max(synchronized host-wall seconds, CUDA-event seconds) for the complete candidate call, including scheduling, internal temporary allocations, kernels, writes, and synchronization.",
-        "Input generation, cache clearing, reference evaluation, correctness checks, warm-up, and decoy calls are outside timing. There is no reference-speed denominator."
+        "Input generation, cache clearing, reference evaluation, correctness checks, warm-up, and decoy calls are outside timing."
       ],
       "conditions": [
         "All 13 scored configurations and 401 correctness-only cases must pass the applicable validity gates.",
@@ -315,13 +312,13 @@
       "formula": "A = Σb [S_q × L_b − S_q(S_q − 1)/2]\nF = 4 × H_q × 128 × A\nq_i = median of 7 trials [F / (10¹² × t)]\nscore = √(GM(5 one-query cases) × GM(5 16-query cases))",
       "details": [
         "L_b is request b’s valid cache length and S_q its query length. A counts only query–key pairs visible under the bottom-right causal mask; H_q is query-head count and head width is 128.",
-        "The factor 4 counts QK and PV multiply-add work. Page-table lookup and softmax do not add to F, but their execution time remains in the denominator.",
+        "The factor 4 counts QK and PV multiply-add work. Timing also covers page-table lookup and softmax.",
         "t is max(synchronized host-wall seconds, CUDA-event seconds) for the complete call, including host scheduling, temporary allocations, kernels, output writes, and completion synchronization.",
         "Seven-trial median throughputs are combined geometrically within the one-query and 16-query families, then those families receive equal weight. Input preparation, reference checks, warm-up, and decoy calls are excluded."
       ],
       "conditions": [
         "All 10 scored configurations and 160 correctness-only cases must pass the applicable validity gates.",
-        "Preserve BF16 attention, page mapping, shared KV heads, per-request lengths, and bottom-right causal masking; no context truncation.",
+        "Preserve BF16 attention, page mapping, shared KV heads, each request’s full valid cache, and bottom-right causal masking.",
         "Outputs must satisfy the independent reference tolerances and be completely written; inputs and memory boundaries must remain intact."
       ],
       "sources": [
@@ -337,10 +334,10 @@
       "home_label": "TFLOPS",
       "formula": "A = B × L² (noncausal), or B × L(L + 1)/2 (causal)\nF = 4 × H_q × d_h × A\nq_i = median of 7 trials [F / (10¹² × t)]\nscore = √(GM(3 video-DiT cases) × GM(2 causal cases))",
       "details": [
-        "B is batch size, L sequence length, H_q query-head count, and d_h head width. F is fixed dense-equivalent QK/PV work, not a count of the candidate’s actual instructions.",
-        "The video-DiT and causal families each receive half the geometric weight. Each video case therefore has weight 1/6 and each causal case 1/4; the five cases are not directly equal-weight.",
+        "B is batch size, L sequence length, H_q query-head count, and d_h head width. F is fixed dense-equivalent QK/PV work.",
+        "The video-DiT and causal families each receive half the geometric weight. Each video case therefore has weight 1/6 and each causal case 1/4.",
         "t is max(synchronized host-wall seconds, CUDA-event seconds), covering smoothing, quantization, attention, dequantization, output writes, host dispatch, temporary allocations, and synchronization.",
-        "Judge input preparation, compilation/warm-up, decoy calls, and reference/error checks are excluded. The result is raw TFLOPS, not a seed speedup or a quality-weighted score."
+        "Judge input preparation, compilation/warm-up, decoy calls, and reference/error checks are excluded."
       ],
       "conditions": [
         "All five scored cells, eight edge fixtures, and captured-activation checks on 30 CogVideoX and 32 Llama attention layers must pass.",
@@ -360,13 +357,13 @@
       "home_label": "TFLOPS",
       "formula": "F(L) = 8192 × L × (L + 1)\nq_i = median of 3 prompt trials [F(L_i,j) / (10¹² × t_i,j)]\nscore = (∏i=1…48 q_i)^(1/48)",
       "details": [
-        "8192 = 2 × 32 query heads × 128 head dimensions. L is each trial’s actual prompt length; F is the work of full dense causal attention, even when the candidate computes a sparse approximation.",
+        "8192 = 2 × 32 query heads × 128 head dimensions. L is each trial’s actual prompt length; F uses full dense-causal attention work as the common throughput numerator.",
         "The 48 cells are four RULER task types × three context budgets (32K, 64K, 128K) × four model layers. Each cell uses the median throughput of three real prompts, and all cells receive equal geometric weight.",
         "t is max(synchronized host-wall seconds, caller-stream CUDA-event seconds), including pattern estimation, index conversion, attention, dense repair, output writing/snapshot, and synchronization.",
-        "Model loading, QKV capture, reference evaluation, error checks, and warm-up are excluded. No seed/FA3 normalization or error multiplier enters the score."
+        "Model loading, QKV capture, reference evaluation, error checks, and warm-up are excluded."
       ],
       "conditions": [
-        "All 144 timed calls and 11 short/boundary cases must pass; failing calls are not dropped from the aggregate.",
+        "All 144 timed calls and 11 short/boundary cases must pass.",
         "Against FP32 dense causal attention, both sampled uniform rows and tail rows require overall NRMSE ≤ 0.25 and worst-head NRMSE ≤ 0.50.",
         "Outputs must be complete and finite, inputs unchanged, and timing/evaluation integrity preserved."
       ],
@@ -384,14 +381,14 @@
       "formula": "P_i = Σwaves [(blocks − skip) × kv × NL × BS × NH × W × 2]\nb_i = P_i / (10⁹ × median of 5 trial durations in seconds)\nG_a = geometric mean of case bandwidths in group a\nscore = G_device^0.55 × G_host^0.15 × G_trace^0.30",
       "details": [
         "P_i is the logical payload of the complete sequence of transfers. NL = layers, BS = tokens per block, NH = heads, W = vector width. Split layout uses kv=2 and W=head width; fused layout uses kv=1 and W=combined KV width. Each element occupies 2 bytes.",
-        "Count each required payload transfer once: a read plus its corresponding write is not double-counted. Skipped blocks, temporary copies, and redundant physical traffic do not increase P_i. GB uses decimal 10⁹ bytes.",
+        "P_i sums the required logical payload transfers. Each transfer’s read and write count as one payload. GB uses decimal 10⁹ bytes.",
         "Each trial times the full sequence of calls using max(host-wall time through device-wide synchronization, CUDA-event time). Compilation, buffer allocation/refresh, warm-up, settling, and correctness checks are outside timing.",
-        "Case bandwidths are equal-weight within device, host, and trace groups, followed by weights 0.55/0.15/0.30. This is not total bytes divided by total suite time; correctness-only fixtures have no bandwidth weight."
+        "Case bandwidths are equal-weight within device, host, and trace groups, followed by weights 0.55/0.15/0.30. Correctness-only fixtures carry zero bandwidth weight."
       ],
       "conditions": [
-        "All 20 scored cases and 14 correctness-only fixtures must pass the required validity gates; missing groups invalidate the result.",
+        "All 20 scored cases and 14 correctness-only fixtures must pass the required validity gates.",
         "Transferred data must be bit-exact; sources and untouched destinations must be preserved, including reverse transfers and evolving state across traces.",
-        "The same-run bandwidth-envelope check must pass. The envelope is a validity limit, not a score denominator or a clipping threshold."
+        "The same-run bandwidth-envelope check must pass."
       ],
       "sources": [
         {
@@ -408,11 +405,11 @@
       "details": [
         "B = batch size, N = points, K = centroids, D = feature dimension. Assignment and update use their respective work counts; combined iterations and deployment cases use F_full. C ≈ 4.694344299 TFLOP is fixed by the scored workload.",
         "Group weights are assignment 0.10, update 0.10, full iteration 0.20, fresh-process control 0.10, large-K 0.25, and large-N/high-D 0.25. Their case counts are 2/2/4/1/3/2, with w_i = group weight / case count, so the 14 weights sum to one.",
-        "t_i is median warmed latency in milliseconds. Timing includes candidate dispatch, temporary allocations, GPU work, and synchronization; input preparation and reference checks are excluded. Fresh-process first-run/import/compilation latency is diagnostic only and has zero score weight.",
-        "The Judge accepts weighted latency L, while the paper and website invert it into equivalent throughput for higher-is-better comparisons. The conversion equals the same weighted geometric mean of per-case effective throughputs; it is not clustering-to-convergence speed or measured hardware FLOP utilization."
+        "t_i is median warmed latency in milliseconds. Timing includes candidate dispatch, temporary allocations, GPU work, and synchronization; input preparation and reference checks are excluded. Fresh-process first-run, import, and compilation times are diagnostics.",
+        "The Judge reports weighted latency L; the paper and website display its equivalent throughput. This equals the weighted geometric mean of per-case effective throughputs."
       ],
       "conditions": [
-        "All 14 scored cases and eight zero-weight correctness cases must pass the required gates; an invalid/null score is never interpreted as zero-millisecond latency.",
+        "All 14 scored cases and eight zero-weight correctness cases must pass the required gates.",
         "Preserve nearest-centroid assignment, specified tie behavior, exact counts, centroid accuracy, and old centroids for empty clusters.",
         "Input integrity, temporary-memory limits, steady-state timing, and fresh-process protocols must pass; the full point-by-centroid distance matrix may not be materialized."
       ],
@@ -423,17 +420,16 @@
           "paper": "Flash-KMeans, main.tex:1606–1633; equivalent-work conversion checked against website scripts/build_data.py:29–48"
         }
       ],
-      "example": "Illustrative only: a valid weighted latency of 25 ms becomes 4694.344299 / 25 = 187.773772 TFLOP/s on the website."
+      "example": "For example, a valid weighted latency of 25 ms gives 4694.344299 / 25 = 187.773772 TFLOP/s."
     },
     "mamba2": {
       "label": "Effective TFLOPS",
       "home_label": "TFLOPS",
       "formula": "F = 4 × B × L × H × d_h × d_s\nq_i = median of 7 trials [F / (10¹² × t)]\nG_f = geometric mean of 6 sequence-length cases in family f\nscore = (G_Mamba-2 × G_Codestral × G_Falcon-H1)^(1/3)",
       "details": [
-        "B is batch size, L sequence length, H heads, d_h channels per head, and d_s state dimension. F counts effective recurrent state-update and output-projection work and does not depend on the candidate’s chunk size.",
+        "B is batch size, L sequence length, H heads, d_h channels per head, and d_s state dimension. F counts effective recurrent state-update and output-projection work.",
         "Three model families each contain six lengths from 1K to 32K. Family means and cases within each family are equal-weight, making the final score the geometric mean of all 18 case throughputs.",
-        "t is max(synchronized host-wall seconds, CUDA-event seconds) for the full candidate forward call. One warm-up and the fresh-input decoy calls are outside the seven timed trials.",
-        "The score is effective TFLOPS, not seed speedup or the operation count of just one chunk-scan stage. No arithmetic averaging or total-work/total-time pooling is used."
+        "t is max(synchronized host-wall seconds, CUDA-event seconds) for the full candidate forward call. One warm-up and the fresh-input decoy calls are outside the seven timed trials."
       ],
       "conditions": [
         "All 18 scored and 18 boundary cases must pass the complete validity gate set.",
@@ -455,8 +451,8 @@
       "details": [
         "ρ is the fraction of cache positions evicted: 50%, 75%, or 87.5%. Both next-token distributions are evaluated on the same full-cache reference continuation; n_i is its token count.",
         "Average each item's token KL before exponentiating; then average item fidelities within each family. The four families are retrieval, aggregation, question answering, and generation.",
-        "Take an equally weighted geometric mean across families, then an arithmetic mean across the three eviction settings. This is a discrete average, not a continuous area integral.",
-        "The score is fidelity points on a 0–100 scale; 100 means identical output distributions. It is not downstream answer accuracy or a speed measurement."
+        "Take an equally weighted geometric mean across families, then an arithmetic mean across the three eviction settings.",
+        "The score is fidelity points on a 0–100 scale; 100 means identical output distributions."
       ],
       "conditions": [
         "Selections must satisfy index and cache-budget rules and preserve inputs; the reference continuation must contain at least 16 tokens and all fidelity values must be finite.",
@@ -479,7 +475,7 @@
         "κ is the cache keep fraction. Trusted evaluation keeps the highest-scoring context entries at 10%, 20%, and 30%; a(d, 1) is the positive full-cache reference for dataset d.",
         "Native answer scores include answer matching, numerical answers, code retrieval, and ROUGE-L summarization. Average questions within each context row, then average rows within each dataset.",
         "G contains retrieval, contextual QA, and redundancy. Datasets receive equal weight within their group; the three groups and three keep fractions also receive equal weight.",
-        "100 points means full-cache answer quality on average; compressed/full ratios can exceed 1, so the score can exceed 100. This is a discrete average, not an integral over cache sizes."
+        "100 points means full-cache answer quality on average; compressed/full ratios can exceed 1, so the score can exceed 100."
       ],
       "conditions": [
         "Importance scores must be finite FP32 values with the required shapes, deterministic, query-agnostic, and computed without changing inputs.",
@@ -499,10 +495,10 @@
       "home_label": "Compression ratio",
       "formula": "R_m = [Σ_{i in cases(m)} Σ_{c in calls(i)} BF16_bytes(m,i,c)] / [Σ_{i in cases(m)} Σ_{c in calls(i)} stored_bytes(m,i,c)]\nscore = √(R_LongCat × R_HY)",
       "details": [
-        "Each model's ratio uses byte sums across every compression call in every case, not an average of per-case ratios. The current suite has 6 LongCat and 11 HY-WorldPlay cases.",
+        "Each model’s ratio pools bytes across every compression call in every case. The current suite has 6 LongCat and 11 HY-WorldPlay cases.",
         "Stored bytes include complete underlying tensor storage and reconstruction metadata, including scales, codebooks, and indices. Aliased storage is counted once within each payload; a view retaining a larger buffer pays for the whole buffer.",
-        "Only tensors passed to the codec enter this ratio. HY's newest BF16 chunk and text KV are excluded; LongCat's condition-frame KV passes through the codec. The score measures persistent cache storage, not total GPU peak memory.",
-        "The two model ratios receive equal geometric weight regardless of their case counts. A BF16 identity codec scores 1×; there is no baseline normalization or speed multiplier."
+        "Only tensors passed to the codec enter this ratio. HY's newest BF16 chunk and text KV are excluded; LongCat's condition-frame KV passes through the codec.",
+        "The two model ratios receive equal geometric weight regardless of their case counts. A BF16 identity codec scores 1×."
       ],
       "conditions": [
         "PSNR, SSIM, LPIPS, and VBench quality checks must pass both per-model average gates and individual-case floors against BF16 references.",
@@ -525,8 +521,7 @@
       "details": [
         "Count newly emitted tokens, including a final emitted EOS and excluding prompt tokens and rejected draft-tree nodes. A batched call sums tokens across its requests and counts its wall time once.",
         "Trusted wall time covers prefill, draft construction, target verification, acceptance, cache updates, synchronization, and result return. Model construction, prompt preparation, warm-up, and reference checks are excluded.",
-        "The six equally weighted cells are chat_bs1, math_bs1, code_bs1, longctx_bs1, think_bs1, and mixed_bs8. Each cell first pools its tokens and seconds; cells are then combined geometrically.",
-        "This is raw tokens/s, without division by seed or greedy-baseline speed and without a 0–100 cap. Reference measurements define validity/resource gates, not score weights."
+        "The six equally weighted cells are chat_bs1, math_bs1, code_bs1, longctx_bs1, think_bs1, and mixed_bs8. Each cell first pools its tokens and seconds; cells are then combined geometrically."
       ],
       "conditions": [
         "A fresh target model must accept emitted trajectories under calibrated greedy-consistency and numerical-tolerance checks; prompts and stopping rules must be preserved.",
@@ -548,8 +543,7 @@
       "details": [
         "For GSM8K, MATH, and MBPP, truncate at EOS and stop text, remove special tokens, then count retokenized completion text. HumanEval counts non-EOS slots across the full generated buffer. Prompt tokens do not count.",
         "Trusted timing covers the complete decoding request, including request allocation, model evaluations, token selection, cache handling, synchronization, and result return. Loading, prompt tokenization, warm-up, text decoding, and answer grading are excluded.",
-        "Each row fixes dataset, few-shot setting, and output length. Pool useful tokens and seconds within a row, then give all 12 rows equal geometric weight; the suite has 520 generations across four benchmarks.",
-        "The score is raw tokens/s, with no seed-speed normalization. Answer-quality retention is a separate validity gate, not a multiplier on throughput."
+        "Each row fixes dataset, few-shot setting, and output length. Pool useful tokens and seconds within a row, then give all 12 rows equal geometric weight; the suite has 520 generations across four benchmarks."
       ],
       "conditions": [
         "Frozen-reference checks enforce correctness, parseability, and useful-token retention per row, per benchmark, and in aggregate; whole-suite retention is at least 90% and each benchmark at least 75%.",
@@ -569,10 +563,9 @@
       "home_label": "Latency-weighted FPS",
       "formula": "v_i = frames_i(chunks 12…last) / [emit_i(last) − push_i(12)]\nℓ_i = p99{emit_i(k) − push_i(k) : k = 12…last}\ns_i = v_i × (ℓ_seed,i / ℓ_i)^(1/4)\nscore = (Π_{i=1…12} s_i)^(1/12)  FPS",
       "details": [
-        "The steady-state numerator counts output frames in chunks 12 through the end. Its denominator starts at the controller's push of chunk 12 and ends when the final output is ready on the GPU; it is not the interval between output emissions.",
+        "The steady-state numerator counts output frames in chunks 12 through the end. Its denominator starts at the controller's push of chunk 12 and ends when the final output is ready on the GPU.",
         "ℓ_i is the candidate's p99 push-to-emit latency over the same steady chunks, calculated by sorting and linear interpolation. ℓ_seed,i comes from the unmodified seed measured in the same evaluation on the same two GPUs.",
-        "The tail-latency ratio contributes with exponent 1/4. All 12 streams have equal geometric weight; the dimensionless latency factor leaves the score in FPS.",
-        "The score uses raw streaming FPS, not FPS divided by seed FPS. Warm-up chunks are excluded from scoring."
+        "The tail-latency ratio contributes with exponent 1/4. All 12 streams have equal geometric weight; the dimensionless latency factor leaves the score in FPS."
       ],
       "conditions": [
         "Every latent and decoded frame must match the seed bit for bit, with complete, ordered, causal outputs and correct stream cleanup.",
@@ -592,10 +585,9 @@
       "home_label": "Valid steps/min",
       "formula": "V = Σ_{192 workflows} count(tool.returncode exists and T_start ≤ tool_end ≤ T_start + 1800 s)\nscore = 60 × V / 1800 = V / 30  steps/min",
       "details": [
-        "A step counts when it has a tool execution return record and its tool-end timestamp falls inside the scored window, including the boundaries. A nonzero tool return code can still count; solving the task or passing its tests is not required.",
-        "The scored window lasts exactly 1,800 seconds after a 300-second warm-up. Steps begun during warm-up count if they finish inside the scored window; completions during warm-up or after the cutoff do not count.",
-        "Sum steps across 192 concurrent workflows, each capped at 100 valid steps. Do not average across agents; queueing, inference, and tool waiting consume the same fixed wall-clock window.",
-        "This is the raw valid-step rate; it is not divided by a baseline speed or by the fraction of workflows solved."
+        "A step counts when it has a tool execution return record and its tool-end timestamp falls inside the scored window, including the boundaries. Both zero and nonzero tool return codes count.",
+        "The scored window lasts exactly 1,800 seconds after a 300-second warm-up. Steps begun during warm-up count if they finish inside the scored window.",
+        "Sum steps across 192 concurrent workflows, each capped at 100 valid steps. Queueing, inference, and tool waiting consume the same fixed wall-clock window."
       ],
       "conditions": [
         "Requests and responses must be preserved, with one-to-one backend forwarding and correct streaming behavior.",

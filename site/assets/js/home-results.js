@@ -45,7 +45,7 @@
         h("td", { class: "barcell" }, scoreBar(r.m, r.score ?? 0, r.ci)),
         h("td", { class: "n" }, `${r.wins}`, h("small", { text: `of ${r.cov}` })),
         h("td", { class: "n first-time" }, firstMedian == null ? "—" : `${fmt(firstMedian, 2)} h`, h("small", { text: `median · ${first.length} runs` })),
-        h("td", { class: "n visible-tokens", title: `Visible agent text and tool-call content across ${ts.length} main runs, counted with o200k_base. Excludes reasoning traces, tool responses, and repeated code-diff displays.` }, tokens, h("small", { text: `total · ${ts.length} runs` }))));
+        h("td", { class: "n visible-tokens", title: `Agent text and tool-call tokens across ${ts.length} runs (o200k_base).` }, tokens, h("small", { text: `total · ${ts.length} runs` }))));
     });
     const scope = [state.stage !== "all" ? state.stage : null, state.level !== "all" ? `${state.level}-level` : null].filter(Boolean).join(" ");
     $("#lb-sub").textContent = `Rank score across ${ts.length} ${scope ? scope + " " : ""}task${ts.length === 1 ? "" : "s"}.`;

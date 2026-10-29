@@ -28,7 +28,7 @@ html[data-theme="dark"] .home-chart-head .task-detail-hint { color: #ff8e8e; }
 .task-result-metric { grid-area: metric; }
 .metric-name { display: block; color: var(--ink-2); font-weight: 500; line-height: 1.45; }
 .task-result-winner { grid-area: winner; }
-.task-result-row .label { display: block; margin-bottom: 8px; font-size: 9px; letter-spacing: .06em; }
+.task-result-row .label { display: block; margin-bottom: 8px; font-size: 11px; letter-spacing: 0; }
 .task-result-category, .task-result-budget, .task-result-metric, .task-result-winner { font-size: 12px; line-height: 1.6; color: var(--ink-2); }
 .task-result-score { display: block; margin-top: 3px; font-variant-numeric: tabular-nums; }
 .task-result-chart { grid-area: chart; }
@@ -44,7 +44,7 @@ html[data-theme="dark"] .home-chart-head .task-detail-hint { color: #ff8e8e; }
 }
 .home-results .notes { margin-top: 12px; }
 .home-results .notes p { max-width: 100ch; line-height: 1.7; }
-.home-results .lb th { font-size: 10px; letter-spacing: .035em; }
+.home-results .lb th { font-size: 12px; letter-spacing: 0; }
 .home-results .lb .barcell { min-width: 180px; }
 @media (max-width: 600px) {
   body[data-page="index"] .home-results { padding-block: 22px; }

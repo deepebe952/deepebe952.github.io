@@ -1,10 +1,10 @@
 /* Paper Section 5: case context, original figures, and the overall answer. */
 body[data-page="agent-behavior"] .page-head { padding-bottom: 30px; }
 body[data-page="agent-behavior"] .page-head .lede { max-width: 90ch; }
-.behavior-scope { max-width: 94ch; margin: 18px 0 0; color: var(--ink-2); font-size: 14px; line-height: 1.8; }
-body[data-page="agent-behavior"] .sec-title h2 { font-size: clamp(21px, 2.4vw, 28px); }
+.behavior-scope { max-width: 94ch; margin: 18px 0 0; color: var(--ink-2); font-size: 16px; line-height: 1.75; }
+body[data-page="agent-behavior"] .sec-title h2 { font-size: clamp(22px, 2.4vw, 26px); }
 .behavior-analysis { max-width: 94ch; margin: 0 0 26px; }
-.behavior-analysis p { margin: 0 0 18px; color: var(--ink-2); font-size: 14px; line-height: 1.85; }
+.behavior-analysis p { margin: 0 0 18px; color: var(--ink-2); font-size: 16px; line-height: 1.75; }
 .behavior-analysis p:last-child { margin-bottom: 0; }
 .behavior-analysis strong { color: var(--ink); font-weight: 600; }
 .behavior-analysis h3 { margin: 28px 0 12px; font-size: 18px; font-weight: 600; }
@@ -34,7 +34,7 @@ body[data-page="agent-behavior"] .sec-title h2 { font-size: clamp(21px, 2.4vw, 2
 .figure-dialog-body { padding: 20px; overflow: auto; background: #fff; }
 .figure-dialog-body img { display: block; width: 100%; min-width: 900px; height: auto; }
 @media (max-width: 560px) {
-  .behavior-analysis p { font-size: 13px; }
+  .behavior-analysis p { font-size: 15px; }
   .paper-figure-scroll { padding: 12px; }
   .behavior-figure figcaption { padding: 14px; }
   .figure-dialog-head { padding: 12px; gap: 10px; }

@@ -7,12 +7,12 @@
 <meta name="description" content="In this work, we study whether frontier models can sustain progress on real-world AI infrastructure optimization over long horizons.">
 <meta property="og:title" content="Infrathon">
 <meta property="og:description" content="Can frontier models solve long-horizon AI infrastructure tasks? 25 tasks, 6 configurations, 150 runs on H100s.">
-<meta name="theme-color" content="#fafbfd">
+<meta name="theme-color" content="#ffffff">
 <script src="assets/js/theme.js"></script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23060709'/%3E%3Cpath d='M7 22h4v-8h4v5h4V9h4v10h3' fill='none' stroke='%23ededef' stroke-width='2.4'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="assets/css/site.css">
 <link rel="stylesheet" href="assets/css/home.css">
 </head>
@@ -85,7 +85,7 @@
 
   <section class="sec home-results" id="leaderboard"><div class="wrap">
     <div class="card">
-      <div class="card-head"><div><h2>Leaderboard</h2><p id="lb-sub">Rank score across 25 tasks.</p></div><a class="more" href="#score-notes">How scores are calculated ↗</a></div>
+      <div class="card-head"><div><h2>Leaderboard</h2><p id="lb-sub">Rank score across 25 tasks.</p></div><a class="more" href="#score-notes">Scoring details ↗</a></div>
       <div class="lb-controls"><div class="toolbar">
         <span class="tool"><span class="tool-label">Stage</span><span class="seg" id="seg-stage"></span></span>
         <span class="tool"><span class="tool-label">Level</span><span class="seg" id="seg-level"></span></span>
@@ -93,29 +93,29 @@
       <div class="scroll-x"><table class="lb" id="lb">
         <caption class="sr-only">Rank-score leaderboard</caption>
         <thead><tr>
-          <th scope="col">#</th><th scope="col">Configuration</th><th scope="col">Rank score</th><th scope="col">95% task-bootstrap CI</th>
+          <th scope="col">#</th><th scope="col">Model</th><th scope="col">Rank score</th><th scope="col">95% CI</th>
           <th scope="col" class="n">Wins</th><th scope="col" class="n">First valid score</th><th scope="col" class="n">Visible output tokens</th>
         </tr></thead><tbody></tbody>
       </table></div>
-      <div class="card-foot">100 = first on every task. Token counts exclude reasoning traces for all models.</div>
+      <div class="card-foot">100 = first on every task.</div>
     </div>
     <details class="notes" id="score-notes" style="margin-top:12px">
       <summary>Scoring and token definitions</summary>
-      <p>Rank score follows paper Eq. 5: rank the six models by each task’s best valid score within its budget, then average 100 × (6 − rank) / 5 equally across tasks. Exact ties share average rank; a run without a valid scored submission receives zero. The website adds 95% task-bootstrap confidence intervals: 10,000 resamples for the full suite; 3,000 for filtered groups. These intervals are supplementary to the paper’s rank scores.</p>
+      <p>Rank score follows paper Eq. 5: rank the six models by each task’s best valid within-budget score, then average 100 × (6 − rank) / 5 equally across tasks. Exact ties share average rank; a run without a valid scored submission receives zero. The 95% task-bootstrap confidence intervals use 10,000 resamples for the full suite and 3,000 for filtered groups.</p>
       <p>Visible tokens use <code>o200k_base</code> for agent text and tool-call content, excluding tool responses, repeated code-diff displays, and reasoning traces. Full-suite totals follow Figure 8; filtered totals sum rounded Figure 15 values (≈). First-score time is the median across scored runs in the selected tasks.</p>
     </details>
   </div></section>
 
   <section class="sec home-results" id="map"><div class="wrap">
     <div class="card die">
-      <div class="card-head"><div><h2>Task map</h2><p>Training and inference × Operators, modules, systems. Colour shows the top configuration.</p></div><p class="task-detail-hint">Click a task to see its results →</p></div>
+      <div class="card-head"><div><h2>Task map</h2><p>Training and inference × operators, modules, systems. Colour shows each task’s top configuration.</p></div></div>
       <div class="die-body" id="task-map" tabindex="0" role="region" aria-label="Task map; scroll horizontally on a small screen"></div>
       <div class="die-legend" id="die-legend"></div>
     </div>
   </div></section>
 
   <section class="sec home-results" id="results"><div class="wrap">
-    <div class="home-chart-head"><div><h2>Results by task</h2><p>Each task and its optimization trajectory. Select a model to highlight its curves.</p></div><p class="task-detail-hint">Click a task to see its details →</p></div>
+    <div class="home-chart-head"><div><h2>Results by task</h2><p>Select a model to highlight its curves.</p></div><p class="task-detail-hint">Select a task for details.</p></div>
     <div class="task-result-controls">
       <div class="toolbar">
         <span class="tool"><span class="tool-label">Stage</span><span class="seg" id="f-stage"></span></span>
