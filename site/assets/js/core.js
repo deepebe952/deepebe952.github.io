@@ -62,7 +62,7 @@ window.IX = (() => {
   const ordinal = (n) => (n === 1 ? "1st" : n === 2 ? "2nd" : n === 3 ? "3rd" : `${n}th`);
   const pct = (x, dp = 0) => `${(x * 100).toFixed(dp)}%`;
   const taskHref = (key) => `task.html#${key}`;
-  const taskResultsHref = (key) => `task-results.html#${key}`;
+  const taskResultsHref = taskHref;
   const runHref = (key, m) => `trajectories.html#${key}/${m}`;
   const groupName = (t) => `${cap(t.stage)} · ${cap(t.level)}`;
   const effortNote = () => "effort max";
@@ -164,7 +164,11 @@ window.IX = (() => {
   function setFocus(m) {
     focusModel = m;
     document.querySelectorAll(".legend button[data-m]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.m === m)));
-    focusListeners.forEach((f) => f());
+    for (let i = focusListeners.length - 1; i >= 0; i--) {
+      const listener = focusListeners[i];
+      if (!listener.svg.isConnected) focusListeners.splice(i, 1);
+      else listener.applyFocus();
+    }
   }
 
   /* ---------- best-so-far chart ---------- */
@@ -211,7 +215,7 @@ window.IX = (() => {
     }
     const applyFocus = () => { for (const m of runs) layers[m].setAttribute("opacity", !focusModel || focusModel === m ? 1 : 0.13); };
     applyFocus();
-    focusListeners.push(applyFocus);
+    focusListeners.push({ svg, applyFocus });
     if (!o.tooltip) return svg;
     const cross = s("line", { x1: 0, x2: 0, y1: Y1, y2: Y0, stroke: C.ink2, "stroke-width": 1, visibility: "hidden" }, svg);
     s("rect", { x: X0, y: Y1, width: X1 - X0, height: Y0 - Y1, fill: "transparent" }, svg);

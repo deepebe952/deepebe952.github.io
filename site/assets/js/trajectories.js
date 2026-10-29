@@ -18,16 +18,23 @@
       : task.results.claude ? "claude" : MODELS.find((m) => task.results[m]);
     return !!state.model;
   }
-  const go = () => history.replaceState(null, "", `#${state.task}/${state.model}`);
+  const go = () => history.replaceState(history.state, "", `#${state.task}/${state.model}`);
+
+  function taskResultsURL(key) {
+    const url = new URL(X.taskHref(key), location.href);
+    url.search = location.search;
+    url.hash = `${key}/results`;
+    return url.href;
+  }
 
   function renderRun() {
     const t = TASK[state.task], r = t.results[state.model];
     document.title = `Run log · ${t.name} · ${MODEL[state.model].short} · Infrathon`;
     $("#r-lede").textContent = `${t.name} · ${MODEL[state.model].name}`;
     X.seg($("#r-model"), MODELS.filter((m) => t.results[m]).map((m) => [m, MODEL[m].short]), state.model, (v) => { state.model = v; go(); renderRun(); });
-    $("#r-tasklink").href = X.taskResultsHref(t.key);
+    $("#r-tasklink").href = taskResultsURL(t.key);
     $("#r-tasklink").textContent = t.name;
-    $("#r-back").href = X.taskResultsHref(t.key);
+    $("#r-back").href = taskResultsURL(t.key);
     $("#r-back").setAttribute("aria-label", `Back to results: ${t.name}`);
     const c = r.counts;
     const k = [
@@ -76,7 +83,7 @@
     // the task whose Run log link opened this page. Keep that return destination
     // only while viewing the same task, including after model changes.
     const cameFromTask = referrer?.origin === location.origin
-      && referrer.pathname === new URL("task-results.html", location.href).pathname
+      && ["task.html", "task-results.html"].some((page) => referrer.pathname === new URL(page, location.href).pathname)
       && (!referrer.hash || referrer.hash.split("/")[0] === `#${entryTask}`);
     if (cameFromTask && state.task === entryTask && history.length > 1) {
       event.preventDefault();

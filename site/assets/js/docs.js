@@ -35,9 +35,16 @@ window.InfrathonDocs = (() => {
     $("#docs-menu").setAttribute("aria-expanded", String(open));
   });
   sidebar.addEventListener("click", event => {
-    if (!event.target.closest("a")) return;
+    const link = event.target.closest("a");
+    if (!link) return;
     document.body.classList.remove("docs-nav-open");
     $("#docs-menu").setAttribute("aria-expanded", "false");
+    if (isTask && link.hasAttribute("data-doc-task") && event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) {
+      event.preventDefault();
+      const url = new URL(link.href);
+      url.search = location.search;
+      location.replace(url.href);
+    }
   });
   if (isTask) document.addEventListener("click", event => {
     const link = event.target.closest("#docs-toc-links a, #docs-mobile-toc a");
@@ -53,7 +60,7 @@ window.InfrathonDocs = (() => {
       else link.removeAttribute("aria-current");
     });
     if (isCatalog) $("[data-task-index]").setAttribute("aria-current", "page");
-    const entries = isTask ? [["overview", "The task"], ["setting", "Task setup"], ["metric", "Metric"], ["running", "Run the task"]]
+    const entries = isTask ? [["overview", "The task"], ["metric", "Metric"], ["results", "Results"], ["setting", "Task setup"], ["metric-details", "Metric details"], ["running", "Run the task"]]
       : isCatalog ? [["training", "Training"], ["inference", "Inference"]] : getStarted;
     const toc = $("#docs-toc-links");
     toc?.replaceChildren(...entries.map(([id, title]) => h("a", { href: isTask ? `#${key}/${id}` : `#${id}`, "data-section": isTask ? `task-${id}` : id, text: title })));

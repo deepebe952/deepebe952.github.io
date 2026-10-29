@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Infrathon Task</title>
-<meta name="description" content="Infrathon task documentation: task goals, models and workloads, scoring, and running instructions.">
+<meta name="description" content="Infrathon tasks: metrics, experimental results, task setup, and running instructions.">
 <meta property="og:title" content="Infrathon">
 <meta property="og:description" content="Can frontier models solve long-horizon AI infrastructure tasks? 25 tasks, 6 configurations, 150 runs on H100s.">
 <meta name="theme-color" content="#ffffff">
@@ -15,6 +15,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="assets/css/site.css">
 <link rel="stylesheet" href="assets/css/docs.css">
+<link rel="stylesheet" href="assets/css/task-results.css">
 </head>
 <body data-page="task">
 <div class="docs-layout">
@@ -25,14 +26,40 @@
       <button class="btn task-back" id="task-back" type="button">← Back</button>
       <div class="crumbs"><a href="tasks.html">Tasks</a><span>/</span><span id="t-group"></span></div>
       <h1 id="t-name">Task</h1><p class="lede" id="t-summary"></p><div class="doc-meta" id="t-meta"></div>
-      <a class="task-results-link" id="t-results-link" href="task-results.html">View results →</a>
     </header>
     <details class="docs-mobile-contents"><summary>On this page</summary><nav id="docs-mobile-toc"></nav></details>
-    <section class="doc-section" id="task-setting"><h2>Task setup</h2><dl class="task-reader-facts" id="t-reader-setup"></dl></section>
     <section class="doc-section" id="task-metric">
       <h2>Metric</h2><h3 class="task-metric-title" id="t-metric-title"></h3><p id="t-metric-meaning"></p>
-      <div class="task-score-rule" id="t-score-rule"></div><p id="t-score-example" hidden></p>
-      <details class="metric-details" id="metric-calculation"><summary>Detailed calculation and validity checks</summary><div class="metric-explanation" id="t-metric-details"></div></details>
+      <div class="task-score-rule" id="t-score-rule"></div>
+    </section>
+    <section class="doc-section" id="task-results">
+      <h2>Results</h2>
+      <div class="task-results-grid">
+        <section class="card task-best-scores" aria-labelledby="best-scores-title">
+          <div class="card-head"><h3 id="best-scores-title">Best scores</h3></div>
+          <div class="card-body bars" id="t-bars"></div>
+        </section>
+        <section class="card task-trajectories" aria-labelledby="trajectories-title">
+          <div class="card-head"><div><h3 id="trajectories-title">Optimization trajectories</h3><p>Lines show the best score so far; dots mark submissions.</p></div></div>
+          <div class="card-body"><div class="legend" id="t-legend"></div><div class="chart" id="t-traj"></div></div>
+        </section>
+        <section class="card task-submissions" aria-labelledby="submissions-title">
+          <div class="card-head"><h3 id="submissions-title">Submission history</h3></div>
+          <div class="card-body">
+            <div class="trace" id="t-trace" tabindex="0" role="region" aria-label="Submission history; scroll horizontally to see the full timeline"></div>
+            <div class="trace-keys"><span class="key"><i></i>scored</span><span class="key"><i class="bad"></i>failed checks</span><span class="key"><i class="rej"></i>rejected</span><span class="key"><i class="infra"></i>infrastructure failure</span></div>
+          </div>
+        </section>
+        <section class="card task-model-results" aria-labelledby="model-results-title">
+          <div class="card-head"><h3 id="model-results-title">Per-model results</h3></div>
+          <div class="scroll-x" tabindex="0" role="region" aria-labelledby="model-results-title"><table class="data" id="t-table"></table></div>
+          <details class="card-foot" id="t-flags" hidden><summary>Run annotations</summary><p id="t-flag-text"></p></details>
+        </section>
+      </div>
+    </section>
+    <section class="doc-section" id="task-setting"><h2>Task setup</h2><dl class="task-reader-facts" id="t-reader-setup"></dl></section>
+    <section class="doc-section" id="task-metric-details" aria-label="Metric details">
+      <details class="metric-details" id="metric-calculation"><summary>Metric details</summary><div class="metric-explanation" id="t-metric-details"></div></details>
     </section>
     <section class="doc-section" id="task-running"><h2>Run the task</h2>
       <details class="task-run-commands" id="task-run-commands"><summary id="task-run-label">Environment setup and launch commands</summary><p>Start from the <code>infrathon</code> repository. Complete the <a href="docs.html#installation">installation</a> and <a href="docs.html#run">run configuration</a>, then prepare this task’s assets and images:</p><ul id="t-resources"></ul><div id="t-setup"></div></details>
@@ -45,6 +72,7 @@
 <script src="data/docs.js"></script>
 <script src="assets/js/core.js"></script>
 <script src="assets/js/docs.js"></script>
+<script src="assets/js/task-results.js"></script>
 <script src="assets/js/task.js"></script>
 </body>
 </html>

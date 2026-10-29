@@ -1,4 +1,4 @@
-/* Task documentation: task.html#<key>/<section>. */
+/* Task documentation and results: task.html#<key>/<section>. */
 (() => {
   "use strict";
   const X = window.IX, Docs = window.InfrathonDocs, guides = window.INFRATHON_DOCS.tasks;
@@ -22,7 +22,6 @@
     $("#t-group").textContent = `${cap(t.stage)} · ${cap(t.level)}`;
     $("#t-name").textContent = t.name;
     $("#t-summary").textContent = guide.reader_overview;
-    $("#t-results-link").href = X.taskResultsHref(t.key);
     $("#task-run-commands").open = false;
     $("#task-run-label").textContent = guide.launch_command ? "Environment setup and launch commands" : "Environment setup";
     $("#t-meta").replaceChildren(h("span", { text: `Experiment budget: ${t.budget_h} hours` }));
@@ -32,8 +31,6 @@
     $("#t-metric-title").textContent = t.metric_info.label;
     $("#t-metric-meaning").textContent = guide.reader_metric.meaning;
     $("#t-score-rule").textContent = guide.reader_metric.rule;
-    $("#t-score-example").hidden = !t.metric_info.example;
-    $("#t-score-example").textContent = t.metric_info.example || "";
 
     const setup = $("#t-setup"), directoryName = guide.directory.split("/").pop();
     const pull = miles[t.key] || t.key === "minference" ? 'scripts/infrathon/pull_images.sh "$TASK"' : 'INFRATHON_PULL=1 bash "$TASK_DIR/scripts/build_images.sh"';
@@ -75,6 +72,7 @@
 
       if (info.conditions.length) metricDetails.append(h("h4", { text: "When a score is valid" }), h("ul", {}, info.conditions.map(text => h("li", { text }))));
     }
+    window.InfrathonTaskResults.render(t);
     const i = D.tasks.indexOf(t), prev = D.tasks[(i + D.tasks.length - 1) % D.tasks.length], next = D.tasks[(i + 1) % D.tasks.length];
     $("#t-pager").replaceChildren(
       h("a", { href: X.taskHref(prev.key) }, h("small", { text: "Previous task" }), prev.name),
@@ -86,22 +84,27 @@
     try { [key, section] = decodeURIComponent(location.hash.slice(1)).split("/"); }
     catch { key = null; }
     const t = TASK[key] || D.tasks[0];
-    if (section === "results") {
-      const resultURL = new URL(X.taskResultsHref(t.key), location.href);
-      resultURL.search = location.search;
-      location.replace(resultURL.href);
-      return;
-    }
     const showCommands = section === "run";
-    const showMetric = section === "evaluation";
-    section = { workspace: "setting", instructions: "setting", implementation: "setting", resources: "running", setup: "running", run: "running", evaluation: "metric" }[section] || section;
+    const showMetric = section === "evaluation" || section === "metric-details";
+    section = { workspace: "setting", instructions: "setting", implementation: "setting", resources: "running", setup: "running", run: "running", evaluation: "metric-details" }[section] || section;
+    const restoringScroll = currentKey === null && performance.getEntriesByType("navigation")[0]?.type === "back_forward";
     const changed = currentKey !== t.key;
     if (changed) { currentKey = t.key; render(t); }
     if (showCommands) $("#task-run-commands").open = true;
     if (showMetric) $("#metric-calculation").open = true;
-    if (section) requestAnimationFrame(() => document.getElementById(`task-${section}`)?.scrollIntoView());
-    else window.scrollTo(0, 0);
+    if (!restoringScroll) {
+      if (section) requestAnimationFrame(() => document.getElementById(`task-${section}`)?.scrollIntoView());
+      else window.scrollTo(0, 0);
+    }
   }
+  $("#t-pager").addEventListener("click", event => {
+    const link = event.target.closest("a");
+    if (!link || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    const url = new URL(link.href);
+    url.search = location.search;
+    location.replace(url.href);
+  });
   window.addEventListener("hashchange", route);
   route();
 })();

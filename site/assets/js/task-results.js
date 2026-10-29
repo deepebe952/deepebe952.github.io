@@ -1,32 +1,11 @@
-/* Individual task results: task-results.html#<key>. */
+/* Results component embedded in task.html. */
 (() => {
   "use strict";
   const X = window.IX;
   if (!X) return;
-  const { D, MODELS, MODEL, COLOR, TASK, h, $, cap, fmt, withUnit, metricLabel, ordinal } = X;
-  let currentKey = null;
-
-  $("#task-back").addEventListener("click", () => {
-    let referrer;
-    try { referrer = new URL(document.referrer); } catch { referrer = null; }
-    const entryPaths = ["index.html", "task.html", "tasks.html", "."].map(path => new URL(path, location.href).pathname);
-    if (referrer?.origin === location.origin && entryPaths.includes(referrer.pathname) && history.length > 1) history.back();
-    else location.assign("index.html#results");
-  });
+  const { D, MODELS, MODEL, COLOR, h, $, fmt, withUnit, ordinal } = X;
 
   function render(t) {
-    const guide = window.INFRATHON_DOCS.tasks[t.key];
-    document.title = `${t.name} Results · Infrathon`;
-    $("#t-group").textContent = `${cap(t.stage)} · ${cap(t.level)}`;
-    $("#t-name").textContent = t.name;
-    $("#t-summary").textContent = guide.result_intro;
-    $("#t-meta").replaceChildren(h("span", { text: `${t.budget_h}-hour budget` }));
-    $("#t-documentation").href = X.taskHref(t.key);
-    $("#t-metric-name").textContent = `Metric · ${metricLabel(t)}`;
-    $("#t-metric-summary").textContent = guide.metric_summary;
-    $("#t-metric-link").href = `${X.taskHref(t.key)}/metric`;
-    $("#t-metric").textContent = metricLabel(t);
-
     const bars = $("#t-bars");
     bars.replaceChildren();
     const max = Math.max(...MODELS.map((m) => t.results[m]?.best ?? 0), 1e-9);
@@ -64,31 +43,7 @@
     $("#t-flags").hidden = flags.length === 0;
     $("#t-flags").open = false;
     $("#t-flag-text").textContent = flags.map(f => `${f}: ${D.flag_legend[f]}`).join(" · ");
-
-    const i = D.tasks.indexOf(t), prev = D.tasks[(i + D.tasks.length - 1) % D.tasks.length], next = D.tasks[(i + 1) % D.tasks.length];
-    $("#t-pager").replaceChildren(
-      h("a", { href: X.taskResultsHref(prev.key) }, h("small", { text: "Previous task" }), prev.name),
-      h("a", { class: "next", href: X.taskResultsHref(next.key) }, h("small", { text: "Next task" }), next.name));
   }
 
-  // Keep the entry page in history while browsing adjacent task results.
-  $("#t-pager").addEventListener("click", event => {
-    const link = event.target.closest("a");
-    if (!link || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    event.preventDefault();
-    const target = new URL(link.href);
-    target.search = location.search;
-    location.replace(target.href);
-  });
-
-  function route() {
-    let key;
-    try { key = decodeURIComponent(location.hash.slice(1)).split("/")[0]; }
-    catch { key = null; }
-    const t = TASK[key] || D.tasks[0];
-    if (currentKey !== t.key) { currentKey = t.key; render(t); }
-    window.scrollTo(0, 0);
-  }
-  window.addEventListener("hashchange", route);
-  route();
+  window.InfrathonTaskResults = { render };
 })();
