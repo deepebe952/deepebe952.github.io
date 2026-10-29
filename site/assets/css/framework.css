@@ -17,13 +17,9 @@ body[data-page="framework"] .inventory-target { width: 40%; color: var(--ink-2);
 body[data-page="framework"] .inventory-level-start td { border-top: 1px solid var(--hair-2); }
 body[data-page="framework"] .framework-inventory a { color: var(--m-sol); font-weight: 500; }
 body[data-page="framework"] .framework-flow { margin: 0; padding: 0; list-style: none; }
-body[data-page="framework"] .framework-continuation p { max-width: 90ch; margin: 0 0 12px; color: var(--ink-2); font-size: 16px; line-height: 1.75; }
-body[data-page="framework"] .framework-continuation { padding: 22px 24px; background: var(--panel-2); border-radius: var(--r); }
-body[data-page="framework"] .framework-continuation p:last-child { margin-bottom: 0; }
 @media (max-width: 900px) {
   body[data-page="framework"] .framework-flow { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 600px) {
   body[data-page="framework"] .framework-levels { grid-template-columns: minmax(0, 1fr); }
-  body[data-page="framework"] .framework-continuation { padding: 18px; }
 }

@@ -27,6 +27,7 @@ site/
   assets/css/tasks.css       task documentation directory
   assets/css/task-results.css  individual task result layout
   assets/js/core.js          shared data access, rank math, charts, navigation
+  assets/js/section-tabs.js  single-section views, deep links, keyboard navigation
   assets/js/home.js          homepage scoring notes and legacy anchors
   assets/js/home-results.js  leaderboard, task map, filterable task rows with trajectories
   assets/js/experimental-results.js  figure expansion and section navigation
@@ -97,13 +98,15 @@ The retained first-score distributions come from the October 25, 41-page manuscr
 
 Published charts and tables use descriptive titles without paper numbering. Source manifests and legacy anchors retain their original identifiers; figure expansion uses the displayed title.
 
+Framework, Experimental Results, and Agent Behavior use tabs to display one section at a time. Page titles remain visible, and section or figure URLs open the corresponding section. Existing figure expansion remains available.
+
 The homepage (`index.html`) follows the paper title and author order, with 18 names in three desktop rows (5 / 7 / 6), 16 verified homepage links, numbered affiliations, and eight unlinked logos. Author rows wrap within their groups on narrow screens. Affiliation numbers and logo order follow the latest author-supplied reference: Washington, Ai2, Penn, Pyromind, Stanford, RadixArk, UT Austin, Northwestern. Zheyuan Xiao is affiliated with Washington. Seven logos preserve the PDF’s vector paths; Pyromind uses its original transparent image. `data/institution_logos.json` records the original PDF hash and extraction positions, not the display order. Paper, Code, Docker, and HuggingFace buttons are explicitly marked coming soon until public URLs are supplied.
 
 The brand opens Home; the top-level navigation links are Framework (`framework.html`), Experimental Results (`experimental-results.html`), Agent Behavior (`agent-behavior.html`), Tasks (`tasks.html`), and Docs (`docs.html`). Discord links to the author-provided invite. There is no Task Results tab or standalone trajectory navigation. Task documentation uses `task.html#<key>` with `/<section>` anchors. Its View results link opens `task-results.html#<key>`, as do homepage task rows and map tiles. The results page has no top-level navigation tab; its per-model Run log links open `trajectories.html#<task>/<model>`. The log page supports switching models and returns to the task results. The global all-runs directory is removed.
 
 Home keeps the paper title in two equally sized lines, three author rows, institutions, and resource links, followed by a filterable leaderboard, a full-width task map, and 25 task rows. Each row pairs the task name and optimization target with its category, budget, metric, best configuration, and a compact trajectory chart. Rows omit Start and All six columns, open individual task results, and stack their content on small screens. Stage, level, and search filters share saved history state with the selected model highlight; filtering hides existing rows without rebuilding charts. The leaderboard omits mean-relative performance and bootstrap first-place probability; visible output tokens are totals across the selected main runs, explicitly excluding reasoning traces. Scoring and token definitions remain collapsed at `#score-notes`. The homepage citation block and shared site footer are removed.
 
-Framework follows Section 3: original Figure 1; Section 3.1's W/P/E/R/T definitions and complete Table 2 inventory; Section 3.2's Work/Controller/Judge roles, integrity checks, private evaluation, and continuation mechanisms. `data/framework_figure.json` records the original extraction and verifies that the latest archive's figure is unchanged. Inventory rows link to task details.
+Framework follows Section 3: original Figure 1; Section 3.1's W/P/E/R/T definitions and complete Table 2 inventory; Section 3.2's Work/Controller/Judge roles, integrity checks, and private evaluation. `data/framework_figure.json` records the original extraction and verifies that the latest archive's figure is unchanged. Inventory rows link to task details.
 
 Experimental Results follows all seven Section 4 subsections, beginning with Main Results and Optimization Trajectories. Every section uses the paper's original corresponding vector image (Figures 2–8), with figure expansion, and retains its analysis. The interactive leaderboard and 25 task rows remain on Home. The paper's original Figure 3 shows 12 illustrative tasks through recorded run endpoints; homepage and task-detail charts carry best known scores through the full task budget.
 

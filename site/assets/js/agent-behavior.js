@@ -25,18 +25,5 @@
   $("#figure-dialog-close").addEventListener("click", () => dialog.close());
   dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); });
 
-  function markSection() {
-    const hash = location.hash.slice(1);
-    const sections = ["requirements", "validation", "improvement", "overall-answer"];
-    const figure = document.getElementById(hash)?.closest("section");
-    const active = sections.includes(hash) ? hash : figure?.id || "requirements";
-    document.querySelectorAll(".subnav a").forEach((link) => {
-      if (link.hash === `#${active}`) link.setAttribute("aria-current", "location");
-      else link.removeAttribute("aria-current");
-    });
-  }
-  markSection();
-  window.addEventListener("hashchange", () => {
-    if (!redirectMovedSection()) markSection();
-  });
+  window.InfrathonSectionTabs(redirectMovedSection);
 })();

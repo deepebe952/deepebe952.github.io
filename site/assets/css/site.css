@@ -343,6 +343,9 @@ dl.facts { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 9px 1
 .subnav a { font-size: 13.5px; color: var(--ink-3); padding: 6px 10px; border-radius: 7px; white-space: nowrap; }
 .subnav a:hover { color: var(--ink); background: var(--panel-2); }
 .subnav a[aria-current="page"], .subnav a[aria-current="location"] { color: var(--ink); background: var(--panel-3); }
+.subnav a[role="tab"][aria-selected="true"] { color: var(--ink); background: var(--panel-3); }
+main[data-section-tabs] > section.sec { min-height: calc(100dvh - var(--nav-height) - var(--section-nav-height)); border-top: 0; }
+main[data-section-tabs] > section.sec[hidden] { display: none; }
 .cat-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 @media (max-width: 900px) { .cat-grid { grid-template-columns: minmax(0, 1fr); } }
 .cat { padding: 14px 16px 10px; }

@@ -29,18 +29,5 @@
     dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); });
   }
 
-  function markSection() {
-    const sections = ["leaderboard", "results", "long-vs-short", "ranking-budget", "first-score", "second-half", "interactions"];
-    const hash = location.hash.slice(1);
-    const figureSections = { "figure-2": "leaderboard", "figure-3": "results", "figure-4": "long-vs-short", "figure-5": "ranking-budget", "figure-6": "first-score", "figure-7": "second-half", "figure-8": "interactions" };
-    const active = sections.includes(hash) ? hash : figureSections[hash] || "leaderboard";
-    document.querySelectorAll(".subnav a").forEach((link) => {
-      if (link.hash === `#${active}`) link.setAttribute("aria-current", "location");
-      else link.removeAttribute("aria-current");
-    });
-  }
-  markSection();
-  window.addEventListener("hashchange", () => {
-    if (!redirectMovedSection()) markSection();
-  });
+  window.InfrathonSectionTabs(redirectMovedSection);
 })();

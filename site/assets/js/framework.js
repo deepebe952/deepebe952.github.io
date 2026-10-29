@@ -26,16 +26,5 @@
   });
   $("#inventory-summary").textContent = `${D.tasks.length} tasks grouped by application stage and optimization level.`;
 
-  const links = document.querySelectorAll('.subnav[aria-label="Framework sections"] a');
-  function markSection() {
-    const hash = location.hash;
-    const section = ["#definition", "#protocol", "#task-inventory"].includes(hash) ? "#definition"
-      : hash === "#execution" ? "#execution" : "#overview";
-    links.forEach((link) => {
-      if (link.getAttribute("href") === section) link.setAttribute("aria-current", "location");
-      else link.removeAttribute("aria-current");
-    });
-  }
-  markSection();
-  window.addEventListener("hashchange", markSection);
+  window.InfrathonSectionTabs();
 })();
