@@ -19,10 +19,11 @@
 <body data-page="task-results">
 <main id="main-content">
   <header class="page-head"><div class="wrap">
-    <div class="task-result-actions"><button class="btn task-back" id="task-back" type="button">← Back</button><a class="btn" id="t-instructions" href="task.html">Task instructions →</a></div>
+    <div class="task-result-actions"><button class="btn task-back" id="task-back" type="button">← Back</button><a class="btn" id="t-documentation" href="task.html">Task documentation →</a></div>
     <div class="task-result-context"><span class="label">Results</span><span id="t-group"></span></div>
     <h1 id="t-name">Task</h1>
     <p class="lede" id="t-summary"></p>
+    <div class="task-result-metric"><h2 id="t-metric-name">Metric</h2><p id="t-metric-summary"></p><a class="link" id="t-metric-link" href="task.html">Metric details →</a></div>
     <div class="task-result-meta" id="t-meta"></div>
   </div></header>
   <section class="sec" aria-label="Task results"><div class="wrap">
@@ -36,6 +37,7 @@
   </div></section>
 </main>
 <script src="data/infrathon.js"></script>
+<script src="data/docs.js"></script>
 <script src="assets/js/core.js"></script>
 <script src="assets/js/task-results.js"></script>
 </body>

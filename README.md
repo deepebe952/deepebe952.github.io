@@ -42,7 +42,7 @@ site/
 data/
   tasks.json                 task and model registry
   task_metrics.json          short metric explanations, formulas, conditions, source provenance
-  task_guides.json           task objectives, workspace, resources, workflow, source hashes
+  task_guides.json           task settings, interfaces, workflow, metric summaries, source hashes
   setup_sources.json         setup documentation sources and mock release URLs
   raw/runs.json              selected dashboard submissions
   tokens.json                paper cost totals and 150 per-task cost records
@@ -122,9 +122,9 @@ The default theme is white, with Inter body text, a saved dark-theme preference,
 
 The setup guide follows the release scripts and `scripts/infrathon/release/public/` overlay. It covers host requirements, the Python environment, agent runtime, asset fetching, image pulls, candidate history, launching a kernel task, and submission outputs. Public Code, Docker, and Dataset URLs currently use author-approved `example.com` placeholders, with one release-status line. Replace these URLs in `site/docs.html` and `data/setup_sources.json` when published.
 
-Docs contains the general setup guide and section navigation. Tasks has its own searchable directory and 25 documents with Overview, Instructions, Setup, and Evaluation. Instructions describe the workspace and workflow; Run commands and Score calculation are expandable. Each document links to its independent result page, which contains best scores, optimization trajectories, submission history, and the per-model results table. Document sidebars and contents collapse on mobile.
+Docs contains the general setup guide and section navigation. Tasks has its own searchable directory and 25 documents with Overview, Task setting, Implementation, Running, and Evaluation. Each document describes the workload, input/output interface, workspace components, implementation steps, task requirements, public tests, and scoring. Setup/launch commands and the detailed score calculation are expandable. Each document links to its independent result page, which adds a brief task introduction and metric explanation above best scores, optimization trajectories, submission history, and the per-model results table. Document sidebars and contents collapse on mobile.
 
-`data/task_guides.json` records each task's release documents, launcher, and source hashes. `data/setup_sources.json` records the setup sources and release revision. Current launcher defaults determine the documented GPU allocation. Miles uses its task-specific `run.env` template; Concurrent serving includes its backend and baseline prerequisites. `scripts/build_docs.py` checks registry coverage and emits only display fields into `site/data/docs.js`.
+`data/task_guides.json` records each task's release documents, launcher, source hashes, and the result-page summaries. The task specifications and public release overlay supply task interfaces and commands; metric explanations follow the paper and `data/task_metrics.json`. `data/setup_sources.json` records the setup sources and release revision. Current launcher defaults determine the documented GPU allocation. Miles uses its task-specific `run.env` template; Concurrent serving includes its backend and baseline prerequisites. `scripts/build_docs.py` checks registry coverage and required content fields and emits only display fields into `site/data/docs.js`.
 
 Setup commands were checked against the release code and launcher help. The candidate-history example was exercised in temporary stores. Docker pulls, image builds, and GPU runs have not been executed as part of the website update.
 

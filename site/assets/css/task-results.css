@@ -5,6 +5,11 @@ body[data-page="task-results"] .page-head { padding-top: clamp(28px, 4vw, 48px);
 .task-result-context { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; color: var(--ink-3); font-size: 13px; }
 .task-result-context .label { padding: 5px 8px; border: 1px solid var(--hair-2); border-radius: 6px; }
 .task-result-meta { display: flex; flex-wrap: wrap; gap: 8px 24px; margin-top: 18px; color: var(--ink-3); font-size: 13px; }
+body[data-page="task-results"] .page-head .lede { max-width: 960px; }
+.task-result-metric { max-width: 960px; margin-top: 24px; padding-left: 18px; border-left: 2px solid var(--hair-2); }
+.task-result-metric h2 { margin: 0 0 6px; font-size: 15px; font-weight: 600; }
+.task-result-metric p { margin: 0; color: var(--ink-2); font-size: 15px; line-height: 1.75; }
+.task-result-metric a { display: inline-block; margin-top: 8px; font-size: 13px; }
 .task-results-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.55fr); gap: 20px; align-items: start; }
 .task-results-grid > .card { min-width: 0; overflow: hidden; }
 .task-results-grid .task-submissions, .task-results-grid .task-model-results { grid-column: 1 / -1; }

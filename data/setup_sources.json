@@ -124,6 +124,11 @@
     {
       "path": "sforge/harness/evolve_scripts.py",
       "sha256": "a4e3dd5954023b6c1d8eb5e0d8b91d6b52c1f5b4d159b904c92fe771c842a67a"
+    },
+    {
+      "path": "scripts/infrathon/release/public/docs/LLM_JUDGE.md",
+      "sha256": "5ee49bdd1abfec613ded476a655d2255ffea2df597a805dc9ac6770d56d27bcb",
+      "public_export_path": "docs/LLM_JUDGE.md"
     }
   ],
   "mock_resources": {

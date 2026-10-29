@@ -15,13 +15,17 @@
   });
 
   function render(t) {
+    const guide = window.INFRATHON_DOCS.tasks[t.key];
     document.title = `${t.name} Results · Infrathon`;
     $("#t-group").textContent = `${cap(t.stage)} · ${cap(t.level)}`;
     $("#t-name").textContent = t.name;
-    $("#t-summary").textContent = t.target;
+    $("#t-summary").textContent = guide.result_intro;
     $("#t-meta").replaceChildren(h("span", { text: `${t.budget_h}-hour budget` }));
-    $("#t-instructions").href = X.taskHref(t.key);
-    $("#t-metric").textContent = `${metricLabel(t)} · higher is better`;
+    $("#t-documentation").href = X.taskHref(t.key);
+    $("#t-metric-name").textContent = `Metric · ${metricLabel(t)}`;
+    $("#t-metric-summary").textContent = guide.metric_summary;
+    $("#t-metric-link").href = `${X.taskHref(t.key)}/evaluation`;
+    $("#t-metric").textContent = metricLabel(t);
 
     const bars = $("#t-bars");
     bars.replaceChildren();

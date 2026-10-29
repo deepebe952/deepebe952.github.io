@@ -20,9 +20,10 @@
         "BF16 attention tensors with Wan13B, LTX2, and Kandinsky5 geometries."
       ],
       "workflow": [
-        "Inspect the seed forward/backward paths and the prescribed fake-quantization operations.",
-        "Optimize tiling, reductions, recomputation, and intermediate storage.",
-        "Run the supplied public attention tests and inspect output and gradient errors before selecting a candidate for evaluation."
+        "Read the two entry points in `kernel_v001` and identify where the quantized probabilities and saved intermediates are produced.",
+        "Create a new versioned candidate; change tiling, quantization fusion, recomputation or gradient scheduling while retaining both interfaces.",
+        "Run the public controller and inspect errors for `o`, `dq`, `dk` and `dv`, plus saved-storage and input-preservation checks.",
+        "Run all four public cells, put the tested version number in `FINAL_VERSION`, and submit with `sforge-submit --details`."
       ],
       "evaluation": "Measures effective training throughput across three model families after FP32-reference output and gradient checks, edge fixtures, input preservation, and intermediate-storage checks pass.",
       "sources": [
@@ -37,8 +38,63 @@
         {
           "doc": "scripts/infrathon/tasks.json",
           "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+        },
+        {
+          "doc": "tasks/latest/attn-qat-nvfp4-training-attention-h100-v1-seed/images/work/AGENT_TASK.md",
+          "sha256": "cce86d7a6a89654846f17f712902481d35d5ef3baf43c41bef8ed265fa6b531f"
+        },
+        {
+          "doc": "tasks/latest/attn-qat-nvfp4-training-attention-h100-v1-seed/images/work/workdir/attn_qat_lab/tools/run_public_tests.sh",
+          "sha256": "f72c44762ff78c3215b5953e05e6ebaee3b425292245a4d4ce2133cde289aed2"
+        },
+        {
+          "doc": "tasks/latest/attn-qat-nvfp4-training-attention-h100-v1-seed/images/work/benchmark/run_public_tests.sh",
+          "sha256": "08a34f45975fb17f0a6a8545f7534eaf6332c56c599d698f97ac624c0f928284"
         }
-      ]
+      ],
+      "result_intro": "This task accelerates the forward and backward attention operator used to fine-tune video diffusion models with NVFP4 quantization-aware training. Given BF16 queries, keys, values and an output gradient, the implementation must produce the prescribed attention output and input gradients while reducing quantization, matrix-multiplication and intermediate-storage costs.",
+      "metric_summary": "The score is effective TFLOPS for a checkpointed training step: fixed work divided by twice the forward time plus backward time. Seven-trial median throughputs are combined geometrically, giving Wan13B, LTX2 and Kandinsky5 equal weight.",
+      "setting": "The starting candidate is a correct Triton port of FastVideo’s SM90 attention implementation. Four workload cells represent two Wan2.1-T2V-1.3B configurations, LTX-2 and Kandinsky5, with head dimensions of 64 or 128 and different sequence lengths. Inputs remain BF16 while queries, keys, values and attention probabilities undergo the specified NVFP4 quantize–dequantize operations. Evaluation covers this attention layer rather than an entire video-model training run.",
+      "interface": [
+        {
+          "name": "Inputs",
+          "description": "Contiguous BF16 `q`, `k`, `v` tensors shaped `[B, H, S, D]`, `softmax_scale = D**-0.5`, and upstream gradient `do`; query and key lengths may differ."
+        },
+        {
+          "name": "Outputs",
+          "description": "`attn_qat_fwd` fills `o` and returns saved tensors; `attn_qat_bwd` fills `dq`, `dk` and `dv` without changing `o`."
+        }
+      ],
+      "components": [
+        {
+          "name": "AGENT_TASK.md",
+          "description": "Exact fake-quantization, forward/backward, storage and interface contract."
+        },
+        {
+          "name": "candidates/kernel_vNNN/submission.py",
+          "description": "The two attention entry points and their Triton kernels; version 001 contains the working seed."
+        },
+        {
+          "name": "tools/run_public_tests.sh",
+          "description": "Runs public edge fixtures and attention workloads for a selected version."
+        },
+        {
+          "name": "FINAL_VERSION",
+          "description": "Integer selecting the candidate captured for evaluation."
+        }
+      ],
+      "constraints": [
+        "Preserve the exact quantization locations, 16-element groups and rounding rules, including normalization by the sum of BF16-rounded probabilities.",
+        "Fully write outputs on the current CUDA stream; inputs remain unchanged, and backward may not alter the completed forward output.",
+        "New storage reachable through `saved` is limited to the combined sizes of `q`, `k`, `v`, `o` plus `4 × B × H × S_q` bytes.",
+        "Implement tensor computation in Triton, using the prescribed fake-quantization forward and backward operations."
+      ],
+      "validation": [
+        "The public controller runs 11 correctness fixtures before four public workload cells; fixtures include cross-attention, quantization ties, small gradients and a real Wan capture.",
+        "The Judge uses four scored cells with its frozen sequence lengths and seeds, compares outputs and gradients against an FP32 reference, and checks complete writes, unchanged inputs and saved storage.",
+        "Formal scoring uses one warm-up and seven trials; the public full run uses three measured trials, so its timing is a development estimate."
+      ],
+      "test_commands": "# Replace 1 with your candidate version.\ncd /app/workdir/attn_qat_lab\n./tools/run_public_tests.sh --candidate-version 1"
     },
     "wgrad": {
       "task_id": "standalone_k_grouped_fp8_wgrad_h100_scratch_v2",
@@ -56,9 +112,10 @@
         "FP8 matrices, block scales, group lengths, and FP32 gradient buffers."
       ],
       "workflow": [
-        "Implement grouped reduction, FP8 scaling, and accumulation into the supplied output.",
-        "Exercise empty, uneven, and irregular groups with the public correctness tests.",
-        "Tune tiling, parallel reduction, and scheduling, then select the candidate for formal evaluation."
+        "Implement block-scaled accumulation for each actual `ks` group, including the `K = 0` path and masked loads/stores for irregular dimensions.",
+        "Run sanitizer and public boundary tests before optimizing the aligned scored grid.",
+        "Compare coarse- and fine-family throughput while tuning tiling, split-K or persistent scheduling; keep the general path working.",
+        "Run the full public grid, select the verified version with `FINAL_VERSION`, and submit with `sforge-submit --details`."
       ],
       "evaluation": "Measures effective TFLOPS across coarse and fine grouping workloads. Numerical references, complete writes, unchanged inputs, and memory-safety checks establish correctness.",
       "sources": [
@@ -73,8 +130,59 @@
         {
           "doc": "scripts/infrathon/tasks.json",
           "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+        },
+        {
+          "doc": "tasks/latest/standalone-k-grouped-fp8-wgrad-h100-v2-scratch/images/work/AGENT_TASK.md",
+          "sha256": "7b530b9ca10c5417d34bbd12ac7c98c43d8f9b7de9ab2dddfa68fbb51f06e083"
+        },
+        {
+          "doc": "tasks/latest/standalone-k-grouped-fp8-wgrad-h100-v2-scratch/images/work/benchmark/run_public_tests.sh",
+          "sha256": "43d42d675bc869c05ea275259a0491bd3b1e86a6633058e441fccd89114925fd"
         }
-      ]
+      ],
+      "result_intro": "Implement the weight-gradient matrix multiplication used by mixture-of-experts training, starting from an empty Triton candidate. FP8 activation and gradient rows are grouped by expert along the reduction dimension; each group’s scaled matrix product is added to an existing FP32 gradient and written to a separate output buffer.",
+      "metric_summary": "The score is effective TFLOPS using the actual sum of group reduction lengths and the median of five throughput trials per case. Coarse and fine grouping families receive equal weight through geometric means.",
+      "setting": "The workload follows DeepGEMM’s K-grouped training GEMM, but the Work image supplies no GEMM implementation. Seven scored configurations span coarse and fine expert groupings, with fresh group lengths in each trial. The supported domain also includes 1–128 groups, arbitrary output dimensions from 1 to 8192, and empty groups. An aligned fast path must therefore coexist with correct handling of irregular dimensions and reductions.",
+      "interface": [
+        {
+          "name": "Inputs",
+          "description": "FP8 E4M3FN `a[K_total, M]` and `b[K_total, N]`, FP32 scales per 128-row reduction block and column, actual group sizes `ks`, read-only FP32 addend `c[G, M, N]`, and a scheduling hint."
+        },
+        {
+          "name": "Outputs",
+          "description": "`k_grouped_fp8_gemm_tn_contiguous(...)` fills FP32 `out[G, M, N]` with each scaled group product plus `c`, then returns `None`; empty groups copy their addend."
+        }
+      ],
+      "components": [
+        {
+          "name": "candidates/kernel_vNNN/submission.py",
+          "description": "Implements the grouped FP8 GEMM entry point; version 001 starts empty."
+        },
+        {
+          "name": "AGENT_TASK.md",
+          "description": "Supported tensor domain, scaling semantics and correctness requirements."
+        },
+        {
+          "name": "tools/run_public_tests.sh",
+          "description": "Public timing grid, boundary-case tests and optional memory sanitizer."
+        },
+        {
+          "name": "FINAL_VERSION",
+          "description": "Selects the submitted implementation."
+        }
+      ],
+      "constraints": [
+        "Apply both operands’ per-block scales and add `c` exactly once; `c` is read-only and must not serve as the output buffer.",
+        "`expected_k_hint` may influence scheduling but cannot replace the actual group lengths or omit reduction rows.",
+        "Support empty and uneven groups and all declared matrix dimensions; write only the output and candidate scratch.",
+        "Use self-contained Triton kernels rather than existing GEMM libraries or host-side matrix multiplication."
+      ],
+      "validation": [
+        "Public tests expose seven timing shapes and 40 boundary cases, including two small cases for `compute-sanitizer`.",
+        "The Judge adds 160 correctness cases, compares with dequantized FP64 and BF16 references, and checks finite complete writes, byte-identical inputs and guard bands.",
+        "Each scored case uses five fresh-input trials; the larger of synchronized host-wall and CUDA-event time is charged."
+      ],
+      "test_commands": "cd /app/workdir/k_grouped_wgrad_lab\n./tools/run_public_tests.sh --sanitize --candidate-version 1\n./tools/run_public_tests.sh --edge --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1"
     },
     "flux-moe": {
       "task_id": "flux_moe_ag_scatter_grouped_gemm_dual_h100_seed_v1",
@@ -89,12 +197,13 @@
         "Default allocation: one 2-GPU NVLink pair shared by Work and Judge.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "PyTorch 2.8 / CUDA 12.9 runtime with bidirectional GPU peer access.",
-        "Token shards, expert-weight shards, and routing metadata."
+        "Host CUDA PyTorch with NCCL and symmetric-memory support for the GPU-pair preflight."
       ],
       "workflow": [
-        "Trace the seed token gather, expert scatter, and per-rank output computation.",
-        "Tune producer/consumer work, memory layout, and communication overlap while retaining the supplied stream contract.",
-        "Run public correctness and timing checks across both ranks before selecting the version."
+        "Trace how the seed pulls the peer shard, publishes data-ready flags and schedules local versus remote expert rows.",
+        "Create a candidate version and adjust producer/consumer allocation, matrix tiles or staging layout without changing routing order.",
+        "Use the quick suite to check both ranks, then inspect per-rank timings and public communication diagnostics to locate waits.",
+        "Run all five public cells, select the tested version in `FINAL_VERSION`, and submit with `sforge-submit --details`."
       ],
       "evaluation": "Measures useful per-rank throughput using the slower rank’s time. Output accuracy, complete writes, fresh-input execution, input preservation, and rank agreement must pass.",
       "sources": [
@@ -109,8 +218,66 @@
         {
           "doc": "scripts/infrathon/tasks.json",
           "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+        },
+        {
+          "doc": "tasks/latest/flux-moe-ag-scatter-grouped-gemm-dual-h100-v1-seed/images/work/AGENT_TASK.md",
+          "sha256": "074d91df0eb6d610e2285f03d84048419f5fbc7af5108ea287a5db035280cb08"
+        },
+        {
+          "doc": "tasks/latest/flux-moe-ag-scatter-grouped-gemm-dual-h100-v1-seed/scripts/preflight.py",
+          "sha256": "65bc8ec8f9beb610f363e9ca67a62aae30f90e9e9956b1454d0b4166ccb380eb"
+        },
+        {
+          "doc": "tasks/latest/flux-moe-ag-scatter-grouped-gemm-dual-h100-v1-seed/scripts/launch_fixed_budget_after_gpu_pair_idle.sh",
+          "sha256": "8cecf0cd5ede408ebb83a27c7f7eefb84be0663aa6cc5644482683daf7b34560"
         }
-      ]
+      ],
+      "result_intro": "Optimize the input-side primitive of a tensor-parallel mixture-of-experts layer on two GPUs. Each rank gathers both token shards, scatters rows into the supplied expert order, and performs grouped matrix multiplication to produce its own output-channel shard.",
+      "metric_summary": "Effective TFLOPS divides useful matrix work per rank by the slower rank’s time, including all-gather, scatter, GEMM and synchronization. Seven trials determine each case’s median time; geometric means give the heavy- and moderate-communication families equal weight.",
+      "setting": "The seed is a self-contained Triton adaptation of Flux’s layer-0 path, using remote-pull producers and grouped-GEMM consumers on a peer-connected GPU pair. Five scored cells represent Qwen3-Next, Qwen3-MoE, gpt-oss, Mixtral and DeepSeek configurations. Expert counts, selected experts and per-rank channel widths vary across these cells. Routing decisions are supplied as inputs; applying routing weights or activation functions and combining expert outputs are outside this primitive.",
+      "interface": [
+        {
+          "name": "Inputs",
+          "description": "Local and remotely readable BF16 token shards `[M_local, K]`, this rank’s BF16 expert weights `[E, N, K]`, sorted token/expert IDs, expert offsets, rank ID and local/peer symmetric scratch."
+        },
+        {
+          "name": "Outputs",
+          "description": "`moe_ag_scatter_gemm_bf16(...)` fills BF16 `out[R, N]`, where `R = 2 × M_local × topk`; row order follows the supplied expert-sorted routing."
+        }
+      ],
+      "components": [
+        {
+          "name": "candidates/kernel_vNNN/submission.py",
+          "description": "Fused all-gather, expert scatter and grouped-GEMM implementation."
+        },
+        {
+          "name": "AGENT_TASK.md",
+          "description": "Two-rank ABI, workload geometries and numerical contract."
+        },
+        {
+          "name": "tools/run_one.sh",
+          "description": "Quick correctness/timing check for one candidate."
+        },
+        {
+          "name": "tools/run_public_tests.sh",
+          "description": "Tests the disclosed edge fixtures and all five public cells."
+        },
+        {
+          "name": "FINAL_VERSION",
+          "description": "Selects the implementation evaluated on both ranks."
+        }
+      ],
+      "constraints": [
+        "Both ranks execute on their current CUDA streams; cross-GPU data readiness must be handled by the candidate’s permitted Triton synchronization.",
+        "Preserve every local and remote input and write every routed output row; empty experts and strongly skewed routing remain supported.",
+        "Use the supplied symmetric-memory views and scratch; private streams, NCCL calls and external communication/GEMM implementations are outside the candidate interface."
+      ],
+      "validation": [
+        "Public tests run eight correctness-only fixtures before five disclosed, off-slot workload sizes; quick mode uses X1 and X4.",
+        "The Judge uses different frozen token counts and seeds, checking FP32/BF16-reference accuracy, complete writes, input preservation and agreement between ranks.",
+        "Formal timing uses seven trials and includes communication waits; the public full run uses three trials and exposes per-rank and communication diagnostics."
+      ],
+      "test_commands": "# Replace 1 with your candidate version.\ncd /app/workdir/moe_ag_lab\n./tools/run_one.sh --version 1\n./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1"
     },
     "orpo": {
       "task_id": "qwen3_1p7b_orpo_training_optimizer_dual_h100_v4",
@@ -128,9 +295,10 @@
         "Qwen3-1.7B, TL;DR preference data, and the provided TRL 0.12.1 / FSDP runtime."
       ],
       "workflow": [
-        "Inspect the objective interface and the chosen/rejected completion-target construction.",
-        "Optimize vocabulary projection and equivalent loss/model computation through the provided interfaces.",
-        "Run public CPU checks and complete visible training workloads, then submit the selected version."
+        "Read `runtime/api.py` and the baseline, especially the distinct completion-only odds-ratio labels and full-sequence chosen NLL target.",
+        "Create a new complete objective version and implement equivalent projection/loss computation or supported RoPE, RMSNorm and SwiGLU patches.",
+        "Run CPU checks, then the quick two-GPU smoke; examine losses, auxiliary values and gradients before measuring performance.",
+        "Run the full public training workload, choose the verified version with `FINAL_VERSION`, record it in `notes.md`, and submit with `sforge-submit --details`."
       ],
       "evaluation": "Compares complete-step throughput with an official TRL reference measured in the same evaluation. Losses, gradients, optimizer state, nonzero parameter updates, and memory use must meet the reference checks.",
       "sources": [
@@ -145,8 +313,59 @@
         {
           "doc": "scripts/infrathon/tasks.json",
           "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+        },
+        {
+          "doc": "tasks/latest/qwen3-1p7b-orpo-training-optimizer-dual-h100-v4-cross-matrix-seed/images/work/public_tests/run_public_tests.sh",
+          "sha256": "85c947475150f515f3dd15b6f8815996f2eb6e2eb4b88fdd6472cc45938480c9"
         }
-      ]
+      ],
+      "result_intro": "Accelerate complete Qwen3-1.7B preference-training steps while preserving the official TRL ORPO objective and full-parameter updates. The candidate receives hidden states for chosen/rejected text and the output-head weights, implements vocabulary projection and loss computation, and may supply permitted layer patches to reduce end-to-end training time.",
+      "metric_summary": "The score is 100 times geometric-mean training speedup across five workloads, using each workload’s median of four candidate/reference pairs. Throughput counts completion-target tokens over complete optimizer-step time, including communication and updates; a score of 150 means 1.5× the remeasured official TRL reference.",
+      "setting": "Qwen3-1.7B trains in BF16 on TL;DR chosen/rejected preferences using two GPUs and FSDP1 FULL_SHARD. Its tied embedding and output head has a 151,936-token vocabulary, making projection and materialized logits a substantial cost. Five workloads vary stored sequence length from 512 to 2048 and per-rank pair batch from 2 to 8. The provided seed invokes TRL 0.12.1; this is full-parameter AdamW training, not LoRA.",
+      "interface": [
+        {
+          "name": "Inputs",
+          "description": "The objective receives tied head weights, hidden states for concatenated chosen/rejected sequences, completion-only odds-ratio labels, optional bias and a separate full-sequence chosen NLL target."
+        },
+        {
+          "name": "Outputs",
+          "description": "`build_objective(contract)` returns a callable producing `ORPOResult`: a differentiable scalar loss and nine auxiliary values. Optional `build_model_patch(contract)` returns a declarative `Qwen3ModelPatch`."
+        }
+      ],
+      "components": [
+        {
+          "name": "solutions/objective_vNNN/candidate.py",
+          "description": "Objective implementation and optional supported Qwen3 layer patches."
+        },
+        {
+          "name": "solutions/objective_vNNN/__init__.py",
+          "description": "Completes the versioned candidate package; these are the only two files allowed in a version."
+        },
+        {
+          "name": "runtime/api.py",
+          "description": "Read-only objective types and patch interface."
+        },
+        {
+          "name": "/workspace/public_tests/run_public_tests.sh",
+          "description": "CPU objective checks, short two-GPU smoke and full public training run."
+        },
+        {
+          "name": "FINAL_VERSION",
+          "description": "Selects a retained version; keep `objective_v001` unchanged as the baseline."
+        }
+      ],
+      "constraints": [
+        "Preserve all objective outputs, gradients and full-parameter AdamW updates; the trusted runtime retains control of data, FSDP, optimizer and workload.",
+        "Use BF16 or FP32 computation; dropping vocabulary entries, quantizing to FP8/INT8/FP4 or shortening sequences changes the required computation.",
+        "Model changes must use the declarative patch interface rather than modifying model objects or replacing the trusted runtime.",
+        "Peak reserved memory must stay within 1.02× the paired reference and below the smallest GPU’s capacity minus 4 GiB."
+      ],
+      "validation": [
+        "Public CPU tests check objective semantics and gradients; quick mode adds a synthetic two-GPU smoke, and full mode uses the frozen public TL;DR partition.",
+        "The Judge evaluates five held-out workloads with four counterbalanced pairs each, five warm-up steps and ten timed steps per role.",
+        "Reference-relative checks cover loss trajectories, all auxiliary outputs, gradient coverage, optimizer states, nonzero updates and memory."
+      ],
+      "test_commands": "# Select your version with FINAL_VERSION first.\ncd /app/workdir/orpo_lab\nbash /workspace/public_tests/run_public_tests.sh --cpu-only\nbash /workspace/public_tests/run_public_tests.sh --quick\nbash /workspace/public_tests/run_public_tests.sh"
     },
     "gkd": {
       "task_id": "qwen3_4b_to_1p7b_gkd_distillation_optimizer_dual_h100_v1",
@@ -165,9 +384,10 @@
         "Provided PyTorch 2.8 / CUDA 12.9 / FSDP runtime with the official TRL objective."
       ],
       "workflow": [
-        "Check the shifted completion-token mask and the official generalized-JSD interface.",
-        "Optimize vocabulary projection, loss computation, and supported student/teacher execution paths.",
-        "Use public CPU and full training checks to compare losses, gradients, and memory, then select the candidate."
+        "Read the objective interface and verify how shifted completion masks include answer EOS while excluding prompt and padding targets.",
+        "Create a new version; fuse or tile the projections and JSD computation, or use supported student/teacher patches.",
+        "Run CPU cases for masks, biases, mixture endpoints and temperatures, then the short two-GPU smoke.",
+        "Run full public training, check frozen-teacher and student-update evidence, select the candidate in `FINAL_VERSION`, and submit with `sforge-submit --details`."
       ],
       "evaluation": "Measures training-throughput speedup against the paired official TRL reference. Objective tests, student updates, frozen-teacher preservation, and memory checks must pass.",
       "sources": [
@@ -183,7 +403,54 @@
           "doc": "scripts/infrathon/tasks.json",
           "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
         }
-      ]
+      ],
+      "result_intro": "Accelerate off-policy knowledge-distillation steps from a frozen Qwen3-4B teacher into a trainable Qwen3-1.7B student. Both models consume fixed prompt/completion records; the candidate computes their vocabulary projections and generalized Jensen–Shannon loss, preserving student gradients while reducing the time and memory of complete training steps.",
+      "metric_summary": "The score is 100 times geometric-mean speedup across five training workloads, taking the median of four paired candidate/reference ratios per workload. Timing includes teacher and student forwards, loss, backward, communication and optimizer updates; 194.8 means 1.948× official TRL throughput.",
+      "setting": "The frozen BF16 teacher is replicated on each of two GPUs; the BF16 student uses FSDP FULL_SHARD and full-parameter AdamW. Both read TL;DR prompts with fixed chosen completions, so the timed workload does not generate new student trajectories. The objective matches TRL 0.12.1’s generalized JSD, with a 151,936-token vocabulary. Five workload rows vary sequence length and batch size, while prompt and padding positions are excluded from the completion-target count.",
+      "interface": [
+        {
+          "name": "Inputs",
+          "description": "Student/teacher head weights and hidden states, shifted completion-only labels (`-100` elsewhere), and optional head biases. The objective supports all mixture values `beta ∈ [0,1]` and positive temperatures."
+        },
+        {
+          "name": "Outputs",
+          "description": "`build_objective(contract)` returns an objective producing `GKDResult` with differentiable student loss and auxiliary values; optional student/teacher patch builders return declarative `Qwen3ModelPatch` objects."
+        }
+      ],
+      "components": [
+        {
+          "name": "solutions/objective_vNNN/candidate.py",
+          "description": "Both vocabulary projections, generalized-JSD objective and optional student/teacher layer patches."
+        },
+        {
+          "name": "solutions/objective_vNNN/__init__.py",
+          "description": "Candidate package entry; preserve the unmodified `objective_v001` baseline."
+        },
+        {
+          "name": "runtime/api.py",
+          "description": "Read-only objective and model-patch contract."
+        },
+        {
+          "name": "/workspace/public_tests/run_public_tests.sh",
+          "description": "CPU objective tests and two-GPU public training checks."
+        },
+        {
+          "name": "FINAL_VERSION",
+          "description": "Selects the complete version submitted with `solutions/` and `notes.md`."
+        }
+      ],
+      "constraints": [
+        "Teacher parameters remain bit-identical and receive no gradients; only the student is updated.",
+        "Preserve full-vocabulary JSD and complete student training; prompt tokens remain model context even when excluded from the loss.",
+        "Compute in BF16 or FP32; top-k approximations and lower-precision quantization are outside the contract.",
+        "Use declarative patches and remain within 1.05× paired-reference peak reserved memory and GPU capacity minus 4 GiB."
+      ],
+      "validation": [
+        "Public development covers five CPU objective cases, GPU objective diagnostics and a two-GPU training workload; quick mode reduces the training workload.",
+        "The Judge varies masks, biases, mixture and temperature, then evaluates five held-out TL;DR rows with four counterbalanced pairs, five warm-up steps and ten timed steps.",
+        "Checks compare loss, auxiliaries, gradients, optimizer states and updates, and verify every teacher parameter remains frozen."
+      ],
+      "test_commands": "# Select your version with FINAL_VERSION first.\ncd /app/workdir/gkd_lab\nbash /workspace/public_tests/run_public_tests.sh --cpu-only\nbash /workspace/public_tests/run_public_tests.sh --quick\nbash /workspace/public_tests/run_public_tests.sh"
     },
     "opcd": {
       "task_id": "miles_qwen3_opcd_2xh100_v3",
@@ -199,12 +466,14 @@
         "Default allocation: one 2-GPU NVLink pair shared by Work and Judge.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "Qwen3-1.7B student and frozen teacher, MedMCQA data, and the teacher’s medical system prompt.",
-        "Provided Miles runtime; 24-CPU quota and 256 GiB host RAM per container."
+        "Provided Miles runtime; 24-CPU quota and 256 GiB host RAM per container.",
+        "Set `MILES_SCRATCH_ROOT` on a data disk with at least 200 GiB free; the system root filesystem also needs 20 GiB free."
       ],
       "workflow": [
-        "Connect the context-conditioned teacher and implement the prescribed top-k distillation loss.",
-        "Run the public probe suite to check teacher probabilities, gradients, and parameter updates.",
-        "Exercise public small/performance training, including weight publication, before submitting the complete source workspace."
+        "Implement teacher-only context handling and the top-256 reverse-KL loss in the existing Miles/Megatron training path.",
+        "Make `probe` and `run` share the same numerical implementation and emit all required step records.",
+        "Run the public fixed-trajectory probe, then the small online-training suite to check generation, updates and publication together.",
+        "Run public `perf`, inspect its audited duration and provisional medical accuracy, then submit `repo/`, `task_entry.py`, `config/` and `notes.md` with `sforge-submit --details`."
       ],
       "evaluation": "Measures held-out medical accuracy gained per audited training hour. The quality threshold and checks linking samples, training updates, published weights, and evaluated weights must pass.",
       "sources": [
@@ -219,8 +488,72 @@
         {
           "doc": "scripts/infrathon/tasks.json",
           "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+        },
+        {
+          "doc": "tasks/latest/miles-qwen3-opcd-2xh100-v3-seed/docs/INTERFACE.md",
+          "sha256": "0456424116aca657f748c1b0fa28d0767004115217d7a2c738f67c71b3350fca"
+        },
+        {
+          "doc": "scripts/miles_opcd/v3/run_public_v3.py",
+          "sha256": "bf28e623c414cace353730e6363e9647396d36c8af290cfa116e097590464916"
+        },
+        {
+          "doc": "scripts/miles_common/host_config.py",
+          "sha256": "58e4a5039fd558c29799629d6b81f6536d30611c6550b3f3ab409191e39d1557"
+        },
+        {
+          "doc": "tasks/latest/miles-qwen3-opcd-2xh100-v3-seed/scripts/run_task.py",
+          "sha256": "0257fd3da5a151c190ae530f0c4aeecc46fa6f0fca400f1e016d26dd89b1085f"
+        },
+        {
+          "doc": "tasks/latest/miles-qwen3-opcd-2xh100-v3-seed/images/release.json",
+          "sha256": "4ce142f08137a0073a46dd54749c2203adc2fa9d2e56a5d22eff4fba96a18290"
         }
-      ]
+      ],
+      "result_intro": "Implement context distillation in Miles so a Qwen3-1.7B student learns medical answering behavior from its own initial weights acting as a frozen teacher with a medical system prompt. The student generates responses without that prompt, learns from teacher probabilities, and publishes updated weights; optimization targets the entire learning pipeline.",
+      "metric_summary": "The score is held-out MedMCQA accuracy gained in percentage points per audited training hour, averaged over three evaluations on 2,436 questions. At least 6.5 points of improvement is required; timing includes generation, learning and final weight publication, while model loading and authorized evaluation overhead are excluded.",
+      "setting": "The supplied Miles checkout combines SGLang generation, Megatron-Core training and Ray orchestration, but its context-distillation loss is unfinished. The fixed workload contains 32 rounds of 512 MedMCQA prompts with one response per prompt and a 512-token response limit. Teacher and student start from the same Qwen3-1.7B snapshot. Each round uses a training-side student top-256 distribution, performs one AdamW update and publishes new student weights.",
+      "interface": [
+        {
+          "name": "Inputs",
+          "description": "A JSON training contract, MedMCQA rows, initial student/teacher weights and the teacher-only medical prompt; `probe` additionally receives recorded trajectories."
+        },
+        {
+          "name": "Outputs",
+          "description": "`task_entry.py run` executes training; `probe` performs one update on supplied trajectories. Both write `result.json`, final Hugging Face weights in `final_hf/`, and per-step records with top-256 IDs, probabilities and loss."
+        }
+      ],
+      "components": [
+        {
+          "name": "task_entry.py run / probe",
+          "description": "Shared training implementation exposed as full-run and fixed-trajectory commands."
+        },
+        {
+          "name": "config/opcd_loss.py",
+          "description": "Starter placeholder for the analytic top-256 reverse-KL objective."
+        },
+        {
+          "name": "repo/",
+          "description": "Miles code for teacher scoring, training-side probabilities, batching, overlap and publication."
+        },
+        {
+          "name": "config/",
+          "description": "Launch and training integration settings, subject to the fixed contract."
+        }
+      ],
+      "constraints": [
+        "The student never receives the privileged medical prompt; the teacher remains the frozen initial snapshot throughout training.",
+        "Select top-256 tokens using pre-update student probabilities from the training side; probabilities retain full-vocabulary normalization rather than a top-k softmax.",
+        "Use every assigned response exactly once, permit at most one-step stale generation, and publish after each optimizer step.",
+        "Retain the native Miles/Megatron/SGLang path; teacher/training GEMMs use BF16 or wider, and served/exported weights must equal the optimizer’s output."
+      ],
+      "validation": [
+        "Public `probe` checks an update on eight recorded trajectories; `small` runs four rounds of 16 prompts; `perf` uses the full contract and a separate 64-question provisional evaluation.",
+        "The Judge checks hidden trajectory probabilities, loss and gradients, then verifies sample usage and consistency between trained, served and exported weights.",
+        "The final student answers 2,436 held-out questions without the teacher prompt in three seeded repeats; the fixed answer-tag grader determines accuracy."
+      ],
+      "test_commands": "# Use fresh output directories for each attempt.\ncd /app/workdir/miles_lab\npython /opt/miles_opcd_public/run_public.py --suite probe --output /scratch/check/probe\npython /opt/miles_opcd_public/run_public.py --suite small --output /scratch/check/small --probe-output /scratch/check/probe\npython /opt/miles_opcd_public/run_public.py --suite perf --output /scratch/check/perf --probe-output /scratch/check/probe",
+      "scratch_setup": "# Choose a writable directory on your non-system data disk.\nexport MILES_SCRATCH_ROOT=/absolute/path/on-data-disk/infrathon-scratch\nmkdir -p \"$MILES_SCRATCH_ROOT\""
     },
     "opd": {
       "task_id": "miles_qwen3_opd_scratch_2xh100_v2",
@@ -236,12 +569,14 @@
         "Default allocation: one 2-GPU NVLink pair shared by Work and Judge.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "Qwen3-1.7B student, frozen Qwen3-4B teacher, and DAPO-Math data.",
-        "Provided Miles runtime; 24 CPUs and 256 GiB host RAM per container."
+        "Provided Miles runtime; 24 CPUs and 256 GiB host RAM per container.",
+        "Set `MILES_SCRATCH_ROOT` on a data disk with at least 200 GiB free; the system root filesystem also needs 20 GiB free."
       ],
       "workflow": [
-        "Implement student rollout, teacher token scoring, sampled-token loss, and student updates.",
-        "Validate the shared learning implementation with the public trajectory probes.",
-        "Run the public training/performance path and verify that subsequent rollouts use newly published weights before submission."
+        "Implement teacher scoring and training-side pre-update student probabilities for the student’s sampled tokens.",
+        "Use those probabilities in the prescribed advantage and clipped loss, then connect optimizer updates to SGLang weight publication.",
+        "Pass the public trajectory probe and small online run, inspecting masks, step records and whether later rollouts use updated weights.",
+        "Measure the full public workload, then submit the complete source workspace with `sforge-submit --details`."
       ],
       "evaluation": "Measures held-out math-accuracy gain per audited training hour. Teacher/student probabilities, loss and gradients, sample usage, weight publication, and the quality threshold are checked.",
       "sources": [
@@ -256,8 +591,72 @@
         {
           "doc": "scripts/infrathon/tasks.json",
           "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+        },
+        {
+          "doc": "tasks/latest/miles-qwen3-opd-scratch-2xh100-v2-seed/docs/INTERFACE.md",
+          "sha256": "158b87161f5091cb632bbfde42c3b1dd70790ee893777b9a21eb6ead1840fa72"
+        },
+        {
+          "doc": "scripts/miles_opd/run_public.py",
+          "sha256": "4ff856535e58e8c5e11ac3fb713c4d668836d416a782362f993961310af4d700"
+        },
+        {
+          "doc": "scripts/miles_common/host_config.py",
+          "sha256": "58e4a5039fd558c29799629d6b81f6536d30611c6550b3f3ab409191e39d1557"
+        },
+        {
+          "doc": "tasks/latest/miles-qwen3-opd-scratch-2xh100-v2-seed/scripts/run_task.py",
+          "sha256": "3d4707408f33bd069fb6f62f8150ef584783eaa25745d13750343e96b77dbd99"
+        },
+        {
+          "doc": "tasks/latest/miles-qwen3-opd-scratch-2xh100-v2-seed/images/release.json",
+          "sha256": "683e4700ac26c02c561fb87dea30667f8c0b21c3511cb068e6f3e14792ef155d"
         }
-      ]
+      ],
+      "result_intro": "Build sampled-token on-policy distillation inside Miles: Qwen3-1.7B generates mathematical solutions, a frozen Qwen3-4B teacher scores the sampled tokens, and the student learns from their probability differences. The implementation must connect rollout, teacher scoring, Megatron updates and weight publication, then accelerate that complete fixed-size training run.",
+      "metric_summary": "The score is math-accuracy improvement in percentage points per audited training hour, using three evaluations on 2,000 held-out DAPO-Math problems. A gain of at least 1.6 points is required; timing includes rollout, teacher scoring, learning and final weight publication.",
+      "setting": "The Miles starter can launch training and export weights, but the on-policy distillation feedback and step records are missing. A frozen Qwen3-4B teacher guides a Qwen3-1.7B student for 32 rounds of 128 DAPO-Math prompts. Each prompt produces one response of at most 4,096 tokens with thinking disabled. Student and teacher sampled-token log-probabilities define the fixed advantage, followed by a PPO-clipped update and publication each round.",
+      "interface": [
+        {
+          "name": "Inputs",
+          "description": "A JSON contract, ordered DAPO-Math prompts and pinned student/teacher models; `probe` takes a supplied trajectory batch instead of generating responses."
+        },
+        {
+          "name": "Outputs",
+          "description": "`task_entry.py run` and `probe` produce `result.json`, a complete student `final_hf/` checkpoint and per-step/rank records containing tokens, masks, student/teacher probabilities, advantages and loss."
+        }
+      ],
+      "components": [
+        {
+          "name": "task_entry.py run / probe",
+          "description": "Full online training and one-step recorded-trajectory entry points."
+        },
+        {
+          "name": "repo/",
+          "description": "Miles implementation of student rollouts, frozen-teacher feedback and Megatron training."
+        },
+        {
+          "name": "config/",
+          "description": "Wires the distillation objective and pipeline to the task contract."
+        },
+        {
+          "name": "/opt/miles_opd_public/run_public.py",
+          "description": "Public probe, small-training and full-performance suites."
+        }
+      ],
+      "constraints": [
+        "The frozen Qwen3-4B teacher must not update; pre-update student probabilities come from a Megatron forward, not the generation engine.",
+        "Keep the specified advantage, PPO clip 0.2 and AdamW settings; train each assigned response once, including truncated responses.",
+        "Generation may be at most one weight version stale; every optimizer step publishes the exact trained weights.",
+        "Use the native Miles actor path with BF16-or-wider computation, and share the same learning implementation between `probe` and `run`."
+      ],
+      "validation": [
+        "Public `probe` uses eight fixed trajectories; `small` runs four rounds of 16 prompts; `perf` reports full-contract timing and provisional accuracy on 256 public problems.",
+        "The Judge independently checks probabilities, advantages, loss and update direction, then audits sampled rows, intermediate training steps and final weight consistency.",
+        "Formal quality uses 2,000 held-out math problems in three seeded repeats with the fixed math grader; it is separate from public-test accuracy."
+      ],
+      "test_commands": "# Use fresh output directories for each attempt.\ncd /app/workdir/miles_lab\npython /opt/miles_opd_public/run_public.py --suite probe --output /scratch/public/probe-001\npython /opt/miles_opd_public/run_public.py --suite small --output /scratch/public/small-001 --probe-output /scratch/public/probe-001\npython /opt/miles_opd_public/run_public.py --suite perf --output /scratch/public/perf-001 --probe-output /scratch/public/probe-001",
+      "scratch_setup": "# Choose a writable directory on your non-system data disk.\nexport MILES_SCRATCH_ROOT=/absolute/path/on-data-disk/infrathon-scratch\nmkdir -p \"$MILES_SCRATCH_ROOT\""
     },
     "alfworld": {
       "task_id": "miles_qwen3_alfworld_agentic_rl_2xh100_v1",
@@ -273,12 +672,14 @@
         "Default allocation: one 2-GPU NVLink pair shared by Work and Judge.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "Qwen3-4B, ALFWorld 0.4.2, TextWorld 1.7.0, and json_2.1.1 game data.",
-        "Provided Miles runtime; 24-CPU quota and 256 GiB host RAM per container."
+        "Provided Miles runtime; 24-CPU quota and 256 GiB host RAM per container.",
+        "Set `MILES_SCRATCH_ROOT` on a data disk with at least 300 GiB free; the system root filesystem also needs 20 GiB free."
       ],
       "workflow": [
-        "Implement game creation, observation/action handling, rewards, and training-sequence construction.",
-        "Check token masks, log-probabilities, advantages, and updates with public recorded-trajectory probes.",
-        "Run real multi-turn training, verify environment transitions and published weights, then submit the complete workspace."
+        "Connect game creation, observation rendering and first-action-tag execution, keeping generated token history intact.",
+        "Build response-only masks and the prescribed game-group advantages, then implement shared probe/run GRPO updates.",
+        "Run the public probe followed by short real training; inspect environment replay, reward, token-mask and publication checks.",
+        "Run public `perf` on the complete workload, inspect game-success improvement as well as duration, and submit the source workspace with `sforge-submit --details`."
       ],
       "evaluation": "Measures held-out game-success gain per audited training hour. Environment replay, learning computation, sample-to-update consistency, final weights, and a success-improvement threshold are checked.",
       "sources": [
@@ -293,8 +694,72 @@
         {
           "doc": "scripts/infrathon/tasks.json",
           "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+        },
+        {
+          "doc": "tasks/latest/miles-qwen3-alfworld-agentic-rl-2xh100-v1-seed/docs/INTERFACE.md",
+          "sha256": "615a28fa3d678dfa5fc6753dcc973e23e7776bc7ef8e5d52221b42144a8ed9b9"
+        },
+        {
+          "doc": "scripts/miles_alfworld/run_public.py",
+          "sha256": "9e69155901c6bf5577ddf7bd1947a753c99ee2056717663dc64b355ece0df7e5"
+        },
+        {
+          "doc": "scripts/miles_common/host_config.py",
+          "sha256": "58e4a5039fd558c29799629d6b81f6536d30611c6550b3f3ab409191e39d1557"
+        },
+        {
+          "doc": "tasks/latest/miles-qwen3-alfworld-agentic-rl-2xh100-v1-seed/scripts/run_task.py",
+          "sha256": "ed5a3e6cc99e32fd59e4a5d9233fc85ecc43158797b13c945a95703c771f3d4b"
+        },
+        {
+          "doc": "tasks/latest/miles-qwen3-alfworld-agentic-rl-2xh100-v1-seed/images/release.json",
+          "sha256": "8bacf68dc91fc387d330a93e05089c49107a78b29bb9a84db366ba8872a4d2b1"
         }
-      ]
+      ],
+      "result_intro": "Integrate ALFWorld’s text household games into Miles and train Qwen3-4B through multi-turn GRPO. The system must translate observations into prompts, execute the model’s actions, turn game success into learning updates and publish the trained policy; optimization focuses on environment concurrency, rollout scheduling, training and publication.",
+      "metric_summary": "The score is held-out game-success improvement in percentage points per audited training hour, measured over three greedy evaluations on 1,134 games. At least 15 points of improvement is required; the duration includes environment interaction and learning through final weight publication.",
+      "setting": "Miles supplies the inference, training and checkpoint infrastructure, while the ALFWorld integration and run/probe entry points must be implemented. Training comprises 12 rounds of 16 games, with eight episodes per game for group-relative learning. Each episode allows at most 30 actions and 256 generated tokens per turn. Qwen3-4B receives the observation and admissible actions, preserves its full token history, and earns reward 1 only for winning.",
+      "interface": [
+        {
+          "name": "Inputs",
+          "description": "A JSON contract and ALFWorld game rows for real training; recorded multi-turn episodes for `probe`, including generated tokens and rewards."
+        },
+        {
+          "name": "Outputs",
+          "description": "`run` and `probe` write final policy weights in `final_hf/`, completion status and step records containing tokens, response masks, engine/trainer probabilities, advantages and loss."
+        }
+      ],
+      "components": [
+        {
+          "name": "task_entry.py run / probe",
+          "description": "Real environment training and one-update recorded-episode validation."
+        },
+        {
+          "name": "repo/",
+          "description": "Miles integration for TextWorld games, observations, actions and GRPO training sequences."
+        },
+        {
+          "name": "config/",
+          "description": "Connects the environment and policy pipeline to the fixed workload."
+        },
+        {
+          "name": "/opt/miles_alfworld_public/run_public.py",
+          "description": "Public CPU, probe, small and performance suites."
+        }
+      ],
+      "constraints": [
+        "Preserve token-in-token-out history; execute the first `<action>...</action>` as specified rather than correcting the model’s choice.",
+        "Use only binary game-success reward, response-token loss and the prescribed GRPO clip interval `[0.8, 1.28]`; no extra reward shaping, KL or entropy objective.",
+        "Keep all eight episodes per game and train each trajectory once; stop before 30 actions only when the game succeeds.",
+        "Retain native Miles/Megatron/SGLang updates and exact weight publication; a model turn cannot span a publication, and policy staleness is at most one version."
+      ],
+      "validation": [
+        "Public `probe` checks recorded-episode learning; `small` runs three rounds of four games, while `perf` runs full public training and evaluates 140 separate public games.",
+        "The Judge replays recorded actions in its own ALFWorld environment and independently checks probabilities, masks, advantages, updates and published weights.",
+        "Formal quality is greedy success on 1,134 held-out games in three repeats."
+      ],
+      "test_commands": "# Use fresh output directories for each attempt.\ncd /app/workdir/miles_lab\npython /opt/miles_alfworld_public/run_public.py --suite probe --output /scratch/public/probe-check\npython /opt/miles_alfworld_public/run_public.py --suite small --output /scratch/public/small-check --probe-output /scratch/public/probe-check\npython /opt/miles_alfworld_public/run_public.py --suite perf --output /scratch/public/perf-check --probe-output /scratch/public/probe-check",
+      "scratch_setup": "# Choose a writable directory on your non-system data disk.\nexport MILES_SCRATCH_ROOT=/absolute/path/on-data-disk/infrathon-scratch\nmkdir -p \"$MILES_SCRATCH_ROOT\""
     },
     "sd35": {
       "task_id": "miles_diffusion_sd35m_mopd_2xh100_v2",
@@ -310,12 +775,14 @@
         "Default allocation: one 2-GPU NVLink pair shared by Work and Judge.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "Stable Diffusion 3.5 Medium, OCR and aesthetics teachers, and routed prompt data.",
-        "Provided Miles Diffusion runtime with PaddleOCR; 256 GiB host RAM per container."
+        "Provided Miles Diffusion runtime with PaddleOCR; 256 GiB host RAM per container.",
+        "Set `MILES_SCRATCH_ROOT` on a data disk with at least 500 GiB free; the system root filesystem also needs 20 GiB free."
       ],
       "workflow": [
-        "Implement teacher routing on the student’s sampled diffusion states and the prescribed distillation objective.",
-        "Use public probe and small-training suites to verify gradients, updates, records, and publication.",
-        "Run public performance and quality checks on the final LoRA before submitting the source workspace."
+        "Implement teacher routing from row metadata, and evaluate each frozen teacher on the student’s sampled CPS states.",
+        "Compute the exact Gaussian transition KL and connect its gradients to the prescribed two student LoRA updates per round.",
+        "Run public probe and small suites to verify transitions, gradients, optimizer records and publication.",
+        "Measure public replay performance; use `perf --quality` to check the real training run and provisional OCR/PickScore closure before submitting source with `sforge-submit --details`."
       ],
       "evaluation": "Combines OCR/PickScore teacher-gap closure with replay throughput. Both route-specific quality and KL gates must pass, together with checks of the real training run, optimizer steps, and published LoRA.",
       "sources": [
@@ -330,8 +797,85 @@
         {
           "doc": "scripts/infrathon/tasks.json",
           "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+        },
+        {
+          "doc": "tasks/latest/miles-diffusion-sd35m-mopd-2xh100-v2-seed/docs/INTERFACE.md",
+          "sha256": "b8b44387ca5d44c33c08adc76e51290bb264c73572f26d326f53861a63841930"
+        },
+        {
+          "doc": "scripts/miles_diffusion_opd/judge_v2/run_public.py",
+          "sha256": "4144d69c70c0d768714d24fa560bb3732e2316087b69a299b123c89781fa3ba0"
+        },
+        {
+          "doc": "scripts/miles_common/host_config.py",
+          "sha256": "58e4a5039fd558c29799629d6b81f6536d30611c6550b3f3ab409191e39d1557"
+        },
+        {
+          "doc": "tasks/latest/miles-diffusion-sd35m-mopd-2xh100-v2-seed/scripts/run_task.py",
+          "sha256": "7bf3694cd3e7f7b63843442242421290f9758456abd182c2329c7c7109f6e673"
+        },
+        {
+          "doc": "tasks/latest/miles-diffusion-sd35m-mopd-2xh100-v2-seed/images/release.json",
+          "sha256": "bb673715af954ab2e68ff03df424fae1b48861d15a05baa5f81dcfeb32f8ffe8"
+        },
+        {
+          "doc": "scripts/infrathon/assets.py",
+          "sha256": "d427226c34ffb242eeb198c7103e135d931c89363441df7d4b2410a3a8f892cc"
+        },
+        {
+          "doc": "scripts/infrathon/pull_images.sh",
+          "sha256": "fba75ad54f3bbd5d626bc091c15a81d225afdfd3ca8347b7fad18b228c0ac7ea"
         }
-      ]
+      ],
+      "result_intro": "Implement multi-teacher on-policy distillation for Stable Diffusion 3.5 Medium in miles_diffusion. One student LoRA learns from OCR and aesthetics teachers on its own sampled diffusion states; the candidate must route prompts to the appropriate teacher, compute transition-level distillation loss, update the student and publish its adapter efficiently.",
+      "metric_summary": "The score averages the fraction of the OCR and PickScore teacher gaps closed, then divides by median replay hours across three segments. Quality comes from the real training run’s final LoRA; both routes must close at least 25% of their gap and pass their KL-improvement gates.",
+      "setting": "The starter has FSDP2 training, Ray and sglang-diffusion rollout infrastructure but no teacher path. Stable Diffusion 3.5 Medium trains a rank-32, alpha-64 LoRA over 64 rounds of eight routed prompt rows, with eight samples per row. Sampling uses 512×512 images and a ten-step CPS trajectory with a three-step stochastic window. Each round performs two AdamW updates and publishes the student LoRA before the next round begins.",
+      "interface": [
+        {
+          "name": "Inputs",
+          "description": "A JSON contract with the base model, student initialization, arbitrary teacher-label-to-adapter mappings and prompt rows whose `data_source` selects the teacher; replay mode supplies recorded rollout responses."
+        },
+        {
+          "name": "Outputs",
+          "description": "`task_entry.py run` writes `final_lora.safetensors` and records for every optimizer step, including sampled transition pairs, loss and update evidence."
+        }
+      ],
+      "components": [
+        {
+          "name": "task_entry.py run",
+          "description": "Maps both real-generation and recorded-response contracts onto the same training implementation."
+        },
+        {
+          "name": "repo/train_diffusion.py",
+          "description": "Native miles_diffusion training-job entry."
+        },
+        {
+          "name": "FSDPTrainRayActor.train",
+          "description": "Required training path for teacher-transition loss and student LoRA updates."
+        },
+        {
+          "name": "FSDPTrainRayActor.update_weights",
+          "description": "Publishes the updated student adapter to every rollout engine."
+        },
+        {
+          "name": "config/",
+          "description": "Connects teacher routing and fixed sampling/training settings."
+        }
+      ],
+      "constraints": [
+        "Only the routed teacher-transition KL trains the student; OCR, PickScore and image rewards cannot be used as training signals or to select samples.",
+        "Keep sampling, row order, optimizer and LoRA settings fixed; training uses FP16 or FP32, not BF16.",
+        "Preserve the specified engine source/settings and use the required miles_diffusion rollout, FSDP training and publication path.",
+        "Publish after both updates with zero rollout lag; the final LoRA must exactly match the last update, and every step record must load with `weights_only=True`."
+      ],
+      "validation": [
+        "Public `probe`, `small` and `perf` validate the recorded-response and training paths; `perf --quality` additionally runs full public training and evaluates 128 public held-out prompts.",
+        "The Judge checks hidden transitions, KL, gradients and AdamW updates, and verifies adapter consistency in every engine after each round.",
+        "Final quality uses 1,012 OCR and 2,040 PickScore prompts; separate route-specific KL gates apply, while three six-round replay segments supply the scored time."
+      ],
+      "test_commands": "# Use fresh output directories for each attempt.\ncd /app/workdir/miles_lab\npython /opt/opd_public/run_public.py --suite probe --output /scratch/public/probe-001\npython /opt/opd_public/run_public.py --suite small --output /scratch/public/small-001\npython /opt/opd_public/run_public.py --suite perf --quality --output /scratch/public/perf-quality-001",
+      "after_pull_command": ".venv/bin/python scripts/infrathon/assets.py own \"$TASK\" \\\n  --image miles_diffusion_opd.judge.miles_diffusion_sd35m_mopd_2xh100_v2:local",
+      "scratch_setup": "# Choose a writable directory on your non-system data disk.\nexport MILES_SCRATCH_ROOT=/absolute/path/on-data-disk/infrathon-scratch\nmkdir -p \"$MILES_SCRATCH_ROOT\""
     },
     "wan22": {
       "task_id": "miles_diffusion_wan22_dancegrpo_2xh100_v2",
@@ -347,12 +891,14 @@
         "Default allocation: one 2-GPU NVLink pair shared by Work and Judge.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "Wan2.2-TI2V-5B, HPSv3, and task-provided prompts, videos, and diffusion trajectories.",
-        "Provided Miles Diffusion runtime; 256 GiB host RAM and 128 GiB shared memory per container."
+        "Provided Miles Diffusion runtime; 256 GiB host RAM and 128 GiB shared memory per container.",
+        "Set `MILES_SCRATCH_ROOT` on a data disk with at least 300 GiB free; the system root filesystem also needs 20 GiB free."
       ],
       "workflow": [
-        "Implement the score, run, and serve interfaces and the prescribed sampling/reward path.",
-        "Run public CPU, reward, and single-step probe checks before exercising real training.",
-        "Use public small and replay-performance suites to verify updates, logs, and complete weight publication, then submit the workspace."
+        "Implement the whitelisted Dance-SDE and grouped-noise engine changes, then verify existing sampling branches remain unchanged.",
+        "Implement HPSv3 scoring for frames 0, 4 and 8 and the prescribed trainer-side old-policy probabilities, advantages and PPO update.",
+        "Run public CPU, reward and probe checks before the small real-training suite.",
+        "Run public replay performance, inspect gate results and complete publication/log events, then submit `repo/` and `notes.md` with `sforge-submit --details`."
       ],
       "evaluation": "Measures fixed-workload replay throughput after checking frame rewards, sampling, training updates, and publication. A separate evaluation of the real run’s final model must pass the HPSv3 quality gate.",
       "sources": [
@@ -367,8 +913,81 @@
         {
           "doc": "scripts/infrathon/tasks.json",
           "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+        },
+        {
+          "doc": "tasks/latest/miles-diffusion-wan22-dancegrpo-2xh100-v2-seed/docs/INTERFACE.md",
+          "sha256": "7216261b302b761c4c92a9adef2426b9e8f0c9d0116b4bfded55a6c3c8400323"
+        },
+        {
+          "doc": "scripts/miles_diffusion_wan/judge_v2/run_public.py",
+          "sha256": "1eb57a5ee73b8306aa966bb20a648137516a94df971b493f24e9da46ba9d877b"
+        },
+        {
+          "doc": "scripts/miles_common/host_config.py",
+          "sha256": "58e4a5039fd558c29799629d6b81f6536d30611c6550b3f3ab409191e39d1557"
+        },
+        {
+          "doc": "tasks/latest/miles-diffusion-wan22-dancegrpo-2xh100-v2-seed/scripts/run_task.py",
+          "sha256": "f8061a23ed9f5748ad15f4f6db093ff91129f87dcbadb3f34066cba06a8e8cbc"
+        },
+        {
+          "doc": "tasks/latest/miles-diffusion-wan22-dancegrpo-2xh100-v2-seed/images/release.json",
+          "sha256": "e7004917cf82ef536503c91dbcd146d5e09bd7415a677d12884134f87e900eb7"
+        },
+        {
+          "doc": "scripts/infrathon/assets.py",
+          "sha256": "d427226c34ffb242eeb198c7103e135d931c89363441df7d4b2410a3a8f892cc"
+        },
+        {
+          "doc": "scripts/infrathon/pull_images.sh",
+          "sha256": "fba75ad54f3bbd5d626bc091c15a81d225afdfd3ca8347b7fad18b228c0ac7ea"
         }
-      ]
+      ],
+      "result_intro": "Implement DanceGRPO video training for Wan2.2-TI2V-5B in miles_diffusion, including stochastic sampling transitions, grouped noise and official HPSv3 frame rewards. The candidate must run real training and a replay service, then accelerate reward evaluation, policy-probability recomputation, optimizer updates, durable logging and full-weight publication.",
+      "metric_summary": "The score is 3,600 divided by the median seconds for three fixed replays, each containing 16 prompts with eight videos per prompt. It measures replays per hour; the real run’s final-model HPSv3 reward must be at least the baseline minus 0.28, but quality is not a score multiplier.",
+      "setting": "Wan2.2-TI2V-5B runs in text-to-video mode with full transformer training; the text encoder and VAE stay frozen. The fixed recipe generates nine-frame 704×1280 videos using ten steps, CFG 5 and Dance-SDE noise. Groups of eight share initial noise but use independent stochastic-transition noise. A real run performs three rounds of eight prompts, with two optimizer steps and a complete transformer publication per round; separate replays measure the training-side throughput.",
+      "interface": [
+        {
+          "name": "Inputs",
+          "description": "`score` receives videos and prompt records; `run` receives a training contract; `serve` receives a contract, control/event FIFOs and recorded diffusion payloads."
+        },
+        {
+          "name": "Outputs",
+          "description": "Per-frame HPSv3 values and video rewards; real-run training logs and the final FP32 master weights; replay-service events, per-pair learning records and complete engine publications."
+        }
+      ],
+      "components": [
+        {
+          "name": "repo/task_entry.py score",
+          "description": "Computes the official frame preferences and video reward."
+        },
+        {
+          "name": "repo/task_entry.py run",
+          "description": "Executes the real generation, training and publication workload."
+        },
+        {
+          "name": "repo/task_entry.py serve",
+          "description": "Handles probe, replay, reset and weight-export commands using the supplied engines."
+        },
+        {
+          "name": "repo/engine_overlay/",
+          "description": "Permitted engine-file changes for Dance transitions, grouped noise and associated fields."
+        }
+      ],
+      "constraints": [
+        "Keep the nine-frame sampling recipe, two-step stochastic window and grouped-noise construction; existing `sde`, `cps` and `ode` branches remain bit-identical.",
+        "Reward is 0.1 times mean HPSv3 preference across frames 0, 4 and 8; recompute old-policy probabilities on pre-update trainer weights and retain PPO clip `1e-4`.",
+        "Train full transformer parameters in BF16 or wider with an FP32 master; publish all updated weights after each round, with zero rollout lag.",
+        "Real `run` uses two engines; `serve` uses the supplied engines. Publication and required durable log writes must finish before their completion events."
+      ],
+      "validation": [
+        "Public CPU and reward suites test the engine overlay and official frame scores; probe/small suites check learning math and real training; perf adds one timed replay.",
+        "The Judge independently checks transitions, probabilities, rewards, advantages, optimizer updates and complete engine publications across three hidden replay workloads.",
+        "A separate quality evaluation uses the real run’s final master weights on 61 prompts with three seed groups."
+      ],
+      "test_commands": "# Use fresh output directories for each attempt.\ncd /app/workdir/miles_lab\npython /opt/wan_public/run_public.py --suite cpu --out /scratch/public/cpu-001\npython /opt/wan_public/run_public.py --suite score --out /scratch/public/score-001\npython /opt/wan_public/run_public.py --suite probe --out /scratch/public/probe-001\npython /opt/wan_public/run_public.py --suite small --out /scratch/public/small-001\npython /opt/wan_public/run_public.py --suite perf --out /scratch/public/perf-001",
+      "after_pull_command": ".venv/bin/python scripts/infrathon/assets.py own \"$TASK\" \\\n  --image miles_diffusion_wan.judge.miles_diffusion_wan22_dancegrpo_2xh100_v2:local",
+      "scratch_setup": "# Choose a writable directory on your non-system data disk.\nexport MILES_SCRATCH_ROOT=/absolute/path/on-data-disk/infrathon-scratch\nmkdir -p \"$MILES_SCRATCH_ROOT\""
     },
     "grouped-fp8": {
       "task_id": "standalone_dynamic_grouped_fp8_h100_scratch_v3",
@@ -386,9 +1005,10 @@
         "FP8 inputs, block scales, group boundaries, and BF16 output buffers."
       ],
       "workflow": [
-        "Implement masked and prefix-sum layouts with the supplied scaling and output interfaces.",
-        "Run public tests over dynamic group sizes and boundary shapes.",
-        "Tune tiling, scale access, and group scheduling, then select the candidate for formal evaluation."
+        "Implement both entry points in `candidates/kernel_v001/submission.py`, sharing the scale arithmetic while handling each layout’s row mapping.",
+        "Run the public quick grid, then edge and sanitizer modes to check empty groups, tile tails, and misleading row-count hints.",
+        "Compare full-grid measurements while tuning group scheduling, tile sizes, warps, and stages; retain a correct earlier version.",
+        "Write the selected integer to `FINAL_VERSION`, rerun the complete public grid, and submit with `sforge-submit --details`. Replace version 1 in the commands with the version being tested."
       ],
       "evaluation": "Measures effective TFLOPS across both layouts. Numerical correctness, complete writes, unchanged inputs, and memory safety are checked across scored and boundary cases.",
       "sources": [
@@ -403,13 +1023,60 @@
         {
           "doc": "scripts/infrathon/tasks.json",
           "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+        },
+        {
+          "doc": "tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/images/work/workdir/grouped_fp8_lab/README_AGENT.md",
+          "sha256": "1821a34f75b25f35c6ce2f1e6e01b28b3131c23011a99751a9d128d9afb275f8"
         }
-      ]
+      ],
+      "result_intro": "Implement the matrix multiplication used to process variable token batches in mixture-of-experts inference, starting from empty Triton code. The operator reads block-scaled FP8 activations and expert weights in two storage layouts, writes BF16 results, and must accelerate useful work across changing expert row counts.",
+      "metric_summary": "The score counts only valid expert rows and divides their matrix-multiplication work by the full synchronized call time. Five-trial median TFLOPS are combined geometrically across 32 cases, with equal weight for masked and packed layouts; padded rows earn no throughput credit.",
+      "setting": "The synthetic workload follows DeepGEMM’s grouped FP8 benchmark and uses no model weights. Its 32 scored configurations combine masked and packed layouts, four expert-count/token-count regimes, and four matrix shapes, with fresh valid row counts in every trial. The supported domain includes 1–64 experts, zero-row groups, and widths up to 8192. Optimization covers tiling, scale access, and scheduling across these changing group sizes.",
+      "interface": [
+        {
+          "name": "Inputs",
+          "description": "FP8 E4M3FN `a` and `b`, FP32 row/block scales, and either `m_sizes` or `group_ends`. Masked activations have shape `[G, M_max, K]`; packed activations use `[G*M_max, K]`. `expected_m_hint` is a scheduling hint."
+        },
+        {
+          "name": "Outputs",
+          "description": "Both `grouped_fp8_gemm_nt_masked(...)` and `grouped_fp8_gemm_nt_psum(...)` write valid rows of the supplied BF16 `out` in place on the current CUDA stream and return `None`."
+        }
+      ],
+      "components": [
+        {
+          "name": "candidates/kernel_vNNN/submission.py",
+          "description": "Versioned Triton implementation containing both layout entry points; version 001 starts empty."
+        },
+        {
+          "name": "AGENT_TASK.md",
+          "description": "Tensor layouts, 128-wide scale blocks, support domain, and source-admission contract."
+        },
+        {
+          "name": "tools/run_public_tests.sh",
+          "description": "Public performance grid, edge cases, and optional memory-sanitizer checks."
+        },
+        {
+          "name": "FINAL_VERSION",
+          "description": "Integer selector for the candidate included in formal evaluation."
+        }
+      ],
+      "constraints": [
+        "Apply each A row scale and B 128×128 block scale to its K-block contribution, accumulate in FP32, and cast once to BF16.",
+        "Use actual row counts or prefix-sum boundaries for masks; packed groups begin at the preceding end rounded up to 128 rows.",
+        "Implement tensor computation in Triton; host Torch is limited to metadata, temporary allocation, and dispatch.",
+        "Write every valid output element, preserve inputs, and keep accesses within the supplied tensors and allocated scratch."
+      ],
+      "validation": [
+        "The full public performance grid covers 32 shapes; separate modes exercise 40 public boundary cases and four sanitizer cases.",
+        "The Judge evaluates 32 scored cases and 158 correctness-only cases. It checks dequantized arithmetic against FP64 and BF16 references, complete finite writes, input preservation, and memory boundaries.",
+        "Formal submissions return the aggregate and both layout scores after the required checks pass."
+      ],
+      "test_commands": "./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --edge --candidate-version 1\n./tools/run_public_tests.sh --sanitize --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1"
     },
     "sparse-mla": {
       "task_id": "standalone_sparse_mla_prefill_h100_scratch_v2",
       "directory": "tasks/latest/standalone-sparse-mla-prefill-h100-v2-scratch",
-      "launcher": "launch/standalone-sparse-mla/run.sh",
+      "launcher": "launch/standalone-sparse-mla-v2/run.sh",
       "objective": "Implement BF16 sparse MLA prefill: gather indexed keys, compute attention with the specified sink behavior, and return attention outputs and logit statistics.",
       "workspace": [
         "Scratch: candidates/kernel_v001/submission.py starts empty.",
@@ -422,9 +1089,10 @@
         "BF16 Q/KV tensors, sparse indices, and sink/length inputs for the three MLA geometries."
       ],
       "workflow": [
-        "Implement valid-slot handling, indexed KV gathering, softmax, and the required output statistics.",
-        "Use public cases to check duplicate indices, invalid slots, empty rows, and boundary shapes.",
-        "Optimize head tiling, gather pipelining, and scheduling, then evaluate the selected version."
+        "Implement slot-by-slot validity masks, KV gathering, FP32 online softmax, and all three outputs in the first candidate.",
+        "Check the quick scored grid, run sanitizer mode, then exercise the public edge suite, including empty rows and duplicate keys.",
+        "Tune head blocking, gather pipelining, and shape-based scheduling; compare the complete 13-case public grid across all three families.",
+        "Select a fully checked version with `FINAL_VERSION`, retain the measurement notes, and run `sforge-submit --details`. Replace version 1 in the commands when testing another candidate."
       ],
       "evaluation": "Measures effective throughput across three MLA geometry families. Reference output/statistics checks, input preservation, and memory-safety gates cover the supported domain.",
       "sources": [
@@ -439,13 +1107,68 @@
         {
           "doc": "scripts/infrathon/tasks.json",
           "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+        },
+        {
+          "doc": "tasks/latest/standalone-sparse-mla-prefill-h100-v2-scratch/images/work/workdir/sparse_mla_prefill_lab/README_AGENT.md",
+          "sha256": "ecb64f0fab848eaab25ae255a3d988fe300ec37fdd7e9700d06e41a3a5136c9b"
+        },
+        {
+          "doc": "launch/standalone-sparse-mla-v2/run.sh",
+          "sha256": "97213131526f26763b3d9aa2dcae363403d77db0becb5d87352fb92acef1c767"
+        },
+        {
+          "doc": "scripts/infrathon/release/public.json",
+          "sha256": "c525ab1ad5f036bfb4225465502769a56810b36156f368bfced5b65fa720d8c4"
         }
-      ]
+      ],
+      "result_intro": "Implement sparse multi-head latent attention for prefill from an empty Triton candidate. Each query gathers an indexed set of keys and returns a BF16 attention vector plus FP32 normalization statistics; the optimization target is the complete gather, attention, and output computation across three DeepSeek geometries.",
+      "metric_summary": "Throughput counts the selected query–key interactions, including QK and value aggregation, over the complete synchronized call. The Judge takes seven-trial medians for 13 cases and geometrically combines the three DeepSeek families with equal weight, measuring sparse-attention TFLOPS.",
+      "setting": "The scored workloads use DeepSeek V3.2, V4-Flash, and V4-Pro head geometries with 4096 query positions. Selected-key counts are 2048, 512, and 1024 respectively, while KV context lengths extend to 128K. Inputs are synthetic BF16 tensors with one shared KV head and a 512-dimensional value vector. Additional cases exercise arbitrary valid and invalid indices, optional sinks, variable selected-set lengths, and much larger query dimensions.",
+      "interface": [
+        {
+          "name": "Inputs",
+          "description": "`q` has shape `[S_q,H_q,d_qk]`, `kv` is `[S_kv,1,d_qk]`, and int32 `indices` is `[S_q,1,topk]`. Optional FP32 `attn_sink` and int32 `topk_length` modify normalization and valid-slot counts; `sm_scale` is positive."
+        },
+        {
+          "name": "Outputs",
+          "description": "`sparse_mla_prefill(...)` writes BF16 `out` `[S_q,H_q,512]` and FP32 `max_logits` and `lse` `[S_q,H_q]`, in place on the current stream, and returns `None`."
+        }
+      ],
+      "components": [
+        {
+          "name": "candidates/kernel_vNNN/submission.py",
+          "description": "The nine-argument entry point and its Triton gather, attention, and statistics kernels; version 001 starts empty."
+        },
+        {
+          "name": "AGENT_TASK.md",
+          "description": "Sparse-index semantics, supported geometries, precision requirements, and memory rules."
+        },
+        {
+          "name": "tools/run_public_tests.sh",
+          "description": "Public scored shapes, quick and full edge suites, and memory-sanitizer mode."
+        },
+        {
+          "name": "FINAL_VERSION",
+          "description": "Integer selector for the version to evaluate."
+        }
+      ],
+      "constraints": [
+        "Evaluate every indexed slot independently: out-of-range indices and slots beyond `topk_length` are invalid, while duplicate valid keys contribute repeatedly.",
+        "The sink affects only output normalization. Empty rows produce `out=0`, `max_logits=-inf`, and `lse=+inf`; the two statistics exclude the sink.",
+        "Use BF16 or FP16 multiply operands with FP32 accumulation and softmax statistics in self-contained Triton.",
+        "Preserve inputs, fully write all outputs, and use safe tail masks and 64-bit offsets over the declared support domain."
+      ],
+      "validation": [
+        "Public testing provides 13 scored shapes, 334 edge cases, and six sanitizer cases; the quick grid includes one case from each geometry.",
+        "The Judge checks 13 scored configurations and 401 correctness-only cases against an independent FP32 reference, including the required infinity patterns in normalization statistics.",
+        "Guard bands, input comparisons, and the configured memory-safety pass check accesses in addition to numerical agreement."
+      ],
+      "test_commands": "./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --sanitize --candidate-version 1\n./tools/run_public_tests.sh --edge --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1"
     },
     "paged-gqa": {
       "task_id": "standalone_paged_gqa_decode_bf16_h100_scratch_v2",
       "directory": "tasks/latest/standalone-paged-gqa-decode-bf16-h100-v2-scratch",
-      "launcher": "launch/standalone-paged-gqa/run.sh",
+      "launcher": "launch/standalone-paged-gqa-v2/run.sh",
       "objective": "Implement BF16 grouped-query decode attention over paged KV caches, correctly applying page mappings, request lengths, and suffix-aligned causal masks.",
       "workspace": [
         "Scratch: candidates/kernel_v001/submission.py starts empty.",
@@ -458,9 +1181,10 @@
         "BF16 queries, physical KV pages, page tables, and per-request lengths."
       ],
       "workflow": [
-        "Implement page-table addressing, GQA head mapping, and the required causal attention output.",
-        "Check varied query lengths, shared pages, irregular head groups, and unused cache regions with public tests.",
-        "Tune KV splitting, head packing, and scheduling before submitting the selected candidate."
+        "Implement physical-page lookup and query-to-KV-head mapping, followed by masked QK, stable softmax, and value accumulation.",
+        "Use sanitizer and edge modes to test shared pages, irregular head groups, query tails, and NaN or Inf in invisible cache slots.",
+        "Compare the complete public grid while tuning page-aware tiling, KV splitting, and reuse across grouped query heads.",
+        "Select a checked version in `FINAL_VERSION`, record the measurements, and submit with `sforge-submit --details`. Replace version 1 in the commands with the candidate under test."
       ],
       "evaluation": "Measures effective attention throughput for single-query and short multi-query workloads. Numerical references, complete output writes, input preservation, and memory safety must pass.",
       "sources": [
@@ -475,8 +1199,63 @@
         {
           "doc": "scripts/infrathon/tasks.json",
           "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+        },
+        {
+          "doc": "tasks/latest/standalone-paged-gqa-decode-bf16-h100-v2-scratch/images/work/workdir/paged_gqa_decode_lab/README_AGENT.md",
+          "sha256": "527619d9993a9d083e60e3553eb56ee52e63ca6f48a2cde868879ac5c688988b"
+        },
+        {
+          "doc": "launch/standalone-paged-gqa-v2/run.sh",
+          "sha256": "880f359f489dc98a208990014c6faa8f48892daad225fbc05dd9cf861e6dd628"
+        },
+        {
+          "doc": "scripts/infrathon/release/public.json",
+          "sha256": "c525ab1ad5f036bfb4225465502769a56810b36156f368bfced5b65fa720d8c4"
         }
-      ]
+      ],
+      "result_intro": "Implement grouped-query attention over a paged KV cache for single-token decode and short-query prefill. The Triton kernel maps logical tokens to physical pages, applies shared KV heads and per-request causal limits, and writes BF16 attention outputs while reducing the complete call latency.",
+      "metric_summary": "The score divides the QK and value-aggregation work for causally visible pairs by synchronized call time, including page lookup and softmax. Seven-trial median TFLOPS are geometrically aggregated across five head configurations in each of the equally weighted one-query and 16-query families.",
+      "setting": "The ten scored cases pair query lengths 1 and 16 with head configurations from Llama-3.1-8B, Qwen-2.5-7B, Llama-3.1-70B, Mistral Large, and Llama-3.1-405B at TP8. The operator uses synthetic BF16 queries and caches with head dimension 128 and request lengths up to 32768. The broader support domain includes shared physical pages, oversized page tables, and arbitrary query lengths from 1 to 16. Model weights and text generation are outside this operator workload.",
+      "interface": [
+        {
+          "name": "Inputs",
+          "description": "BF16 `q` `[B,S_q,H_q,128]`, BF16 `k_cache` and `v_cache` `[P,page_size,H_kv,128]`, int32 `page_table` `[B,W]`, int32 `cache_seqlens` `[B]`, and `softmax_scale`."
+        },
+        {
+          "name": "Outputs",
+          "description": "`paged_gqa_decode_bf16(q, k_cache, v_cache, page_table, cache_seqlens, softmax_scale, out)` writes all of BF16 `out`, with the same shape as `q`, on the current stream and returns `None`."
+        }
+      ],
+      "components": [
+        {
+          "name": "candidates/kernel_vNNN/submission.py",
+          "description": "The paged-attention entry point and its Triton kernels; version 001 starts empty."
+        },
+        {
+          "name": "AGENT_TASK.md",
+          "description": "Page addressing, GQA mapping, bottom-right causal masking, and the supported shapes."
+        },
+        {
+          "name": "tools/run_public_tests.sh",
+          "description": "Public one-query and short-query cases, edge fixtures, and sanitizer mode."
+        },
+        {
+          "name": "FINAL_VERSION",
+          "description": "Integer selector for the candidate evaluated by the Judge."
+        }
+      ],
+      "constraints": [
+        "Map logical key `j` through `page_table[b, j // page_size]`; query head `h` uses KV head `h // (H_q // H_kv)`.",
+        "Query row `i` may read only keys through `cache_seqlens[b] - S_q + i`; masked and unused cache values must not affect the output.",
+        "Use BF16 and FP32 computation in Triton, with host Torch limited to metadata and scratch allocation.",
+        "Handle actual page-table strides and large offsets, preserve inputs, and write every output element within its allocation."
+      ],
+      "validation": [
+        "The public suite offers ten scored cases, 40 edge cases, and a memory-sanitizer subset using disclosed lengths and seeds.",
+        "The Judge evaluates ten scored configurations and 160 correctness-only cases, comparing against de-paged FP32 and BF16 references with complete-write and input-preservation checks.",
+        "Boundary tests include shared pages, unusual head groups, nonfinite masked values, and large address ranges."
+      ],
+      "test_commands": "./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --sanitize --candidate-version 1\n./tools/run_public_tests.sh --edge --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1"
     },
     "sageattention": {
       "task_id": "sageattention_quantized_attention_bf16_h100_seed_v2",
@@ -494,9 +1273,10 @@
         "Synthetic workloads and real-layer fixtures from CogVideoX-2B and Llama-3.1-8B."
       ],
       "workflow": [
-        "Inspect the seed centering, Q/K quantization, attention, and output conversion pipeline.",
-        "Optimize quantization granularity, layouts, fusion, and accumulation across the full call.",
-        "Run public accuracy and timing checks, including real-layer inputs, then select the candidate."
+        "Measure the seed on the public suite and inspect the global, per-head, and tail errors alongside its latency.",
+        "Create a new version to test quantization granularity, fused preprocessing, or attention scheduling across both workload families.",
+        "Run the full public suite, including the disclosed real-layer fixtures, and compare every accuracy measure with its reported limit.",
+        "Point `FINAL_VERSION` to the chosen implementation and submit with `sforge-submit --details`; use the desired version number in the public commands."
       ],
       "evaluation": "Measures dense-equivalent attention throughput after output-accuracy and input-integrity checks. Quantization and preprocessing remain part of the timed call.",
       "sources": [
@@ -511,8 +1291,58 @@
         {
           "doc": "scripts/infrathon/tasks.json",
           "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+        },
+        {
+          "doc": "tasks/latest/sageattention-quantized-attention-bf16-h100-v2-seed/images/work/workdir/quant_attention_lab/README_AGENT.md",
+          "sha256": "f653e44e24c3e54d28765df80a22ee0954910c68d81034777865fd2bed0cca2d"
         }
-      ]
+      ],
+      "result_intro": "Accelerate an attention forward pass from BF16 Q, K, and V to a BF16 output, starting from a working SageAttention-style Triton implementation. The candidate controls smoothing, intermediate quantization, softmax, and value aggregation within the timed call, while retaining accuracy across video and language-model workloads.",
+      "metric_summary": "The score uses dense attention work as a common numerator, while timing the entire candidate pipeline, including smoothing and quantization. Seven-trial median TFLOPS are combined geometrically across three video-DiT and two causal-LLM cells, with each family receiving half the weight.",
+      "setting": "The seed computes key means, blockwise INT8 Q/K quantization, online softmax, and FP16 probability–value products. Five scored cells span noncausal video attention and causal language-model attention with head widths 64 or 128. Synthetic inputs vary token scales and channel offsets to expose quantization errors. Accuracy checks also use eight edge fixtures and captured activations from all 30 CogVideoX-2B layers and 32 Llama-3.1-8B layers.",
+      "interface": [
+        {
+          "name": "Inputs",
+          "description": "Contiguous BF16 `q` `[B,L,H_q,D]` and `k`, `v` `[B,L,H_kv,D]`, with `D` 64 or 128 and `H_q` divisible by `H_kv`; `is_causal` and `softmax_scale` specify the attention mask and scale."
+        },
+        {
+          "name": "Outputs",
+          "description": "`quantized_attention_bf16(q, k, v, is_causal, softmax_scale, out)` fully overwrites BF16 `out` `[B,L,H_q,D]` in place on the current stream and returns `None`."
+        }
+      ],
+      "components": [
+        {
+          "name": "candidates/kernel_v001/submission.py",
+          "description": "Working SageAttention-1-style seed with smoothing, quantization, online softmax, and value aggregation."
+        },
+        {
+          "name": "candidates/kernel_vNNN/submission.py",
+          "description": "Subsequent implementations may change precision, fusion, and scheduling while keeping the same entry point."
+        },
+        {
+          "name": "AGENT_TASK.md",
+          "description": "Accuracy limits, permitted host code and Triton operations, and workload definitions."
+        },
+        {
+          "name": "tools/run_public_tests.sh",
+          "description": "Runs public synthetic cases, edge cases, and the disclosed captured model layers."
+        },
+        {
+          "name": "FINAL_VERSION",
+          "description": "Selects the integer version for formal evaluation."
+        }
+      ],
+      "constraints": [
+        "Keep BF16 inputs and outputs, the specified GQA mapping, and the ordinary lower-triangular mask for causal cases.",
+        "Perform tensor computation, including key smoothing and quantization, in reachable Triton kernels; host Torch provides metadata and permitted temporary buffers.",
+        "Meet the calibrated global, per-head, and tail-error limits for every tested input, while fully writing finite outputs and preserving all inputs."
+      ],
+      "validation": [
+        "The public runner checks five synthetic cases, eight edge fixtures, and two captured layers: CogVideoX-2B layer 15 and Llama-3.1-8B layer 0.",
+        "The Judge checks the same interface on all 62 captured layers, the eight edges, and five scored cells. Errors are measured against FP32 attention and calibrated SageAttention numerics.",
+        "Only candidates passing every required accuracy and integrity check receive the aggregate throughput score."
+      ],
+      "test_commands": "./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1"
     },
     "minference": {
       "task_id": "minference_sparse_prefill_h100_seed_v3",
@@ -530,9 +1360,10 @@
         "Llama-3.1-8B and RULER prompts for generating layer Q/K/V at multiple context lengths."
       ],
       "workflow": [
-        "Inspect the seed pattern estimator and the output-error checks for each attention call.",
-        "Optimize selection cost, sparse attention, and head repair together.",
-        "Run public long-context and boundary cases across text families, lengths, and layers before selecting a candidate."
+        "Read the seed’s pattern estimator and repair path, then run CPU source admission and the boundary-only suite.",
+        "Modify pattern selection, sparse budgets, indexing, or Triton kernels in a new candidate; recompute all input-dependent choices inside each invocation.",
+        "Run the complete public real-prompt matrix and inspect uniform-row and tail-row errors across every task, length, and layer.",
+        "Record the measurements, select the admitted version with `FINAL_VERSION`, and run `sforge-submit`. Replace version 1 in the commands with the implementation being checked."
       ],
       "evaluation": "Measures dense-equivalent throughput across the prescribed text/length/layer workloads. Every timed call and boundary case must satisfy the vector-error and integrity checks.",
       "sources": [
@@ -547,8 +1378,59 @@
         {
           "doc": "scripts/infrathon/tasks.json",
           "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+        },
+        {
+          "doc": "tasks/latest/minference-sparse-prefill-h100-v3-seed/images/work/workdir/minference_prefill_lab/README_AGENT.md",
+          "sha256": "1a820351169ed4a28137c3b16debd1a4c5b0637b6a88a6c8aafc3c8044dbd54f"
         }
-      ]
+      ],
+      "result_intro": "Optimize one long-context causal attention call on real Llama-3.1-8B activations, using a MInference-style sparse seed. The candidate receives BF16 Q/K/V and must produce an attention output within a fixed vector-error budget, trading pattern-selection overhead and sparse computation against any required dense-head repair.",
+      "metric_summary": "The score divides full dense-causal attention work by the time for pattern estimation, index conversion, attention, repairs, and synchronized output handling. It geometrically averages 48 cell throughputs, each a median over three prompt trials, so the reported TFLOPS measure equivalent kernel work.",
+      "setting": "Inputs are captured from Llama-3.1-8B-Instruct on four RULER task types: single-needle retrieval, multi-key retrieval, variable tracking, and frequent-word extraction. Each type is evaluated at 32K, 64K, and 128K context budgets and layers 1, 4, 15, and 27. Three prompts per cell produce 144 timed attention calls; their actual lengths remain below the context budget. Model execution prepares Q/K/V outside the measured candidate call.",
+      "interface": [
+        {
+          "name": "Inputs",
+          "description": "Contiguous BF16 `q` `[1,32,N,128]` and `k`, `v` `[1,8,N,128]`, with RoPE already applied to Q/K, a supplied `softmax_scale`, and any supported actual length `N >= 64`."
+        },
+        {
+          "name": "Outputs",
+          "description": "`minference_sparse_prefill_bf16(q, k, v, softmax_scale, out)` writes all of BF16 `out` `[1,32,N,128]` on the caller’s current stream and returns `None`."
+        }
+      ],
+      "components": [
+        {
+          "name": "candidates/kernel_v001/submission.py",
+          "description": "Seed vertical/slash pattern estimator, sparse Triton attention, and error-based dense-head repair."
+        },
+        {
+          "name": "candidates/kernel_vNNN/submission.py",
+          "description": "Versioned implementations of the five-argument attention entry point."
+        },
+        {
+          "name": "tools/check_source.sh",
+          "description": "CPU-only admission check for the candidate source."
+        },
+        {
+          "name": "tools/run_public_tests.sh",
+          "description": "Boundary-only testing or the full real-prompt public workload."
+        },
+        {
+          "name": "FINAL_VERSION",
+          "description": "Selects the candidate used by formal submission and final evaluation."
+        }
+      ],
+      "constraints": [
+        "Preserve native GQA with 32 query heads, eight KV heads, head dimension 128, and causal visibility `j <= i`.",
+        "Recompute input-dependent patterns, indices, and outputs on each call; only compiled code and shape-only empty scratch may persist.",
+        "Both uniform-row and tail-row samples require global NRMSE <= 0.25 and worst-head NRMSE <= 0.50 against FP32 dense causal attention.",
+        "Use the permitted Torch/Triton implementation surface, preserve Q/K/V, and fully write finite output on the caller’s stream."
+      ],
+      "validation": [
+        "CPU admission checks source structure; boundary-only mode tests 11 short and irregular lengths without loading the model.",
+        "The full public suite covers 48 cells and 144 real-input calls. The Judge uses the same matrix with its private prompt partition and sampled check rows.",
+        "Every timed call and boundary case must pass fidelity, complete-output, and input-preservation checks before the aggregate is accepted."
+      ],
+      "test_commands": "tools/check_source.sh --candidate-version 1\ntools/run_public_tests.sh --candidate-version 1 --boundaries-only\ntools/run_public_tests.sh --candidate-version 1"
     },
     "lmcache": {
       "task_id": "lmcache_paged_kv_block_transfer_h100_seed_v1",
@@ -567,9 +1449,10 @@
         "PyTorch 2.8 / CUDA 12.9 build environment and KV-transfer descriptors."
       ],
       "workflow": [
-        "Trace store/retrieve mappings for split and fused KV layouts and skipped prefixes.",
-        "Optimize vector width, grid/block mapping, cross-layer tiling, and memory-access order.",
-        "Run public bitwise-transfer checks and multi-call traces across device and host paths before selecting a version."
+        "Read `transfer_abi.h` and trace the seed’s split/fused layouts, store/retrieve directions, and skipped-prefix handling.",
+        "Create a version that changes vector width, launch geometry, cross-layer tiling, or mapped-host access order.",
+        "Run the public suite to check bitwise transfer results, reverse transfers, and evolving trace state; compare all three bandwidth groups.",
+        "Set `FINAL_VERSION` to the checked implementation and submit with `sforge-submit --details`; replace version 1 in the commands when measuring another candidate."
       ],
       "evaluation": "Measures payload bandwidth across device, host, and trace workloads. Moved elements must match bit for bit, while source and uncovered destination regions remain unchanged.",
       "sources": [
@@ -584,8 +1467,58 @@
         {
           "doc": "scripts/infrathon/tasks.json",
           "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+        },
+        {
+          "doc": "tasks/latest/lmcache-paged-kv-block-transfer-h100-v1-seed/images/work/workdir/kv_transfer_lab/README_AGENT.md",
+          "sha256": "2d05639a0729cc5f0a5675f6aa69930b4dd7ae56078a6151e91704b7aa4d4ef0"
         }
-      ]
+      ],
+      "result_intro": "Accelerate KV-cache movement between an inference engine’s paged buffers and LMCache’s contiguous chunks using the supplied CUDA seed. Inputs describe source and destination buffers, block mappings, and transfer direction; the candidate must preserve every transferred bit while improving complete-call bandwidth for GPU and mapped-host memory.",
+      "metric_summary": "Each case measures logical KV payload bytes divided by the median of five synchronized transfer durations. Geometric group bandwidths receive weights 0.55 for device transfers, 0.15 for host transfers, and 0.30 for mixed-call traces; each required payload transfer is counted once.",
+      "setting": "The workload moves whole 16-token blocks in store and retrieve directions across multiple layers and heads. It includes split K/V and fused layouts, 1–4 chunk objects per call, arbitrary unique block mappings, and skipped prefixes. Device cases keep chunks on the GPU, while host and trace cases use mapped pinned host memory accessed over PCIe. Twenty scored cases combine 16 direct transfers and four traces whose shared engine-pool state evolves across calls.",
+      "interface": [
+        {
+          "name": "Inputs",
+          "description": "`TransferParams` describes engine and chunk pointers, layout, block IDs, layer/head dimensions, skipped-prefix count, transfer direction, and a provided scratch arena; the function also receives the CUDA stream."
+        },
+        {
+          "name": "Outputs",
+          "description": "`lmcache_paged_kv_block_transfer(const TransferParams* params, cudaStream_t stream)` updates the designated destination buffers in place. Transferred 16-bit payloads match exactly; source data and uncovered destinations retain their original bits."
+        }
+      ],
+      "components": [
+        {
+          "name": "candidates/kernel_vNNN/submission.cu",
+          "description": "One CUDA C++17 translation unit per version; version 001 is the supplied upstream-faithful transfer kernel."
+        },
+        {
+          "name": "transfer_abi.h",
+          "description": "Read-only definition of the transfer descriptor and exported C interface."
+        },
+        {
+          "name": "tools/run_public_tests.sh",
+          "description": "Compiles with fixed nvcc flags, audits the library, checks edge fixtures, and benchmarks disclosed transfers."
+        },
+        {
+          "name": "build/",
+          "description": "Local compilation artifacts and scratch experiments, outside the submitted paths."
+        },
+        {
+          "name": "FINAL_VERSION",
+          "description": "Selects the version whose transfer function is evaluated."
+        }
+      ],
+      "constraints": [
+        "Copy all required 16-bit patterns exactly, including NaN payloads and signed zero, while preserving sources and untargeted destinations.",
+        "Queue all work on the supplied stream and use the provided 256 MiB scratch arena; candidate-side allocation, private streams, and synchronization calls are outside the permitted interface.",
+        "Keep the transfer ABI and fixed compiler configuration; source and compiled-library checks enforce the allowed CUDA interfaces."
+      ],
+      "validation": [
+        "The public suite runs 14 edge fixtures followed by 14 disclosed cases, reporting case and group bandwidths.",
+        "The Judge runs 20 scored cases plus the 14 edge gates, verifying every wave, reverse transfers, and the complete expected engine-pool state.",
+        "A same-run bandwidth-envelope check validates reported performance against measured device and host transfer capacity."
+      ],
+      "test_commands": "./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1"
     },
     "flash-kmeans": {
       "task_id": "flash_kmeans_paper_h100_kernel_lab_v7_scratch",
@@ -604,9 +1537,10 @@
         "GPU-resident points, centroids, and precomputed point norms."
       ],
       "workflow": [
-        "Implement assignment and centroid update with the specified tie and empty-cluster behavior.",
-        "Check isolated operators and a complete iteration using the supplied public tests.",
-        "Tune distance tiling and reductions under the memory limit, then select the implementation for evaluation."
+        "Create `kernels/flash_kmeans_v001.py` with both entry points and write `1` to `FINAL_VERSION`.",
+        "Run the quick public checks for assignment, exact counts, centroid means, ties, and empty clusters.",
+        "Run the full public scale ladders and inspect large-K and large-N/high-D behavior while tuning distance tiles and update reductions.",
+        "Keep complete versions, select the best Judge-passing implementation in `FINAL_VERSION`, and submit with `sforge-submit --details`."
       ],
       "evaluation": "The Judge measures weighted workload latency after assignment, count, centroid, input-integrity, and memory checks. The website presents its documented equivalent-throughput conversion.",
       "sources": [
@@ -621,13 +1555,60 @@
         {
           "doc": "scripts/infrathon/tasks.json",
           "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+        },
+        {
+          "doc": "tasks/latest/flash-kmeans-paper-h100-v7-scratch/images/work/workdir/flash_kmeans_lab/README_AGENT.md",
+          "sha256": "92a119aa9af9a69b348da03ff956b2c4c9b94ddf914e36afb15ef95aed4a1e8d"
         }
-      ]
+      ],
+      "result_intro": "Implement one exact Euclidean K-Means iteration from an empty GPU workspace: assign each point to its nearest centroid, then update counts and centroid means. Inputs are resident FP16 points and centroids plus FP32 point norms; optimization targets the latency of assignment, update, and combined workloads under bounded temporary memory.",
+      "metric_summary": "The Judge measures weighted geometric-mean latency across 14 workloads. The paper and website express this as equivalent TFLOPS using the workloads’ fixed operation counts: halving latency doubles the displayed score. Compilation is excluded from the scored, warmed calls.",
+      "setting": "Synthetic batched points and centroids are already on the GPU, with precomputed squared point norms supplied by the caller. The implementation performs a single Lloyd update using PyTorch and/or Triton. Fourteen scored workloads cover assignment, update, full iterations, fresh-process control, large-K, and large-N/high-dimension groups. Eight additional correctness cases test ties, empty clusters, and numerical boundaries; the task uses no model weights or external dataset.",
+      "interface": [
+        {
+          "name": "Inputs",
+          "description": "`assign` receives FP16 `x` `[B,N,D]`, FP16 `centroids` `[B,K,D]`, and FP32 `x_sq` `[B,N]`. `update` receives `x`, integer `labels` `[B,N]`, and FP16 `old_centroids` `[B,K,D]`."
+        },
+        {
+          "name": "Outputs",
+          "description": "`assign(x, centroids, x_sq)` returns integer labels `[B,N]`; `update(x, labels, old_centroids)` returns exact integer counts `[B,K]` and FP16 new centroids `[B,K,D]` accumulated in FP32."
+        }
+      ],
+      "components": [
+        {
+          "name": "kernels/flash_kmeans_vNNN.py",
+          "description": "Create complete versioned implementations of `assign` and `update`; the initial kernels directory is empty."
+        },
+        {
+          "name": "AGENT_TASK.md",
+          "description": "Input/output contract, tie-breaking, temporary-memory bounds, and allowed implementation surface."
+        },
+        {
+          "name": "/workspace/public_tests/run_public_tests.sh",
+          "description": "Work-container runner for literal correctness fixtures, warmed probes, and fresh-process scale ladders."
+        },
+        {
+          "name": "FINAL_VERSION",
+          "description": "Create the integer version selector and keep it on the implementation chosen for evaluation."
+        }
+      ],
+      "constraints": [
+        "Assign each point to its exact nearest centroid under squared Euclidean distance; exact ties select the smallest cluster ID.",
+        "Accumulate centroid sums in FP32, return exact counts, and preserve the old centroid exactly for an empty cluster.",
+        "Preserve all inputs, respect the stage-specific temporary-memory bounds, and avoid materializing the full `[B,N,K]` distance tensor.",
+        "Implement both operators within the permitted PyTorch/Triton surface; every retained version must pass source admission."
+      ],
+      "validation": [
+        "The public suite contains 11 cases: three literal golden checks, three steady-state probes, and five fresh-process scale probes. Its timings are development diagnostics.",
+        "The Judge evaluates 14 scored and eight correctness-only cases, checking labels, counts, centroid accuracy, input integrity, and temporary memory.",
+        "Fresh-process cases start with an empty compilation cache; first-call cost is diagnostic, while warmed execution contributes to the latency score."
+      ],
+      "test_commands": "bash /workspace/public_tests/run_public_tests.sh --quick\nbash /workspace/public_tests/run_public_tests.sh"
     },
     "mamba2": {
       "task_id": "tilelang_mamba2_ssd_forward_h100_seed_v2",
       "directory": "tasks/latest/tilelang-mamba2-ssd-forward-h100-v2-seed",
-      "launcher": "launch/tilelang-mamba2-ssd/run.sh",
+      "launcher": "launch/tilelang-mamba2-ssd-v2/run.sh",
       "objective": "Accelerate the Mamba-2 state-space forward operator while preserving the specified recurrent state update and BF16 output.",
       "workspace": [
         "Seed: candidates/kernel_v001/submission.py supplies a correct four-stage TileLang implementation.",
@@ -641,9 +1622,10 @@
         "State-space tensors with Mamba-2, Codestral, and Falcon-H1 geometries."
       ],
       "workflow": [
-        "Trace the seed recurrence and its four stages, including intermediate state storage.",
-        "Optimize sequence blocks, fusion, TileLang tiles, layouts, and pipelining.",
-        "Run public reference and boundary checks across sequence lengths, then select the candidate."
+        "Run the seed on the quick public suite and inspect its four stages, intermediate memory, and warm-up cost.",
+        "Create a version that changes chunking, TileLang tiles, layouts, or stage fusion while preserving cross-chunk state.",
+        "Tune configurations in local scratch scripts, encode the selected shape-dependent choices in the candidate, and run the full public suite.",
+        "Record results in `notes.md`, set `FINAL_VERSION`, and submit with `sforge-submit --details`; replace version 1 in the commands when testing another implementation."
       ],
       "evaluation": "Measures recurrence-equivalent throughput across three model families. FP32-reference tolerances, complete finite outputs, unchanged inputs, and temporary-memory limits must pass.",
       "sources": [
@@ -658,8 +1640,71 @@
         {
           "doc": "scripts/infrathon/tasks.json",
           "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+        },
+        {
+          "doc": "tasks/latest/tilelang-mamba2-ssd-forward-h100-v2-seed/images/work/workdir/mamba2_ssd_lab/README_AGENT.md",
+          "sha256": "034c9708bdd3380fc38d38b5c988e5c6499769b6924eab858d9cdd1be6cc42ae"
+        },
+        {
+          "doc": "launch/tilelang-mamba2-ssd-v2/run.sh",
+          "sha256": "8f252756eba153570c57c4711b8bad220e2496d702c32ccd96fd73622de0d0b8"
+        },
+        {
+          "doc": "scripts/infrathon/release/public.json",
+          "sha256": "c525ab1ad5f036bfb4225465502769a56810b36156f368bfced5b65fa720d8c4"
         }
-      ]
+      ],
+      "result_intro": "Accelerate the Mamba-2 state-space forward operator from a correct four-stage TileLang seed. Given token features, time steps, decay parameters, state write/read tensors, and a skip coefficient, the implementation produces BF16 sequence outputs while preserving the recurrence and reducing scan, intermediate-storage, and synchronization costs.",
+      "metric_summary": "The score counts recurrence-equivalent state-update and output-projection work over the full synchronized forward call. Seven-trial median TFLOPS are geometrically averaged over six lengths in each of three equally weighted model families; the work count stays fixed when the implementation changes its internal chunk size.",
+      "setting": "The frozen synthetic workload uses head and state geometries from Mamba-2-2.7B, Mamba-Codestral-7B, and Falcon-H1-34B. Each family runs sequence lengths from 1024 to 32768, normally at batch eight; the longest Codestral case uses batch four. The seed splits decay accumulation, chunk-state formation, state passing, and chunk scanning into separate kernels with chunk length 256. Eighteen additional fixtures exercise short sequences, ragged tails, extreme decays, and isolated recurrence terms.",
+      "interface": [
+        {
+          "name": "Inputs",
+          "description": "BF16 `x` `[batch,L,H,P]`, positive preprocessed FP32 `dt` `[batch,L,H]`, negative FP32 `A` `[H]`, BF16 `B` and `C` `[batch,L,G,N]`, and FP32 skip coefficient `D` `[H]`."
+        },
+        {
+          "name": "Outputs",
+          "description": "`ssd_forward(x, dt, A, B, C, D, out)` writes BF16 `out` with the same shape as `x` and returns `None`. Starting from zero state, it computes `S = exp(A*dt)*S + dt*outer(x,B)` and `out = S@C + D*x`."
+        }
+      ],
+      "components": [
+        {
+          "name": "candidates/kernel_v001/submission.py",
+          "description": "Correct four-stage TileLang seed with FP32 intermediate state and fixed initial chunk length."
+        },
+        {
+          "name": "candidates/kernel_vNNN/submission.py",
+          "description": "Versioned alternatives for scan decomposition, layouts, fusion, and scheduling."
+        },
+        {
+          "name": "AGENT_TASK.md",
+          "description": "State recurrence, tensor shapes, numerical tolerances, and TileLang computation rules."
+        },
+        {
+          "name": "tools/run_public_tests.sh",
+          "description": "Runs edge fixtures and the quick or complete model-family workload with operator records."
+        },
+        {
+          "name": "build/",
+          "description": "Local scratch experiments and TileLang cache; offline tuning can select configurations to encode in the candidate."
+        },
+        {
+          "name": "FINAL_VERSION",
+          "description": "Integer selector for the candidate to submit."
+        }
+      ],
+      "constraints": [
+        "Preserve zero-initial-state recurrence semantics, FP32 exponential/state accumulation, head-to-group mapping, and the `D*x` contribution.",
+        "Implement tensor computation in TileLang; Torch is restricted to permitted allocations, views, metadata, and device/stream queries.",
+        "Write every finite BF16 output element and preserve input tensors for arbitrary positive sequence lengths, including partial chunks.",
+        "Each case allows at most 300 seconds for warm-up and temporary device memory up to four times its input-plus-output size."
+      ],
+      "validation": [
+        "The public suite checks 18 edge fixtures and 18 scored shapes with disclosed seeds; quick mode selects length 4096 in each family.",
+        "The Judge uses the same scored geometry with private inputs and checks every trial against a blocked FP32 reference, including whole-tensor relative L2 <= 0.006.",
+        "Operator records verify the TileLang computation boundary; finite writes, unchanged inputs, warm-up time, and temporary memory are also checked."
+      ],
+      "test_commands": "./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1"
     },
     "kvpress": {
       "task_id": "kvpress_kv_eviction_policy_qwen3_8b_h100_scratch_v2",
@@ -678,9 +1723,10 @@
         "The Judge supports 1–8 GPUs of the same model."
       ],
       "workflow": [
-        "Implement per-head position selection and any layer-budget allocation within the supplied cache budget.",
-        "Use the public two-phase selection/replay path to inspect fidelity, KL, latency, and memory.",
-        "Compare policies across all eviction settings and task families, then select the candidate version."
+        "Read the positional baseline in `candidates/policy_v001/submission.py`, then implement a versioned `EvictionPolicy` using the supplied activation tensors.",
+        "Run a single case and the quick public suite to check retained-index shape, uniqueness, cache budgets, and unchanged inputs.",
+        "Run the full public suite and compare family fidelity, all three eviction fractions, selection overhead, and temporary memory.",
+        "Write the selected version number to `FINAL_VERSION`, record the result in `notes.md`, and wait for local tests to finish before `sforge-submit --details`."
       ],
       "evaluation": "Measures next-token distribution fidelity at three eviction fractions. Selection validity, cache budgets, input preservation, determinism, selection time, and temporary memory are checked.",
       "sources": [
@@ -695,8 +1741,58 @@
         {
           "doc": "scripts/infrathon/tasks.json",
           "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+        },
+        {
+          "doc": "tasks/latest/kvpress-kv-eviction-policy-qwen3-8b-h100-v2-scratch/images/work/AGENT_TASK.md",
+          "sha256": "6ac1e70e5fece4a7bf8cf9ede50612d67016122f294caff98a124c746257349e"
         }
-      ]
+      ],
+      "result_intro": "Design a policy that chooses which Qwen3-8B KV-cache positions to retain after prefill. The policy receives context activations and attention tensors, returns retained indices for each KV head, and aims to preserve the model’s next-token distribution at three cache-eviction settings.",
+      "metric_summary": "The score measures output-distribution fidelity on a 0–100 scale. Each item’s mean token-level KL divergence is converted to fidelity; item means are combined geometrically across four task families, then averaged across the three eviction fractions. Identical distributions score 100.",
+      "setting": "The frozen BF16 Qwen3-8B model has 36 layers, 32 query heads, and 8 KV heads. Selection happens after context prefill, before the downstream question is appended, at eviction fractions of 50%, 75%, and 87.5%. The private suite contains 5,000 contexts of 6K–28K tokens from RULER, LongBench, LooGLE, and Zero-SCROLLS, covering retrieval, aggregation, question answering, and generation. Trusted replay measures both distributions on the same full-cache reference continuation.",
+      "interface": [
+        {
+          "name": "Inputs",
+          "description": "`EvictionPolicy.select(...)` receives one layer’s context hidden states, query/key/value tensors, positional embeddings, projection weights, and the required retained-position count. KV tensors have shape `[1, 8, context_length, 128]`."
+        },
+        {
+          "name": "Outputs",
+          "description": "Return unique, in-range `int64` indices of shape `[1, 8, n_kept]`. Optional `layer_budgets(...)` redistributes the fixed total across 36 layers, with at least 64 retained positions per layer."
+        }
+      ],
+      "components": [
+        {
+          "name": "candidates/policy_vNNN/submission.py",
+          "description": "Implements `EvictionPolicy`, its per-head selection rule, and optional layer-budget allocation."
+        },
+        {
+          "name": "candidates/policy_vNNN/assets.pt",
+          "description": "Optional tensor assets, limited to 64 MiB."
+        },
+        {
+          "name": "tools/run_one.sh",
+          "description": "Exercises one policy version through the public selection and replay path."
+        },
+        {
+          "name": "tools/run_public_tests.sh",
+          "description": "Runs quick or full public evaluation and reports fidelity, timing, memory, and validity checks."
+        },
+        {
+          "name": "FINAL_VERSION / notes.md",
+          "description": "Selects the submitted version and records policy experiments."
+        }
+      ],
+      "constraints": [
+        "Use context activations and weights to select positions; token identity and the downstream question cannot guide selection.",
+        "Preserve input tensors and RNG state. Keep input-derived state within the current call and compute only on the inputs’ CUDA device.",
+        "Satisfy the fixed cache budget, 8 GiB policy-memory limit, and selection-time caps of 30% of total prefill and 60% per item/setting."
+      ],
+      "validation": [
+        "The 85-item public suite combines RULER and LongBench cases and exposes item, family, and eviction-setting diagnostics.",
+        "Formal evaluation separates untrusted position selection from trusted masked replay on 5,000 held-out contexts, measuring fidelity on the same reference continuation.",
+        "Index validity, layer budgets, input preservation, deterministic replay, timing, and memory must pass alongside finite fidelity measurements."
+      ],
+      "test_commands": "cd /app/workdir/kv_eviction_lab\n./tools/run_one.sh --version 1\n./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1"
     },
     "kvzip": {
       "task_id": "kvzip_query_agnostic_kv_scoring_qwen3_8b_h100_scratch_v2",
@@ -715,9 +1811,10 @@
         "The Judge supports 1–8 GPUs of the same model."
       ],
       "workflow": [
-        "Implement importance scoring from context-only inputs.",
-        "Run the public scoring-to-masked-decoding path and inspect per-task answer quality and scoring overhead.",
-        "Compare behavior at all three cache keep fractions before selecting the submission."
+        "Implement `KVScorer` in a complete `candidates/scorer_vNNN/submission.py`, producing globally comparable context-entry scores.",
+        "Run one case and the quick public suite; inspect finite values, determinism, context isolation, and scoring overhead.",
+        "Use the full public suite to compare retained answer quality across groups and keep fractions, then check submission size.",
+        "Set `FINAL_VERSION` to the chosen version, record any asset-training procedure in `notes.md`, and submit after local processes finish."
       ],
       "evaluation": "Measures answer-quality retention relative to the full cache. Score shape/finite values, query isolation, deterministic behavior, unchanged inputs, and scoring-time/memory limits must pass.",
       "sources": [
@@ -732,8 +1829,58 @@
         {
           "doc": "scripts/infrathon/tasks.json",
           "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+        },
+        {
+          "doc": "tasks/latest/kvzip-query-agnostic-kv-scoring-qwen3-8b-h100-v2-scratch/images/work/AGENT_TASK.md",
+          "sha256": "c4f44d8870e6b5ec98f2f2c6dddc1db435e295c38dfd17333441a418fa136a0b"
         }
-      ]
+      ],
+      "result_intro": "Assign query-agnostic importance scores to Qwen3-8B context KV entries before the downstream question is supplied. A trusted runtime retains the highest-scoring entries across layers and heads at three memory budgets; the objective is to preserve answer quality using the compressed cache.",
+      "metric_summary": "The score averages compressed/full-cache answer-quality ratios within each dataset group, across the three groups, and across 10%, 20%, and 30% keep fractions, then multiplies by 100. Native answer scores are averaged over questions within each context row and then over rows; 100 denotes full-cache quality.",
+      "setting": "A frozen BF16 Qwen3-8B supplies context activations, queries, keys, values, and projection weights to the scorer. One set of importance scores serves all three keep fractions, with global selection across the model’s 36 layers and 8 KV heads. The private suite has 1,812 context rows and about 7,000 questions across 12 tasks in retrieval, contextual QA, and redundancy. System-prefix positions remain protected, and questions are appended only after scoring.",
+      "interface": [
+        {
+          "name": "Inputs",
+          "description": "`KVScorer.score(...)` receives one layer’s context activations, attention tensors, positional embeddings, weights, and `ctx_range=(start, end)`. Positions before `start` belong to the protected system prefix."
+        },
+        {
+          "name": "Outputs",
+          "description": "Return finite FP32 CUDA scores of shape `[1, 8, end-start]`, with higher values indicating entries to retain. Values must be comparable across heads and layers because trusted selection ranks them globally."
+        }
+      ],
+      "components": [
+        {
+          "name": "candidates/scorer_vNNN/submission.py",
+          "description": "Defines `KVScorer` and the context-only importance function; the initial scorer file is empty."
+        },
+        {
+          "name": "candidates/scorer_vNNN/assets.pt",
+          "description": "Optional tensor assets; `assets.ref` can refer to an earlier version’s asset file within the documented size limit."
+        },
+        {
+          "name": "tools/run_public_tests.sh",
+          "description": "Runs importance scoring followed by trusted masked decoding at all three keep fractions."
+        },
+        {
+          "name": "tools/check_submission_size.sh",
+          "description": "Checks the 128 MiB compressed submission limit."
+        },
+        {
+          "name": "FINAL_VERSION / notes.md",
+          "description": "Selects the scorer version and records experiments and any learned-asset recipe."
+        }
+      ],
+      "constraints": [
+        "Score the context before the question is supplied; the same scores are reused at 10%, 20%, and 30% retention. Preserve inputs and avoid token-identity features or cross-request content reuse.",
+        "Learned importance assets must be produced during the run and documented. Keep the model and trusted decoding runtime unchanged.",
+        "Peak scoring memory is limited to 8 GiB. Total scoring time is capped at 25% of prefill, with the documented per-row cap."
+      ],
+      "validation": [
+        "The public suite contains 63 context rows and reports native answer quality, group scores, scoring time, and memory.",
+        "Formal evaluation covers 1,812 context rows and about 7,000 questions. Trusted decoding applies global top-score retention independently of candidate code.",
+        "Random-shape warm-up, timed scoring, and fresh-copy replay check finite outputs, deterministic behavior, input preservation, and resource limits."
+      ],
+      "test_commands": "cd /app/workdir/kv_scoring_lab\n./tools/run_one.sh --version 1\n./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1\n./tools/check_submission_size.sh"
     },
     "qvg": {
       "task_id": "quant_videogen_cross_model_kv_codec_h100_scratch_v4",
@@ -749,12 +1896,15 @@
         "Default allocation: Work 1 GPU + Judge 6 GPUs (7 GPUs per run).",
         "Release hardware: H100 NVL 94 GB.",
         "LongCat-Video, HY-WorldPlay-8B, and the supplied video-generation inputs.",
-        "PyTorch 2.8 / CUDA 12.8 runtime with video-quality evaluators; Judge supports 1–8 same-model GPUs."
+        "PyTorch 2.8 / CUDA 12.8 runtime with video-quality evaluators; Judge supports 1–8 same-model GPUs.",
+        "Host: git-lfs on PATH and about 200 GiB free under INFRATHON_ASSETS_ROOT.",
+        "Before fetching assets, accept the FLUX.1-Redux-dev license and authenticate with hf auth login or HF_TOKEN."
       ],
       "workflow": [
-        "Implement independently decodable K/V payloads and BF16 reconstruction.",
-        "Run public codec checks for shapes, device/dtype, payload accounting, and reconstruction.",
-        "Exercise the public end-to-end generation path and video-quality diagnostics before submitting the codec."
+        "Create `mlsysforge_codec.py` in the initially empty submission directory and implement independently decodable K/V payloads.",
+        "Run the source-policy and codec tests; inspect shape coverage, reconstruction error, and complete payload storage.",
+        "Run Self-Forcing generation with VBench to compare video quality and runtime with the supplied BF16 references.",
+        "Keep the complete selected codec under `/workspace/submission`, record its measurements, and run `sforge-submit --details` after local jobs finish."
       ],
       "evaluation": "Measures persistent-cache compression across both models. Reconstructed-cache correctness, video fidelity/quality, complete compression coverage, runtime, and memory checks must pass.",
       "sources": [
@@ -769,8 +1919,66 @@
         {
           "doc": "scripts/infrathon/tasks.json",
           "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+        },
+        {
+          "doc": "tasks/latest/quant-videogen-cross-model-kv-codec-h100-v4-scratch/images/work/AGENT_TASK.md",
+          "sha256": "3eafe0c2c9d6d3ff273427d2ad8a21e729e93b3447b5d263805a5ce4e746462e"
+        },
+        {
+          "doc": "scripts/infrathon/release/public/docs/HOST_PREREQUISITES.md",
+          "sha256": "5a910d69ffebd435214cfb8668e00930d7c9b088bd0083237d393af6edd8d20c"
         }
-      ]
+      ],
+      "result_intro": "Implement a persistent KV-cache codec that compresses CUDA BF16 key and value tensors and reconstructs them for video generation. The same codec must transfer across LongCat-Video and HY-WorldPlay, reducing stored bytes while preserving reconstructed-cache correctness, generated-video quality, and acceptable runtime.",
+      "metric_summary": "Each model’s compression factor is total original BF16 bytes divided by total stored payload bytes across its cases and compression calls. The score is the geometric mean of the two model factors, including all reconstruction metadata; an identity codec scores 1×.",
+      "setting": "The codec receives contiguous four-dimensional tensors in batch, head, sequence, and feature order. Formal evaluation covers six LongCat-Video continuation cases and eleven HY-WorldPlay image-conditioned camera-trajectory cases, using one implementation for both models. The public end-to-end workload instead uses Self-Forcing with Wan2.1-1.3B to test transfer on a third model. Frozen BF16 generations provide reconstruction and video-quality references, while the evaluator accounts for every persistent payload allocation.",
+      "interface": [
+        {
+          "name": "Inputs",
+          "description": "`encode(k, v)` receives same-shaped contiguous CUDA BF16 tensors in `[batch, heads, sequence, head_dim]` layout. `decode(packed_k, packed_v)` receives the resulting persistent payloads."
+        },
+        {
+          "name": "Outputs",
+          "description": "Return independently decodable K and V payloads, then reconstruct tensors with the original shape, dtype, and device. Each payload contains all input-derived information needed for its own reconstruction."
+        }
+      ],
+      "components": [
+        {
+          "name": "/workspace/submission/mlsysforge_codec.py",
+          "description": "Required codec entry point exposing `encode` and `decode`."
+        },
+        {
+          "name": "/workspace/submission/codec/",
+          "description": "Optional Python helper modules included with the submission."
+        },
+        {
+          "name": "/workspace/public_tests/codec_source_policy.py",
+          "description": "Checks the admitted source and execution policy."
+        },
+        {
+          "name": "/workspace/public_tests/run_public_tests.py",
+          "description": "Tests the tensor interface, payload independence, reconstruction, and byte accounting."
+        },
+        {
+          "name": "/workspace/public_tests/run_self_forcing_paper.py",
+          "description": "Runs public end-to-end video generation and optional VBench quality evaluation."
+        },
+        {
+          "name": "/workspace/submission/notes.md",
+          "description": "Records codec design and compression/quality experiments."
+        }
+      ],
+      "constraints": [
+        "Payloads use the admitted plain containers, CUDA tensors, and scalar metadata; all input-derived reconstruction state must travel in the payload.",
+        "Reconstruct BF16 tensors on the original device, preserve RNG state, and support independent K/V payload decoding across the tested shapes.",
+        "Use one codec across workloads, with computation confined to the input device and input-derived state confined to each encoded payload."
+      ],
+      "validation": [
+        "Public tensor tests check source policy, independent payloads, shape/dtype/device, finite reconstruction, and actual underlying storage including metadata.",
+        "Public Self-Forcing generation compares outputs with frozen BF16 references and reports video-quality measurements on a separate model.",
+        "Formal LongCat-Video and HY-WorldPlay cases enforce PSNR, SSIM, LPIPS, and VBench quality gates, plus runtime, compression-call coverage, and device-memory limits."
+      ],
+      "test_commands": "cd /workspace/submission\npython /workspace/public_tests/codec_source_policy.py --submission /workspace/submission --json\npython /workspace/public_tests/run_public_tests.py\npython /workspace/public_tests/run_self_forcing_paper.py --mode candidate --prefixes 350 --vbench"
     },
     "eagle3": {
       "task_id": "eagle3_spec_decode_engine_qwen3_8b_h100_v1",
@@ -789,9 +1997,10 @@
         "PyTorch 2.8 / CUDA 12.9, Transformers 4.53.1, Triton, and nvcc."
       ],
       "workflow": [
-        "Inspect the seed draft-tree, target-verification, acceptance, and cache-commit loop.",
-        "Optimize full generation, including mixed-request batching and execution overhead.",
-        "Run public CPU, quick, and full checks, then select the candidate for formal evaluation."
+        "Copy `solutions/engine_v001` to a new version and trace draft-tree construction, target verification, acceptance, and KV-cache commit.",
+        "Implement a concrete change to tree policy, batching, kernels, cache layout, or buffer reuse while keeping version dependencies self-contained.",
+        "Run CPU checks, then quick and full GPU evaluations; inspect all six workload cells and greedy-consistency diagnostics.",
+        "Record the hypothesis in `notes.md`, save the candidate with `sforge-save-version --label <hypothesis>`, select it through `FINAL_VERSION`, and submit."
       ],
       "evaluation": "Measures generated-token throughput across six workload cells. A fresh target checks calibrated greedy consistency; stopping rules, request isolation, determinism, execution, and resource checks must pass.",
       "sources": [
@@ -806,8 +2015,58 @@
         {
           "doc": "scripts/infrathon/tasks.json",
           "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+        },
+        {
+          "doc": "tasks/latest/eagle3-spec-decode-engine-qwen3-8b-h100-v1-seed/images/work/AGENT_TASK.md",
+          "sha256": "b7f69cbade428d7af933b25cfa7a1ac6fc88c4598e5e5a0fa58a7e173be94a05"
         }
-      ]
+      ],
+      "result_intro": "Accelerate the complete EAGLE-3 speculative-decoding engine for a frozen Qwen3-8B target and draft head. Given tokenized prompts and a generation specification, the engine builds draft trees, verifies them with the target, accepts tokens, and updates its KV cache while preserving calibrated greedy-decoding behavior.",
+      "metric_summary": "Each workload cell pools emitted tokens and synchronized generation seconds, including prefill and an emitted EOS. The final score is the equally weighted geometric mean of six cell throughputs in tokens/s; model construction, warm-up, and reference checks are outside the timed calls.",
+      "setting": "The task supplies frozen BF16 Qwen3-8B target weights and an EAGLE-3 draft head, plus a working speculative-decoding seed. Six workload cells cover chat, math, code, long context, thinking-mode math, and mixed batches, using MT-Bench, GSM8K, HumanEval, and UltraChat prompts. Calls contain one to eight requests with cell-specific output budgets of 256, 512, or 1,024 tokens. A fresh target checks each candidate’s emitted trajectory under calibrated numerical tolerances.",
+      "interface": [
+        {
+          "name": "Inputs",
+          "description": "`candidate.build(target, draft, tokenizer, contract)` constructs the engine from supplied model objects. `engine.generate(prompt_ids, spec)` accepts one to eight CUDA token prompts and a `GenerationSpec`."
+        },
+        {
+          "name": "Outputs",
+          "description": "Return `runtime.api.GenerationResult` with token sequences that preserve each prompt and follow the requested generation limit and first-EOS stopping rule."
+        }
+      ],
+      "components": [
+        {
+          "name": "solutions/engine_vNNN/candidate.py",
+          "description": "Defines engine construction and the complete speculative generation loop."
+        },
+        {
+          "name": "solutions/engine_vNNN/config.py",
+          "description": "Holds the seed’s draft-tree configuration and candidate tuning settings."
+        },
+        {
+          "name": "runtime/api.py",
+          "description": "Read-only generation specification and result interface."
+        },
+        {
+          "name": "/workspace/public_tests/run_public_tests.sh",
+          "description": "Provides CPU interface checks and quick/full GPU evaluations."
+        },
+        {
+          "name": "FINAL_VERSION / notes.md",
+          "description": "Selects the engine version and records experiments."
+        }
+      ],
+      "constraints": [
+        "Preserve prompt tokens and stop at the first emitted EOS or the requested token limit; return complete valid token sequences.",
+        "Keep supplied model inputs and weight mounts unchanged. Target execution changes must satisfy the fresh-target numerical oracle.",
+        "Use request-isolated state and deterministic outputs; persistent buffers must be reset before reuse."
+      ],
+      "validation": [
+        "CPU mode checks the interface with small test models. Quick and full public GPU runs exercise the supplied target and draft across the workload cells.",
+        "A fresh eager target checks the candidate’s own emitted trajectories using calibrated logit-margin and disagreement limits.",
+        "Formal evaluation also checks stopping, determinism, request isolation, source/model integrity, memory, and completed execution."
+      ],
+      "test_commands": "cd /app/workdir/spec_lab\n/workspace/public_tests/run_public_tests.sh --cpu-only\n/workspace/public_tests/run_public_tests.sh --quick --candidate-version 1\n/workspace/public_tests/run_public_tests.sh --full --candidate-version 1"
     },
     "llada": {
       "task_id": "llada_h100_decoder_optimization_v2",
@@ -826,9 +2085,10 @@
         "PyTorch 2.7.1 / CUDA 12.8 / Transformers 4.49 task environment."
       ],
       "workflow": [
-        "Inspect the seed iterative masking, token selection, and completion-buffer interface.",
-        "Optimize parallel token selection, reusable computation, caches, and synchronization.",
-        "Run public CPU, quick, and full generation checks; submit the selected candidate for the separate formal quality evaluation."
+        "Keep `solutions/decoder_v001` as the recovery seed and create a new decoder version for changes to token selection, iteration scheduling, or request-local reuse.",
+        "Run the CPU interface check and quick GPU suite; verify the full output-buffer contract and deterministic behavior.",
+        "Run the full public suite and inspect throughput, useful-token counts, and answer-quality diagnostics for all four benchmarks.",
+        "Write the selected version number to `FINAL_VERSION`, document the comparison in `notes.md`, and use `sforge-submit --details` for formal quality evaluation."
       ],
       "evaluation": "Measures useful-token throughput across twelve workload rows. Reference-relative answer quality, useful-token retention, determinism, request isolation, model integrity, time, and memory checks must pass.",
       "sources": [
@@ -843,8 +2103,62 @@
         {
           "doc": "scripts/infrathon/tasks.json",
           "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+        },
+        {
+          "doc": "tasks/latest/llada-h100-decoder-optimization-v2-vanilla-seed/images/work/AGENT_TASK.md",
+          "sha256": "4fc8d9f0abe8a43c26b6de306750e08c33ea54c49f7ee0c86c2a0b085187a617"
+        },
+        {
+          "doc": "tasks/latest/llada-h100-decoder-optimization-v2-vanilla-seed/scripts/make_reference_archives.py",
+          "sha256": "832544aabebb11b6d2a392fbd4a7fc34abb3af2b56da598e9fdee66a2ef19e74"
+        },
+        {
+          "doc": "scripts/infrathon/assets.py",
+          "sha256": "d427226c34ffb242eeb198c7103e135d931c89363441df7d4b2410a3a8f892cc"
         }
-      ]
+      ],
+      "result_intro": "Accelerate the iterative masked-token decoder for frozen LLaDA-8B-Instruct. The engine receives a tokenized prompt and generation settings, fills a complete output buffer through model predictions, and returns the prompt plus generated tokens while retaining useful completions and benchmark answer quality.",
+      "metric_summary": "Pool useful completion tokens and complete decoding time within each workload row, then take the geometric mean of all twelve row throughputs in tokens/s. Useful-token counting follows benchmark-specific stop rules; frozen-reference quality and token-retention checks determine whether the throughput is accepted.",
+      "setting": "The task runs frozen BF16 LLaDA-8B-Instruct with batch size one and a 4,096-token context limit. Its twelve workload rows combine GSM8K, MATH, HumanEval, and MBPP with few-shot settings and output budgets of 256, 512, or 1,024 tokens. Formal evaluation contains 520 generations, with 130 targets per benchmark. The supplied decoder fills masked positions iteratively, and the candidate may change decoding control and request-local reuse while preserving model weights and the output contract.",
+      "interface": [
+        {
+          "name": "Inputs",
+          "description": "`candidate.build(model, tokenizer)` constructs the decoder. `engine.generate(prompt_ids, spec)` receives a contiguous CUDA `int64` prompt of shape `[1, prompt_length]` and generation length, block length, temperature, and mask-token settings."
+        },
+        {
+          "name": "Outputs",
+          "description": "Return `GenerationResult` containing a CUDA `int64` tensor of shape `[1, prompt_length + generation_length]`. Preserve the prompt and fill every generated slot with a valid model-predicted token, including slots after an EOS."
+        }
+      ],
+      "components": [
+        {
+          "name": "solutions/decoder_vNNN/candidate.py",
+          "description": "Defines engine construction and masked-token generation."
+        },
+        {
+          "name": "solutions/decoder_vNNN/__init__.py",
+          "description": "Optional companion module admitted within a decoder version."
+        },
+        {
+          "name": "/workspace/public_tests/run_public_tests.sh",
+          "description": "Runs CPU interface checks and quick/full public generation tests."
+        },
+        {
+          "name": "FINAL_VERSION / notes.md",
+          "description": "Selects the decoder version and records performance and quality evidence."
+        }
+      ],
+      "constraints": [
+        "Preserve frozen model weights, dtype, and `model.forward`; implement the admitted candidate in Python/Triton.",
+        "Preserve the prompt exactly, fill all generated slots, and retain the model’s EOS predictions without suppression or remapping.",
+        "Reuse computation within a request while keeping caches and other input-derived state isolated between requests."
+      ],
+      "validation": [
+        "CPU mode exercises a small synthetic interface case. The public GPU suite covers training/synthetic targets from the four benchmark families; quick mode uses one target per dataset.",
+        "Formal evaluation checks 520 generations against a frozen decoder reference, enforcing answer quality, parseability, and useful-token retention per row, per benchmark, and in aggregate.",
+        "Determinism, cache isolation, model integrity, complete output buffers, timeouts, and memory limits also gate acceptance."
+      ],
+      "test_commands": "cd /app/workdir/decoder_lab\nbash /workspace/public_tests/run_public_tests.sh --cpu-only\nbash /workspace/public_tests/run_public_tests.sh --quick\nbash /workspace/public_tests/run_public_tests.sh"
     },
     "sdv2": {
       "task_id": "streamdiffusionv2_dual_h100_pipeline_runtime_seed_v2",
@@ -860,12 +2174,14 @@
         "Default allocation: one 2-GPU NVLink pair shared by Work and Judge.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "At least 64 GiB usable host RAM per container.",
-        "PyTorch 2.6 / CUDA 12.4 runtime, frozen StreamDiffusionV2 computation, video chunks, and prompt embeddings."
+        "PyTorch 2.6 / CUDA 12.4 runtime, frozen StreamDiffusionV2 computation, video chunks, and prompt embeddings.",
+        "Host: CUDA-enabled PyTorch in the python3 first on PATH for the GPU-pair preflight."
       ],
       "workflow": [
-        "Trace the seed VAE/DiT pipeline and the state shared between consecutive video chunks.",
-        "Optimize stage placement and overlap while moving complete state with each block.",
-        "Run public quick and full stream checks against the seed measured on the same GPU pair, then submit the candidate."
+        "Copy `candidates/runtime_v001` into a new version and trace VAE stages, the 30 DiT blocks, and persistent state across chunks.",
+        "Change stage placement, transport, overlap, or buffer reuse; move complete block state at safe boundaries when changing ownership.",
+        "Run one public stream, then quick and full suites to verify every latent/frame and compare FPS, tail latency, construction, and memory.",
+        "Select the version in `FINAL_VERSION`, record the experiment, and submit once local workers and device work have finished."
       ],
       "evaluation": "Measures latency-weighted streaming FPS. Every latent and decoded frame must match the seed bit for bit; ordering, causal execution, latency, construction, memory, and cleanup checks must pass.",
       "sources": [
@@ -880,8 +2196,62 @@
         {
           "doc": "scripts/infrathon/tasks.json",
           "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+        },
+        {
+          "doc": "tasks/latest/streamdiffusionv2-dual-h100-pipeline-runtime-v2-seed/images/work/AGENT_TASK.md",
+          "sha256": "9c342ee7261eea61eba1eaf339137f055c558ea69c1c7d1504e790f31b937ada"
+        },
+        {
+          "doc": "scripts/infrathon/release/public/docs/HOST_PREREQUISITES.md",
+          "sha256": "5a910d69ffebd435214cfb8668e00930d7c9b088bd0083237d393af6edd8d20c"
         }
-      ]
+      ],
+      "result_intro": "Optimize a live video-to-video runtime around frozen StreamDiffusionV2 computation on two GPUs. The runtime receives prompt embeddings and successive frame chunks, schedules VAE and DiT work, and emits latents and decoded frames while preserving causal execution and bit-exact reference outputs.",
+      "metric_summary": "For each stream, multiply steady-state FPS by the fourth root of the seed-to-candidate p99 latency ratio. The score is the geometric mean across twelve streams, retaining FPS units; throughput and push-to-emit latency use the same post-warm-up chunks.",
+      "setting": "The frozen StreamDiffusionV2 pipeline uses Wan2.1-T2V-1.3B with 30 DiT blocks, VAE encoding and decoding, and persistent stream state. The supplied runtime splits the blocks 15/15 across two GPUs, then processes four-frame chunks after a five-frame preparation chunk. Six public cases vary resolution, stream length, and two or four denoising steps; twelve private cases extend these settings to one through four steps. Stage placement, communication, overlap, and complete state migration are candidate-controlled.",
+      "interface": [
+        {
+          "name": "Inputs",
+          "description": "Construct `Runtime(core_loader, devices, plan_meta, sink, ...)`; call `start(prompt_embeds, first_chunk_frames)` and then `push(chunk_idx, frames)` as input chunks arrive. Plan metadata supplies scheduling geometry without future frames."
+        },
+        {
+          "name": "Outputs",
+          "description": "Emit each chunk’s latent and decoded frames through the supplied sink in order. `flush()` completes pending work, and `close()` returns a run ledger after communication, child processes, and device work have finished."
+        }
+      ],
+      "components": [
+        {
+          "name": "candidates/runtime_vNNN/runtime.py",
+          "description": "Implements the Runtime lifecycle, stage placement, communication, and stream scheduling."
+        },
+        {
+          "name": "candidates/runtime_vNNN/",
+          "description": "Contains the runtime’s admitted Python helpers and configuration files."
+        },
+        {
+          "name": "tools/run_one.sh",
+          "description": "Evaluates one named public stream against the seed."
+        },
+        {
+          "name": "tools/run_public_tests.sh",
+          "description": "Runs quick/full stream evaluations and manages the public seed reference."
+        },
+        {
+          "name": "FINAL_VERSION / notes.md",
+          "description": "Selects the runtime version and records throughput, latency, and correctness evidence."
+        }
+      ],
+      "constraints": [
+        "Preserve frozen model computation, noise, denoising steps, and cache/sink/refresh semantics, with bit-exact latent and frame outputs.",
+        "Consume frames only when supplied and emit complete chunks in causal order; stage migration must include KV caches, indices, and policy state.",
+        "Flush all pending work and release worker processes, communication, and GPU activity when the stream closes."
+      ],
+      "validation": [
+        "Public single-case, quick, and full tests compare candidate outputs and measurements with the seed on the same GPU pair; the public seed cache can be refreshed.",
+        "Formal evaluation remeasures the seed and evaluates twelve streams with varied resolutions, lengths, prompts, and one to four denoising steps.",
+        "Every latent and decoded frame must match bit for bit. First-frame/tail latency, construction time, memory, ordering, and cleanup also gate the score."
+      ],
+      "test_commands": "cd /app/workdir/sdv2_pipeline_lab\ntools/run_one.sh --version 1 --case public_bbb_480p_129_s2\ntools/run_public_tests.sh --candidate-version 1 --quick\ntools/run_public_tests.sh --candidate-version 1"
     },
     "serving": {
       "task_id": "concurrent_agent_serving_optimizer_qwen36_swe192_v24",
@@ -903,9 +2273,11 @@
         "Hidden and public Direct baselines measured on the current backend boot, plus a registered candidate-history store."
       ],
       "workflow": [
-        "Inspect the supplied runtime contract, gateway architecture, and HTTP/streaming interface.",
-        "Tune workflow-aware admission, queueing, and scheduling while preserving backend requests and responses.",
-        "Use protocol smoke checks and the documented kvbench public diagnostics, then submit the gateway for the fixed-window formal workload."
+        "Read the runtime contract and starter architecture, then record a resource model and program lifecycle in `ARCHITECTURE.md`.",
+        "Implement a restorable admission or scheduling change using observed request traffic and bounded per-program state.",
+        "Run compilation, shell syntax, and loopback protocol checks after changes to transport, cancellation, or scheduling.",
+        "Run `kvbench doctor` and the public candidate workload, compare the evidence, and record the exact checkpoint and keep/reject decision.",
+        "Submit a tested checkpoint with `sforge-submit --details`; keep or restore the strongest Judge-valid implementation in `/app/submission`."
       ],
       "evaluation": "Measures valid executable tool steps per minute across all workflows. Protocol transparency, one-to-one forwarding, request success, valid-step proportion, waiting, backend work per step, and accounting checks must pass.",
       "sources": [
@@ -932,8 +2304,62 @@
         {
           "doc": "tasks/latest/concurrent-agent-serving-optimizer-qwen36-swe192-v24/scripts/host_vllm_backend.sh",
           "sha256": "fdd78681eb08f814b5cd02213a3080ddd62cea0fcacdef56b333df50c08a7bd5"
+        },
+        {
+          "doc": "tasks/latest/concurrent-agent-serving-optimizer-qwen36-swe192-v24/images/work/AGENT_TASK.md",
+          "sha256": "506e3126bcc32f0a94c2fd8613bae49109c8d07e0c7178826a0c904177944da2"
         }
-      ]
+      ],
+      "result_intro": "Optimize an OpenAI-compatible scheduling gateway between concurrent coding agents and a fixed Qwen3.6-27B backend. The gateway observes multi-turn request traffic, controls admission and queueing, and returns backend responses unchanged, with the objective of increasing completed executable agent steps across the workload.",
+      "metric_summary": "The score is the total number of valid executable steps completed across all workflows during an exact 1,800-second window, divided by 30 minutes. A completed tool return counts regardless of its exit code; warm-up completions and completions after the cutoff are excluded.",
+      "setting": "The workload runs 192 distinct SWE-bench Lite coding agents concurrently, each capped at 100 steps. Agents alternate between model requests and tool execution against one fixed vLLM 0.24.0 backend serving Qwen3.6-27B with tensor parallelism across two GPUs. Work and Judge are CPU-only; the candidate changes the gateway while the model server and agent environments remain fixed. Formal evaluation uses 300 seconds of warm-up followed by a 1,800-second scored window.",
+      "interface": [
+        {
+          "name": "Inputs",
+          "description": "`launch.sh` receives the supplied `BACKEND_URL` and `PORT`. The service accepts health, models, and streaming/non-streaming chat-completion requests; equal opaque `X-Agent-Run-ID` values identify the same ongoing program."
+        },
+        {
+          "name": "Outputs",
+          "description": "Listen on `0.0.0.0:${PORT}` and forward each accepted model request exactly once, preserving its backend response and streaming order. An optional `/programs/release` endpoint handles program cleanup locally."
+        }
+      ],
+      "components": [
+        {
+          "name": "/app/submission/launch.sh",
+          "description": "Foreground executable that starts the submitted gateway with the supplied endpoint and port."
+        },
+        {
+          "name": "/app/submission/gateway.py",
+          "description": "Implements transport, program-state tracking, admission, queueing, and cancellation."
+        },
+        {
+          "name": "/app/RUNTIME_CONTRACT.json",
+          "description": "Read-only model-server limits and conservative hybrid-cache geometry used for resource planning."
+        },
+        {
+          "name": "/app/RUN_BUDGET.json",
+          "description": "Current session budget, submission cooldown, and expected evaluation duration."
+        },
+        {
+          "name": "/app/submission/ARCHITECTURE.md",
+          "description": "Records the resource model, lifecycle policy, exact checkpoints, and experiment results."
+        },
+        {
+          "name": "kvbench",
+          "description": "Runs public workload diagnostics and compares the current candidate with the selected Direct evidence."
+        }
+      ],
+      "constraints": [
+        "Preserve request parameters, response content/status/usage, headers, and stream order with one-to-one upstream forwarding and propagated cancellation.",
+        "Infer workload state from proxied traffic and the supplied static contract; use program identifiers only as equality keys.",
+        "Keep model serving, weights, agents, sandboxes, and the runtime contract fixed. Scheduling state must have bounded memory and cleanup paths."
+      ],
+      "validation": [
+        "The loopback smoke test uses a fake backend to check health, forwarding, streaming, errors, headers, concurrency, cancellation, and lifecycle isolation.",
+        "Public evaluation runs 192 workflows with a 300-second warm-up and 600-second scored window. `kvbench compare` reports candidate results against the selected public Direct evidence.",
+        "Formal evaluation uses a 1,800-second window and checks protocol identity, one-to-one requests, request success, valid-step proportion, gateway waiting, backend work per step, and rate accounting."
+      ],
+      "test_commands": "cd /app\npython3 -m py_compile /app/submission/*.py\nbash -n /app/submission/launch.sh\nbash /workspace/protocol_tests/run_protocol_smoke.sh\nkvbench doctor\nkvbench run --mode baseline --profile public-swe192-distinct\nkvbench run --mode candidate --profile public-swe192-distinct\nkvbench compare"
     }
   }
 }

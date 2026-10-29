@@ -1,10 +1,12 @@
-/* Task instructions: task.html#<key>/<section>. */
+/* Task documentation: task.html#<key>/<section>. */
 (() => {
   "use strict";
   const X = window.IX, Docs = window.InfrathonDocs, guides = window.INFRATHON_DOCS.tasks;
   const { D, TASK, h, $, cap } = X;
   const miles = { opcd: "miles-opcd", opd: "miles-opd", alfworld: "miles-alfworld", sd35: "miles-diffusion-opd", wan22: "miles-diffusion-wan" };
   let currentKey = null;
+  const inline = text => text.split(/(`[^`]+`)/g).map(part => part.startsWith("`") ? h("code", { text: part.slice(1, -1) }) : part);
+  const items = texts => texts.map(text => h("li", {}, ...inline(text)));
 
   $("#task-back").addEventListener("click", () => {
     const referrer = document.referrer ? new URL(document.referrer) : null;
@@ -23,18 +25,31 @@
     $("#t-results-link").href = X.taskResultsHref(t.key);
     $("#task-run-commands").open = false;
     $("#t-meta").replaceChildren(h("span", { text: `${t.budget_h}-hour budget` }), h("span", { text: t.start === "seed" ? "Seed implementation" : "From scratch" }));
-    $("#t-workspace").replaceChildren(h("ul", {}, guide.workspace.map(text => h("li", { text }))));
-    $("#t-resources").replaceChildren(...guide.requirements.map(text => h("li", { text })));
-    $("#t-workflow").replaceChildren(...guide.workflow.map(text => h("li", { text })));
-    $("#t-evaluation").textContent = guide.evaluation;
+    $("#t-setting").replaceChildren(...inline(guide.setting));
+    $("#t-interface").replaceChildren(...guide.interface.map(row => h("div", {}, h("dt", { text: row.name }), h("dd", {}, ...inline(row.description)))));
+    $("#t-components").replaceChildren(h("table", { class: "doc-table task-components" },
+      h("caption", { class: "sr-only", text: `Workspace components for ${t.name}` }),
+      h("thead", {}, h("tr", {}, h("th", { scope: "col", text: "Component" }), h("th", { scope: "col", text: "Purpose" }))),
+      h("tbody", {}, guide.components.map(row => h("tr", {}, h("th", { scope: "row" }, ...inline(row.name)), h("td", {}, ...inline(row.description)))))));
+    $("#t-resources").replaceChildren(...items(guide.requirements));
+    $("#t-workflow").replaceChildren(...items(guide.workflow));
+    $("#t-constraints").replaceChildren(...items(guide.constraints));
+    $("#t-evaluation").textContent = guide.metric_summary;
+    $("#t-validation").replaceChildren(...items(guide.validation));
+    const publicTests = $("#t-public-tests");
+    publicTests.replaceChildren();
+    if (guide.test_commands) publicTests.append(h("h3", { text: "Public test" }), h("p", { text: "Inside the running Work environment:" }), Docs.code(guide.test_commands));
 
     const setup = $("#t-setup"), directoryName = guide.directory.split("/").pop();
     const pull = miles[t.key] || t.key === "minference" ? 'scripts/infrathon/pull_images.sh "$TASK"' : 'INFRATHON_PULL=1 bash "$TASK_DIR/scripts/build_images.sh"';
     setup.replaceChildren(Docs.code(`TASK=${directoryName}\nTASK_DIR="${guide.directory}"\n"$TASK_DIR/assets/fetch.sh"\n.venv/bin/python scripts/infrathon/assets.py check "$TASK"\n${pull}`));
+    if (guide.after_pull_command) setup.append(h("p", { text: "Prepare evaluator asset ownership using the pulled Judge image:" }), Docs.code(guide.after_pull_command));
+    if (t.key === "flux-moe" || t.key === "sdv2") setup.prepend(h("p", {}, "Configure ", h("a", { class: "link", href: "docs.html#host-torch", text: "host CUDA PyTorch" }), " for the GPU-pair preflight."));
     if (miles[t.key]) {
       const entry = miles[t.key];
+      setup.append(h("p", { text: "Choose a scratch directory on your data disk:" }), Docs.code(guide.scratch_setup));
       setup.append(h("p", {}, "Create the run configuration:") , Docs.code(`cp launch/${entry}/codex.env.example launch/${entry}/run.env`),
-        h("p", {}, "Set the model, credentials, GPU indices, and ", h("a", { class: "link", href: "docs.html#history", text: "candidate-history store" }), " in ", h("code", { text: `launch/${entry}/run.env` }), ". Use KEY=VALUE entries with absolute paths. Export asset and Hugging Face cache paths in your shell."),
+        h("p", {}, "Set the model, credentials, GPU indices, ", h("code", { text: "SFORGE_AGENT_RUNTIME_DIR" }), ", and ", h("a", { class: "link", href: "docs.html#history", text: "candidate-history store" }), " in ", h("code", { text: `launch/${entry}/run.env` }), ". Use KEY=VALUE entries with absolute paths. Export asset and Hugging Face cache paths in your shell."),
         Docs.code(`launch/${entry}/run.sh --config launch/${entry}/run.env --dry-run\nlaunch/${entry}/run.sh --config launch/${entry}/run.env --foreground`));
     } else if (t.key === "serving") {
       setup.replaceChildren(Docs.code(`TASK=${directoryName}\nTASK_DIR="${guide.directory}"\n"$TASK_DIR/assets/fetch.sh"\n.venv/bin/python scripts/infrathon/assets.py check "$TASK"\nINFRATHON_PULL=1 DOCKER_BUILD_NETWORK=host bash "$TASK_DIR/scripts/build_images.sh"`));
@@ -54,6 +69,9 @@
         h("p", {}, "With the backend, baselines, proxy, and store ready, start the agent:"),
         Docs.code(`${guide.launcher} \\\n  --config launch/concurrent-serving/run.env \\\n  --model MODEL_ID --effort max --hours ${t.budget_h} \\\n  --auth /path/to/auth.json`));
     } else if (guide.launcher) {
+      if (t.key === "llada") setup.append(
+        h("p", { text: "Set the model cache path and generate the quality-control archives on the host:" }),
+        Docs.code('export LLADA_MODEL_REPO="$(.venv/bin/python scripts/infrathon/assets.py hub-cache)/models--GSAI-ML--LLaDA-8B-Instruct"\npython3 "$TASK_DIR/scripts/make_reference_archives.py" \\\n  --task-root "$TASK_DIR" --stress-extra-mib 61440'));
       setup.append(h("p", {}, "Start the run with your model and credentials. Use ", h("code", { text: `${guide.launcher} --help` }), " to set GPU allocation and other options."),
         Docs.code(`${guide.launcher} \\\n  --model MODEL_ID --effort max --hours ${t.budget_h} \\\n  --auth /path/to/auth.json`));
     }
@@ -84,7 +102,7 @@
       return;
     }
     const showCommands = section === "run";
-    section = { workspace: "instructions", resources: "setup", run: "setup", metric: "evaluation" }[section] || section;
+    section = { workspace: "implementation", instructions: "implementation", resources: "running", setup: "running", run: "running", metric: "evaluation" }[section] || section;
     const changed = currentKey !== t.key;
     if (changed) { currentKey = t.key; render(t); }
     if (showCommands) $("#task-run-commands").open = true;
