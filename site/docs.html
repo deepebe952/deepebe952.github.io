@@ -21,7 +21,7 @@
   <button class="docs-menu-button" id="docs-menu" aria-expanded="false" aria-controls="docs-sidebar">☰ Setup guide</button>
   <aside class="docs-sidebar" id="docs-sidebar"><nav id="docs-nav" aria-label="Documentation"></nav></aside>
   <main class="doc-article" id="main-content">
-    <header class="doc-header"><div class="crumbs"><a href="index.html">Home</a><span>/</span><span>Docs</span></div><h1>Setup guide</h1><p class="lede">Install the harness, prepare a task, and run an agent.</p>
+    <header class="doc-header"><div class="crumbs"><a href="index.html">Home</a><span>/</span><span>Docs</span></div><h1>Setup guide</h1><p class="lede">Install Infrathon and an agent CLI, prepare a task, and start a run.</p>
       <div class="doc-resource-links"><a href="https://example.com/infrathon/code" data-mock-resource>Code ↗</a><a href="https://example.com/infrathon/containers" data-mock-resource>Docker Hub ↗</a><a href="https://example.com/infrathon/data" data-mock-resource>Hugging Face ↗</a></div><p class="doc-resource-status">Release links coming soon.</p>
     </header>
     <section class="doc-section" id="requirements"><h2>Requirements</h2>
@@ -34,35 +34,35 @@ docker run --rm -e NVIDIA_VISIBLE_DEVICES=all \
   nvidia/cuda:12.8.1-base-ubuntu24.04 nvidia-smi -L</code></pre></div>
     </section>
     <section class="doc-section" id="installation"><h2>Installation</h2>
-      <p>Clone the repository and install the SForge harness and agent runtime:</p>
+      <p>Clone the repository and install its Python dependencies:</p>
       <div class="doc-code"><pre><code>git clone https://github.com/deepebe952/infrathon.git
 cd infrathon
 uv sync --frozen --dev --python 3.12
 uv pip install --python .venv/bin/python numpy==2.5.2
 uv pip install --python .venv/bin/python \
   --index-url https://download.pytorch.org/whl/cpu torch==2.14.1
-launch/build-agent-runtime.sh --agent codex
 .venv/bin/sforge --help</code></pre></div>
-      <h3 id="versions">Harness and agent versions</h3>
-      <p>The harness is the <code>sforge/</code> code in this repository. To select a version, check out its Git commit or tag and reinstall its locked dependencies:</p>
-      <div class="doc-code"><pre><code>git fetch origin --tags
-# Replace with the commit or tag you want to run.
-HARNESS_REF=eb72a9ce8a4067766b0ffaf99ea23659102b617a
-git switch --detach "$HARNESS_REF"
-uv sync --frozen --dev --python 3.12
-uv pip install --python .venv/bin/python numpy==2.5.2
-uv pip install --python .venv/bin/python \
-  --index-url https://download.pytorch.org/whl/cpu torch==2.14.1
-git rev-parse HEAD</code></pre></div>
-      <p>The example selects the repository revision used for this guide. After changing revisions, prepare the task images using that checkout’s publication records.</p>
-      <p>The agent CLI has a separate version. To build and select a Codex runtime, set <code>CODEX_CLI_VERSION</code> to the version you want:</p>
+      <h3 id="versions">Agent harness setup</h3>
+      <p>Choose Codex or Claude Code. The builder downloads Node.js and the selected CLI into <code>../agent_runtimes/</code>; the task mounts that directory into Worker. The versions below are the repository’s configured defaults.</p>
+      <h4>Codex</h4>
       <div class="doc-code"><pre><code>export CODEX_CLI_VERSION=0.159.3
 export SFORGE_AGENT_RUNTIME_DIR="$(realpath -m "../agent_runtimes/codex-$CODEX_CLI_VERSION")"
 if [ ! -d "$SFORGE_AGENT_RUNTIME_DIR" ]; then
   launch/build-agent-runtime.sh --agent codex --version "$CODEX_CLI_VERSION"
 fi
 PATH="$SFORGE_AGENT_RUNTIME_DIR/bin:$PATH" "$SFORGE_AGENT_RUNTIME_DIR/bin/codex" --version</code></pre></div>
-      <p>Save these two values in <code>launch/mlsysforge.env</code>, or the task’s <code>run.env</code> for Miles. Changing the agent CLI does not require rebuilding task images.</p>
+      <p>This installs <code>@openai/codex</code>. Provide your <code>auth.json</code> through <code>--auth</code> or <code>CODEX_AUTH_JSON_PATH</code>.</p>
+      <h4>Claude Code</h4>
+      <div class="doc-code"><pre><code>CLAUDE_CODE_VERSION=2.1.287
+export SFORGE_AGENT_RUNTIME_DIR="$(realpath -m "../agent_runtimes/claude-code-$CLAUDE_CODE_VERSION")"
+if [ ! -d "$SFORGE_AGENT_RUNTIME_DIR" ]; then
+  launch/build-agent-runtime.sh --agent claude-code --version "$CLAUDE_CODE_VERSION"
+fi
+PATH="$SFORGE_AGENT_RUNTIME_DIR/bin:$PATH" "$SFORGE_AGENT_RUNTIME_DIR/bin/claude" --version</code></pre></div>
+      <p>This installs <code>@anthropic-ai/claude-code</code>. Select <code>--agent claude-code</code> and pass <code>--claude-token /path/to/token</code>. The token file contains a <code>claude setup-token</code> OAuth token and has mode <code>0600</code>.</p>
+      <h4>Change the version</h4>
+      <p>Change the version variable in the chosen example and build that runtime. Save its <code>SFORGE_AGENT_RUNTIME_DIR</code> in <code>launch/mlsysforge.env</code>; for Codex, also save <code>CODEX_CLI_VERSION</code>. Task images can be reused.</p>
+      <p>Miles reads these settings from the task’s <code>run.env</code>. For Claude Code, set <code>AGENT=claude-code</code>, <code>SFORGE_AGENT_RUNTIME_DIR</code>, and <code>CLAUDE_OAUTH_TOKEN_FILE</code>; for Codex, use the configuration shown on each task page.</p>
       <h3>Configuration</h3>
       <div class="doc-code"><pre><code>cp launch/mlsysforge.env.example launch/mlsysforge.env</code></pre></div>
       <p>Edit <code>launch/mlsysforge.env</code> with your model credentials and local asset paths. For this first run, leave <code>SFORGE_VERSION_STORE_ROOT</code> unset and set <code>SFORGE_VERSION_STORE_OPTIONAL=1</code> to retain submission archives without a separate candidate-history store.</p>
