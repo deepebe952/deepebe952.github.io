@@ -25,16 +25,24 @@
       <div class="doc-resource-links"><a href="https://example.com/infrathon/code" data-mock-resource>Code ↗</a><a href="https://example.com/infrathon/containers" data-mock-resource>Docker Hub ↗</a><a href="https://example.com/infrathon/data" data-mock-resource>Hugging Face ↗</a></div><p class="doc-resource-status">Release links coming soon.</p>
     </header>
     <section class="doc-section" id="requirements"><h2>Requirements</h2>
-      <ul><li>Linux x86-64, Docker 24+, and the NVIDIA Container Toolkit.</li><li>An H100 NVL or H100 SXM host. The example below uses one GPU for Worker and a separate GPU for Judge.</li><li><code>uv</code>, <code>git</code>, <code>jq</code>, <code>flock</code>, <code>rsync</code>, <code>patch</code>, <code>curl</code>, and <code>sha256sum</code>.</li><li>Credentials for your agent’s model provider.</li></ul>
-      <p>Set Docker’s default runtime to <code>nvidia</code> and check GPU access:</p>
-      <div class="doc-code"><pre><code>sudo nvidia-ctk runtime configure --runtime=docker --set-as-default
+<p>Linux x86-64 with H100 NVL or H100 SXM GPUs. The first-run example uses two GPUs: one for Worker and one for Judge.</p>
+<p>Install <a href="https://docs.docker.com/engine/install/ubuntu/">Docker Engine 24+</a>, an <a href="https://docs.nvidia.com/datacenter/tesla/driver-installation-guide/">NVIDIA driver</a>, and the <a href="https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html">NVIDIA Container Toolkit</a>.</p>
+<p>On Ubuntu, install the host tools:</p><div class="doc-code"><pre><code>sudo apt-get update
+sudo apt-get install -y git git-lfs jq util-linux rsync patch curl ca-certificates tmux python3 coreutils tar xz-utils
+curl -LsSf https://astral.sh/uv/install.sh | sh
+export PATH="$HOME/.local/bin:$PATH"
+uv tool install 'huggingface_hub[cli]==1.23.0'
+git lfs install
+sudo usermod -aG docker "$USER"</code></pre></div><p>Open a new login session for Docker group access, then configure and check the GPU runtime:</p><div class="doc-code"><pre><code>export PATH="$HOME/.local/bin:$PATH"
+umask 022
+sudo nvidia-ctk runtime configure --runtime=docker --set-as-default
 sudo systemctl restart docker
 docker info --format '{{.DefaultRuntime}}'
 docker run --rm -e NVIDIA_VISIBLE_DEVICES=all \
-  nvidia/cuda:12.8.1-base-ubuntu24.04 nvidia-smi -L</code></pre></div>
+  nvidia/cuda:12.8.1-base-ubuntu24.04 nvidia-smi -L</code></pre></div><p>The runtime should print <code>nvidia</code> and the container should list your GPUs. Allow about 25 GB for one task’s images and additional space for its models and run outputs; Miles requires a large scratch disk.</p>
     </section>
     <section class="doc-section" id="installation"><h2>Installation</h2>
-      <p>Clone the repository and install its Python dependencies:</p>
+      <p>Clone the repository and install its Python dependencies. Run the following setup commands in Bash from this checkout.</p>
       <div class="doc-code"><pre><code>git clone https://github.com/deepebe952/infrathon.git
 cd infrathon
 uv sync --frozen --dev --python 3.12
@@ -42,23 +50,6 @@ uv pip install --python .venv/bin/python numpy==2.5.2
 uv pip install --python .venv/bin/python \
   --index-url https://download.pytorch.org/whl/cpu torch==2.14.1
 .venv/bin/sforge --help</code></pre></div>
-      <h3>Configuration</h3>
-      <div class="doc-code"><pre><code>cp launch/mlsysforge.env.example launch/mlsysforge.env</code></pre></div>
-      <p>Edit <code>launch/mlsysforge.env</code> with your model credentials and local asset paths. For this first run, leave <code>SFORGE_VERSION_STORE_ROOT</code> unset and set <code>SFORGE_VERSION_STORE_OPTIONAL=1</code> to retain submission archives without a separate candidate-history store.</p>
-      <p>Configure the submission reviewer in the same file:</p>
-      <div class="doc-code"><pre><code>SFORGE_LLM_JUDGE_MODE=enforce
-SFORGE_LLM_JUDGE_MODEL=MODEL_ID</code></pre></div>
-      <p>Load the completed configuration:</p>
-      <div class="doc-code"><pre><code>set -a
-. launch/mlsysforge.env
-set +a</code></pre></div>
-      <div class="scroll-x"><table class="doc-table"><thead><tr><th>Setting</th><th>Purpose</th></tr></thead><tbody>
-        <tr><td><code>INFRATHON_ASSETS_ROOT</code></td><td>Task models and data. Defaults to <code>~/.cache/infrathon/assets</code>.</td></tr>
-        <tr><td><code>INFRATHON_HARDWARE</code></td><td><code>h100-94gb-400w</code> or <code>h100-80gb-700w</code>; detected from GPU 0 when unset.</td></tr>
-        <tr><td><code>CODEX_AUTH_JSON_PATH</code></td><td>Agent authentication file.</td></tr>
-        <tr><td><code>SFORGE_AGENT_RUNTIME_DIR</code></td><td>Absolute runtime directory printed by <code>launch/build-agent-runtime.sh</code>.</td></tr>
-        <tr><td><code>MODEL_API_BASE_URL</code><br><code>MODEL_API_KEY_FILE</code></td><td>Model endpoint and key file for a custom provider.</td></tr>
-      </tbody></table></div>
       <details class="metric-details" id="host-torch"><summary>Host CUDA PyTorch for Flux and StreamDiffusionV2</summary><p>These launchers check GPU peer access on the host. Put a CUDA PyTorch environment first on <code>PATH</code>:</p><div class="doc-code"><pre><code>uv venv ~/.venvs/host-torch --python 3.12
 uv pip install --python ~/.venvs/host-torch/bin/python \
   --index-url https://download.pytorch.org/whl/cu128 torch==2.8.0
@@ -66,7 +57,7 @@ export PATH=~/.venvs/host-torch/bin:$PATH</code></pre></div></details>
     </section>
     <section class="doc-section" id="versions">
       <h2>Agent harness setup</h2>
-      <p>Choose Codex or Claude Code. The builder downloads Node.js and the selected CLI into <code>../agent_runtimes/</code>; the task mounts that directory into Worker. The versions below are the repository’s configured defaults.</p>
+      <p>The first-run example uses Codex. The builder downloads Node.js and the CLI into <code>../agent_runtimes/</code>. The versions below are pinned in the repository.</p>
       <h4>Codex</h4>
       <div class="doc-code"><pre><code>export CODEX_CLI_VERSION=0.159.3
 export SFORGE_AGENT_RUNTIME_DIR="$(realpath -m "../agent_runtimes/codex-$CODEX_CLI_VERSION")"
@@ -74,45 +65,69 @@ if [ ! -d "$SFORGE_AGENT_RUNTIME_DIR" ]; then
   launch/build-agent-runtime.sh --agent codex --version "$CODEX_CLI_VERSION"
 fi
 PATH="$SFORGE_AGENT_RUNTIME_DIR/bin:$PATH" "$SFORGE_AGENT_RUNTIME_DIR/bin/codex" --version</code></pre></div>
-      <p>This installs <code>@openai/codex</code>. Provide your <code>auth.json</code> through <code>--auth</code> or <code>CODEX_AUTH_JSON_PATH</code>.</p>
-      <h4>Claude Code</h4>
-      <div class="doc-code"><pre><code>CLAUDE_CODE_VERSION=2.1.287
-export SFORGE_AGENT_RUNTIME_DIR="$(realpath -m "../agent_runtimes/claude-code-$CLAUDE_CODE_VERSION")"
-if [ ! -d "$SFORGE_AGENT_RUNTIME_DIR" ]; then
+      <p>Enable device-code login in your ChatGPT account or workspace, then sign in and save file-based credentials:</p><div class="doc-code"><pre><code>PATH="$SFORGE_AGENT_RUNTIME_DIR/bin:$PATH" \
+  "$SFORGE_AGENT_RUNTIME_DIR/bin/codex" \
+  -c 'cli_auth_credentials_store="file"' login --device-auth
+chmod 600 "$HOME/.codex/auth.json"</code></pre></div><p>For API-key login or signing in from a local computer, see <a href="https://learn.chatgpt.com/docs/auth">Codex authentication</a>.</p>
+      <details class="metric-details"><summary>Claude Code</summary>
+<p>Build the Claude runtime and create an OAuth token:</p><div class="doc-code"><pre><code>CLAUDE_CODE_VERSION=2.1.287
+CLAUDE_RUNTIME_DIR="$(realpath -m "../agent_runtimes/claude-code-$CLAUDE_CODE_VERSION")"
+if [ ! -d "$CLAUDE_RUNTIME_DIR" ]; then
   launch/build-agent-runtime.sh --agent claude-code --version "$CLAUDE_CODE_VERSION"
 fi
-PATH="$SFORGE_AGENT_RUNTIME_DIR/bin:$PATH" "$SFORGE_AGENT_RUNTIME_DIR/bin/claude" --version</code></pre></div>
-      <p>This installs <code>@anthropic-ai/claude-code</code>. Select <code>--agent claude-code</code> and pass <code>--claude-token /path/to/token</code>. The token file contains a <code>claude setup-token</code> OAuth token and has mode <code>0600</code>.</p>
+PATH="$CLAUDE_RUNTIME_DIR/bin:$PATH" "$CLAUDE_RUNTIME_DIR/bin/claude" --version
+PATH="$CLAUDE_RUNTIME_DIR/bin:$PATH" "$CLAUDE_RUNTIME_DIR/bin/claude" setup-token</code></pre></div><p>Paste the token into a file:</p><div class="doc-code"><pre><code>mkdir -p "$HOME/.config/infrathon"
+read -rsp 'Claude OAuth token: ' CLAUDE_TOKEN; printf '\n'
+(umask 077; printf '%s\n' "$CLAUDE_TOKEN" &gt; "$HOME/.config/infrathon/claude.token")
+unset CLAUDE_TOKEN
+chmod 600 "$HOME/.config/infrathon/claude.token"</code></pre></div><p><a href="task.html#flux-moe/run">Flux/Comet MoE</a> accepts <code>--agent claude-code --claude-token "$HOME/.config/infrathon/claude.token"</code>. Set <code>SFORGE_AGENT_RUNTIME_DIR</code> to the Claude runtime for that launch. The FP8 launcher used in this guide runs Codex.</p>
+<p>For Miles, set <code>AGENT=claude-code</code>, <code>SFORGE_AGENT_RUNTIME_DIR</code>, and <code>CLAUDE_OAUTH_TOKEN_FILE</code> in the task’s <code>run.env</code>. The submission reviewer retains the separate Codex settings in <a href="#configuration">Configuration</a>.</p></details>
       <h4>Change the version</h4>
       <p>Change the version variable in the chosen example and build that runtime. Save its <code>SFORGE_AGENT_RUNTIME_DIR</code> in <code>launch/mlsysforge.env</code>; for Codex, also save <code>CODEX_CLI_VERSION</code>. Task images can be reused.</p>
-      <p>Miles reads these settings from the task’s <code>run.env</code>. For Claude Code, set <code>AGENT=claude-code</code>, <code>SFORGE_AGENT_RUNTIME_DIR</code>, and <code>CLAUDE_OAUTH_TOKEN_FILE</code>; for Codex, use the configuration shown on each task page.</p>
+      <p>Miles stores its runtime and version settings in the task’s <code>run.env</code>.</p>
     </section>
+    <section class="doc-section" id="configuration"><h2>Configuration</h2>
+<p>After Codex login, enter a model ID available to your account. This example uses the same model and credentials for the Worker and the submission reviewer.</p><div class="doc-code"><pre><code>read -rp 'Model ID: ' MODEL
+CODEX_CLI_VERSION="${CODEX_CLI_VERSION:-0.159.3}"
+CODEX_RUNTIME_DIR="$(realpath -m "../agent_runtimes/codex-$CODEX_CLI_VERSION")"
+cat &gt; launch/mlsysforge.env &lt;&lt;EOF
+MODEL=$MODEL
+REASONING_EFFORT=max
+CODEX_CLI_VERSION=$CODEX_CLI_VERSION
+CODEX_AUTH_JSON_PATH="$HOME/.codex/auth.json"
+SFORGE_AGENT_RUNTIME_DIR="$CODEX_RUNTIME_DIR"
+INFRATHON_ASSETS_ROOT="$HOME/.cache/infrathon/assets"
+SFORGE_VERSION_STORE_OPTIONAL=1
+SFORGE_LLM_JUDGE_MODE=enforce
+SFORGE_LLM_JUDGE_ENGINE=agent
+SFORGE_LLM_JUDGE_AGENT=codex
+SFORGE_LLM_JUDGE_MODEL=$MODEL
+SFORGE_LLM_JUDGE_AGENT_RUNTIME_DIR="$CODEX_RUNTIME_DIR"
+SFORGE_LLM_JUDGE_CODEX_AUTH_JSON="$HOME/.codex/auth.json"
+EOF
+set -a
+. launch/mlsysforge.env
+set +a</code></pre></div><p>The FP8 example saves submission archives without a candidate-history store. Miles and Concurrent serving also need <a href="#history">Candidate history</a>. Use each task’s <a href="tasks.html">Run the task</a> section for its GPU, model, data, and launcher settings.</p>
+<details class="metric-details"><summary>Custom model endpoint</summary><p>For the FP8 launcher’s OpenAI-compatible endpoint (<code>http://HOST:PORT/v1</code>, serving <code>/v1/responses</code>), set these values in <code>launch/mlsysforge.env</code>. The API key file contains the key and has mode <code>0600</code>.</p><div class="doc-code"><pre><code>MODEL=MODEL_ID
+MODEL_API_BASE_URL=http://ENDPOINT_HOST:PORT/v1
+MODEL_API_KEY_FILE=/absolute/path/to/api.key</code></pre></div><p>To use that endpoint for the reviewer too, remove <code>SFORGE_LLM_JUDGE_CODEX_AUTH_JSON</code> from the file, add the following settings, and load the configuration in a new shell:</p><div class="doc-code"><pre><code>SFORGE_LLM_JUDGE_MODEL=MODEL_ID
+SFORGE_LLM_JUDGE_API_BASE_URL=http://ENDPOINT_HOST:PORT/v1
+SFORGE_LLM_JUDGE_API_KEY_FILE=/absolute/path/to/api.key</code></pre></div></details></section>
     <section class="doc-section" id="assets"><h2>Models and data</h2>
-      <p>This example uses Dynamic grouped FP8 GEMM, a kernel task. Select the task, fetch its assets, and verify the download:</p>
-      <div class="doc-code"><pre><code>TASK=standalone-dynamic-grouped-fp8-h100-v3-scratch
+<p>Select Dynamic grouped FP8 GEMM and download its task assets. The download scripts read <code>INFRATHON_ASSETS_ROOT</code> from the <a href="#configuration">configuration loaded into your shell</a>.</p><div class="doc-code"><pre><code>TASK=standalone-dynamic-grouped-fp8-h100-v3-scratch
 TASK_DIR="tasks/latest/$TASK"
 "$TASK_DIR/assets/fetch.sh"
-.venv/bin/python scripts/infrathon/assets.py check "$TASK"</code></pre></div>
-      <p>To use an existing local copy of the release dataset, set <code>INFRATHON_ASSETS_SOURCE</code> before fetching.</p>
+.venv/bin/python scripts/infrathon/assets.py check "$TASK"</code></pre></div><details class="metric-details"><summary>Dataset access and local assets</summary><p>For private or gated datasets and models, grant access to your Hugging Face account and sign in before fetching:</p><div class="doc-code"><pre><code>hf auth login</code></pre></div><p>Set <code>INFRATHON_HF_DATASET</code> to the release dataset name, or <code>INFRATHON_ASSETS_SOURCE</code> to an existing local copy. The repository’s default dataset is <code>pyrominddynamics/infrathon</code>.</p></details>
     </section>
     <section class="doc-section" id="containers"><h2>Docker images</h2>
-      <p>Each task publishes a Work image and a public Judge image. Select your hardware and read their tags from <code>images/published.json</code>:</p>
-      <div class="doc-code"><pre><code>export INFRATHON_HARDWARE=h100-94gb-400w
-IMAGE_REPOSITORY="$(jq -r '.repository' scripts/infrathon/registry.json)"
+<p>With <code>TASK</code> and <code>TASK_DIR</code> selected in <a href="#assets">Models and data</a>, choose the host hardware: <code>h100-94gb-400w</code> for H100 NVL or <code>h100-80gb-700w</code> for H100 SXM.</p><div class="doc-code"><pre><code>export INFRATHON_HARDWARE=h100-94gb-400w
+INFRATHON_PULL=1 bash "$TASK_DIR/scripts/build_images.sh"</code></pre></div><p>The helper pulls the recorded Work and public Judge images, adds the Judge’s private data, and records the local images for launch. For Miles and MInference, use this helper instead:</p><div class="doc-code"><pre><code>scripts/infrathon/pull_images.sh "$TASK"</code></pre></div><details class="metric-details"><summary>Docker Hub tags and direct pull</summary><p>To download the images separately:</p><div class="doc-code"><pre><code>IMAGE_REPOSITORY="${INFRATHON_REGISTRY_REPOSITORY:-$(jq -r '.repository' scripts/infrathon/registry.json)}"
 PUBLISHED="$TASK_DIR/images/published.json"
 WORK_TAG="$(jq -er --arg hw "$INFRATHON_HARDWARE" '.hardware[$hw].work_tag' "$PUBLISHED")"
 JUDGE_TAG="$(jq -er --arg hw "$INFRATHON_HARDWARE" '.hardware[$hw].judge_public_tag' "$PUBLISHED")"
 docker pull "$IMAGE_REPOSITORY:$WORK_TAG"
-docker pull "$IMAGE_REPOSITORY:$JUDGE_TAG"</code></pre></div>
-      <p>Use <code>h100-94gb-400w</code> for H100 NVL or <code>h100-80gb-700w</code> for H100 SXM. The image repository comes from <code>scripts/infrathon/registry.json</code>.</p>
-      <p>Tags follow <code>&lt;hardware&gt;-&lt;task-directory&gt;-&lt;role&gt;-&lt;release&gt;</code>. For this FP8 task, the Work tag is <code>h100-94gb-400w-standalone-dynamic-grouped-fp8-h100-v3-scratch-work-r1</code>; the Judge tag ends in <code>judge-public-r1</code>. The publication file also records each image’s SHA-256 digest.</p>
-      <h3>Prepare images for launch</h3>
-      <p>Run the task helper to pull by the recorded digest, assign local image names, prepare the Judge’s private-data layer, and write the build record:</p>
-      <div class="doc-code"><pre><code>INFRATHON_PULL=1 bash "$TASK_DIR/scripts/build_images.sh"</code></pre></div>
-      <p>For Miles and MInference, use:</p>
-      <div class="doc-code"><pre><code>scripts/infrathon/pull_images.sh "$TASK"</code></pre></div>
-      <details class="metric-details"><summary>Build images from source</summary>
-      <div class="doc-code"><pre><code>bash "$TASK_DIR/scripts/build_images.sh"</code></pre></div></details>
+docker pull "$IMAGE_REPOSITORY:$JUDGE_TAG"</code></pre></div><p>The default repository is <code>pyrominddynamics/sforge</code>. For FP8 on H100 NVL, the Work tag is <code>h100-94gb-400w-standalone-dynamic-grouped-fp8-h100-v3-scratch-work-r1</code>; the Judge tag ends in <code>judge-public-r1</code>. The helper above reuses these downloads to finish task preparation.</p></details>
+<details class="metric-details"><summary>Build from source</summary><div class="doc-code"><pre><code>bash "$TASK_DIR/scripts/build_images.sh"</code></pre></div></details>
     </section>
     <section class="doc-section" id="history"><h2>Candidate history</h2><p>Miles and Concurrent serving use a store for candidate versions. With <code>TASK_DIR</code> set to your task, initialize and register it:</p><details class="metric-details"><summary>Initialize the store</summary><div class="doc-code"><pre><code>export SFORGE_VERSION_STORE_ROOT=&quot;$PWD/../infrathon-version-store&quot;
 .venv/bin/python - &quot;$SFORGE_VERSION_STORE_ROOT&quot; &quot;$TASK_DIR&quot; &lt;&lt;&#x27;PY&#x27;
@@ -142,17 +157,17 @@ print(&quot;Registered&quot;, task_id, &quot;in&quot;, root)
 PY
 .venv/bin/sforge versions --version-store-root &quot;$SFORGE_VERSION_STORE_ROOT&quot; --verify</code></pre></div></details><p>For Miles, copy the printed absolute path into <code>SFORGE_VERSION_STORE_ROOT</code> in the task’s <code>run.env</code>. For Concurrent serving, keep this variable exported in the launch shell. Register each task once in the same store.</p></section>
     <section class="doc-section" id="run"><h2>Run a task</h2>
-      <p>Select separate GPUs for Worker and Judge. Replace the GPU indices, model ID, and authentication path:</p>
-      <div class="doc-code"><pre><code>nvidia-smi -L
+<p>Start the FP8 task with Codex after completing Configuration, Models and data, and Docker images. Select two available GPU indices and an unused Judge port.</p><div class="doc-code"><pre><code>set -a
+. launch/mlsysforge.env
+set +a
+nvidia-smi --query-gpu=index,uuid --format=csv,noheader
+RUN_ID="fp8-$(date -u +%Y%m%d-%H%M%S)"
 WORK_GPU=0 JUDGE_GPU=1 launch/standalone-fp8/run.sh \
-  --model MODEL_ID --effort max --hours 12 \
-  --legacy-dual-gpu \
-  --auth /path/to/auth.json</code></pre></div>
-      <h3>Submit a candidate</h3>
-      <p>Inside the running Work environment, run the task’s public tests, then submit the current implementation:</p>
-      <div class="doc-code"><pre><code>sforge-submit --details
-sforge-submit --list</code></pre></div>
-      <p>See <a href="tasks.html">Tasks</a> for task documentation and launch commands.</p>
+  --model "$MODEL" --effort max --hours 12 \
+  --legacy-dual-gpu --judge-port 18096 --run-id "$RUN_ID" \
+  --auth "$CODEX_AUTH_JSON_PATH"</code></pre></div><p>This starts the agent in the foreground. Add <code>--tmux</code> to run it in a detached session.</p>
+<details class="metric-details"><summary>Submit from the Work container</summary><p>The agent submits candidates during its run. In an interactive Work container session, these commands submit the current implementation and list submissions:</p><div class="doc-code"><pre><code>sforge-submit --details
+sforge-submit --list</code></pre></div></details><p>Other tasks have their setup and launch commands under <a href="tasks.html">Tasks</a>.</p>
     </section>
     <section class="doc-section" id="outputs"><h2>Results and logs</h2>
       <p>Runs are saved under <code>outputs/&lt;task-directory&gt;/runs/&lt;run-id&gt;/</code>.</p>

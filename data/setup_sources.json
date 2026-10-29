@@ -114,6 +114,14 @@
     {
       "path": "scripts/infrathon/publish_images.sh",
       "sha256": "7aa254dc63ada8f03bfb7eb8ac77694c0e1f40fe89e68d28a53d104daad9e22a"
+    },
+    {
+      "path": "sforge/harness/llm_judge/config.py",
+      "sha256": "8cedcc940dc71f6b6f515f21a49e4e1e5813bbd79e468a73f317b7ac22c10ea9"
+    },
+    {
+      "path": "launch/flux-moe-ag/run.sh",
+      "sha256": "bc5015493a18ce067aa9779569771813cd723aa53c194d2aeae31d53c422f360"
     }
   ],
   "mock_resources": {
