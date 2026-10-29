@@ -14,13 +14,13 @@ def build():
     tasks = {}
     for key in keys:
         guide = guides['tasks'][key]
-        assert all(guide.get(field) for field in ('task_id', 'directory', 'objective', 'requirements', 'workflow', 'sources', 'result_intro', 'metric_summary', 'setting', 'interface', 'components', 'constraints', 'validation', 'launch_command')), key
+        assert all(guide.get(field) for field in ('task_id', 'directory', 'objective', 'requirements', 'sources', 'result_intro', 'metric_summary', 'setting', 'interface', 'components', 'constraints', 'validation', 'launch_command')), key
         for field in ('result_intro', 'metric_summary', 'setting', 'reader_overview', 'reader_compute', 'launch_command'):
             assert isinstance(guide[field], str) and guide[field].strip(), (key, field)
         for field in ('interface', 'components', 'reader_setup'):
             assert isinstance(guide[field], list) and all(row.get('name') and row.get('description') for row in guide[field]), (key, field)
         assert all(isinstance(guide['reader_metric'].get(field), str) and guide['reader_metric'][field].strip() for field in ('meaning', 'rule')), (key, 'reader_metric')
-        for field in ('requirements', 'workflow', 'constraints', 'validation'):
+        for field in ('requirements', 'constraints', 'validation'):
             assert isinstance(guide[field], list) and all(isinstance(item, str) and item.strip() for item in guide[field]), (key, field)
         assert isinstance(guide.get('test_commands'), str), (key, 'test_commands')
         assert guide['directory'].startswith('tasks/latest/') and '..' not in guide['directory'], key

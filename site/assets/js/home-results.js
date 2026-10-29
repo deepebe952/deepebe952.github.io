@@ -101,7 +101,7 @@
           X.showTip(event.clientX ?? bounds.right, event.clientY ?? bounds.bottom,
             `${task.name} · ${cap(stage)} ${level}`,
             order.map((model) => ({ color: COLOR[model], value: withUnit(task, task.results[model].best), label: MODEL[model].name })),
-            "Best score during the run · open task details");
+            "Best score during the run");
         };
         tile.addEventListener("pointermove", show);
         tile.addEventListener("focus", show);

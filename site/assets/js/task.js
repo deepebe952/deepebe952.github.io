@@ -34,7 +34,6 @@
       h("thead", {}, h("tr", {}, h("th", { scope: "col", text: "Component" }), h("th", { scope: "col", text: "Purpose" }))),
       h("tbody", {}, guide.components.map(row => h("tr", {}, h("th", { scope: "row" }, ...inline(row.name)), h("td", {}, ...inline(row.description)))))));
     $("#t-resources").replaceChildren(...items(guide.requirements));
-    $("#t-workflow").replaceChildren(...items(guide.workflow));
     $("#t-constraints").replaceChildren(...items(guide.constraints));
     $("#t-metric-title").textContent = t.metric_info.label;
     $("#t-metric-meaning").textContent = guide.reader_metric.meaning;
@@ -70,10 +69,9 @@
           h("li", {}, "Provide a host CONNECT proxy at ", h("code", { text: "127.0.0.1:18080" }), " that reaches your agent’s model API.")),
         h("h3", { text: "Configure and run" }),
         h("p", {}, "Save these settings in ", h("code", { text: "launch/concurrent-serving/run.env" }), ", using the backend URL and absolute paths from the preparation steps:"),
-        Docs.code('KVBENCH_VLLM_BASE_URL=http://BACKEND_HOST:18000\nKVBENCH_HIDDEN_BASELINE_PATH=/absolute/path/hidden-direct.json\nKVBENCH_PUBLIC_BASELINE_PATH=/absolute/path/public-direct.json\nSFORGE_KVBENCH_NONCE_SOURCE=/absolute/path/v24.nonces\nSFORGE_VERSION_STORE_ROOT=/absolute/path/infrathon-version-store'),
-        h("p", {}, "Use the backend and baseline settings above in the run configuration."));
+        Docs.code('KVBENCH_VLLM_BASE_URL=http://BACKEND_HOST:18000\nKVBENCH_HIDDEN_BASELINE_PATH=/absolute/path/hidden-direct.json\nKVBENCH_PUBLIC_BASELINE_PATH=/absolute/path/public-direct.json\nSFORGE_KVBENCH_NONCE_SOURCE=/absolute/path/v24.nonces\nSFORGE_VERSION_STORE_ROOT=/absolute/path/infrathon-version-store'));
     }
-    setup.append(h("h3", { text: "Launch" }), h("p", { text: "Set the GPU and provider values for your host. These commands use the experiment budget shown above." }));
+    setup.append(h("h3", { text: "Launch" }));
     if (guide.launch_setup) setup.append(Docs.code(guide.launch_setup));
     setup.append(Docs.code(guide.launch_command));
 

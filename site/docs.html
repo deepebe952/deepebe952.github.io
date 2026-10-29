@@ -26,7 +26,6 @@
     </header>
     <section class="doc-section" id="requirements"><h2>Requirements</h2>
       <ul><li>Linux x86-64, Docker 24+, and the NVIDIA Container Toolkit.</li><li>An H100 NVL or H100 SXM host. The example below uses one GPU shared by Work and Judge.</li><li><code>uv</code>, <code>git</code>, <code>jq</code>, <code>flock</code>, <code>rsync</code>, <code>patch</code>, <code>curl</code>, and <code>sha256sum</code>.</li><li>Credentials for your agent’s model provider.</li></ul>
-      <p>GPU allocation and model downloads are listed on each task page.</p>
       <p>Set Docker’s default runtime to <code>nvidia</code> and check GPU access:</p>
       <div class="doc-code"><pre><code>sudo nvidia-ctk runtime configure --runtime=docker --set-as-default
 sudo systemctl restart docker
@@ -45,7 +44,7 @@ launch/build-agent-runtime.sh --agent codex
       <h3>Configuration</h3>
       <div class="doc-code"><pre><code>cp launch/mlsysforge.env.example launch/mlsysforge.env</code></pre></div>
       <p>Edit <code>launch/mlsysforge.env</code> with your model credentials and local asset paths. For this first run, leave <code>SFORGE_VERSION_STORE_ROOT</code> unset and set <code>SFORGE_VERSION_STORE_OPTIONAL=1</code> to retain submission archives without a separate candidate-history store.</p>
-      <p>Configure the submission reviewer in the same file. It uses the agent runtime and authentication configured below:</p>
+      <p>Configure the submission reviewer in the same file:</p>
       <div class="doc-code"><pre><code>SFORGE_LLM_JUDGE_MODE=enforce
 SFORGE_LLM_JUDGE_MODEL=MODEL_ID</code></pre></div>
       <p>Load the completed configuration:</p>
@@ -70,12 +69,12 @@ export PATH=~/.venvs/host-torch/bin:$PATH</code></pre></div></details>
 TASK_DIR="tasks/latest/$TASK"
 "$TASK_DIR/assets/fetch.sh"
 .venv/bin/python scripts/infrathon/assets.py check "$TASK"</code></pre></div>
-      <p>Each task’s <code>assets/manifest.json</code> lists its models, data, and file hashes. To use an existing local copy of the release dataset, set <code>INFRATHON_ASSETS_SOURCE</code> before fetching.</p>
+      <p>To use an existing local copy of the release dataset, set <code>INFRATHON_ASSETS_SOURCE</code> before fetching.</p>
     </section>
     <section class="doc-section" id="containers"><h2>Docker images</h2>
       <p>Pull the task’s Work and Judge images and complete the local setup:</p>
       <div class="doc-code"><pre><code>INFRATHON_PULL=1 bash "$TASK_DIR/scripts/build_images.sh"</code></pre></div>
-      <p>The script runs <code>docker pull</code> for the digests in <code>images/published.json</code>, assigns the local image tags, and installs the evaluator assets. To build the images from source:</p>
+      <p>To build the images from source:</p>
       <div class="doc-code"><pre><code>bash "$TASK_DIR/scripts/build_images.sh"</code></pre></div>
       <p>Miles and MInference use <code>scripts/infrathon/pull_images.sh</code>; their task pages show the corresponding command.</p>
     </section>
@@ -114,12 +113,10 @@ launch/standalone-fp8/run.sh \
   --model MODEL_ID --effort max --hours 12 \
   --device-uuid "$DEVICE_UUID" \
   --auth /path/to/auth.json</code></pre></div>
-      <p>Work pauses while Judge evaluates a submission on the same GPU.</p>
       <h3>Submit a candidate</h3>
       <p>Inside the running Work environment, run the task’s public tests, then submit the current implementation:</p>
       <div class="doc-code"><pre><code>sforge-submit --details
 sforge-submit --list</code></pre></div>
-      <p>The first command submits a candidate and returns feedback. The second lists previous submissions.</p>
       <p>See <a href="tasks.html">Tasks</a> for task documentation and launch commands.</p>
     </section>
     <section class="doc-section" id="outputs"><h2>Results and logs</h2>

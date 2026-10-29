@@ -54,7 +54,7 @@
         h("td", { class: "n", text: v == null ? "—" : fmt(v) }), h("td", { class: "n", text: best == null ? "—" : fmt(best) }),
         h("td", { class: "n", text: delta })));
     });
-    if (!r.subs.length) tb.append(h("tr", {}, h("td", { colspan: 6, class: "muted", text: "No submissions were recorded for this run." })));
+    if (!r.subs.length) tb.append(h("tr", {}, h("td", { colspan: 6, class: "muted", text: "No submissions." })));
     log.append(tb);
   }
 

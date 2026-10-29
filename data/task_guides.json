@@ -20,12 +20,6 @@
         "PyTorch 2.8 / CUDA 12.9 / Triton task environment.",
         "BF16 attention tensors with Wan2.1-T2V-1.3B, LTX-2, and Kandinsky5 geometries."
       ],
-      "workflow": [
-        "Read the two entry points in `kernel_v001` and identify where the quantized probabilities and saved intermediates are produced.",
-        "Create a new versioned candidate; change tiling, quantization fusion, recomputation or gradient scheduling while retaining both interfaces.",
-        "Run the public controller and inspect errors for `o`, `dq`, `dk` and `dv`, plus saved-storage and input-preservation checks.",
-        "Run all four public cells, put the tested version number in `FINAL_VERSION`, and submit with `sforge-submit --details`."
-      ],
       "evaluation": "Measures effective training throughput across three model families after FP32-reference output and gradient checks, edge fixtures, input preservation, and intermediate-storage checks pass.",
       "sources": [
         {
@@ -69,7 +63,7 @@
           "sha256": "265b5bdddf2c3c07e499630713fae43cc0908c690fe8d847f8bfcb0cb1219499"
         }
       ],
-      "result_intro": "This task accelerates the forward and backward attention operator used to fine-tune video diffusion models with NVFP4 quantization-aware training. Given BF16 queries, keys, values and an output gradient, the implementation must produce the prescribed attention output and input gradients while reducing quantization, matrix-multiplication and intermediate-storage costs.",
+      "result_intro": "This task accelerates the forward and backward attention operator used to fine-tune video diffusion models with NVFP4 quantization-aware training.",
       "metric_summary": "The score is effective TFLOPS for a checkpointed training step: fixed work divided by twice the forward time plus backward time. Seven-trial median throughputs are combined geometrically, giving Wan2.1-T2V-1.3B, LTX-2 and Kandinsky5 equal weight.",
       "setting": "The starting candidate is a correct Triton port of FastVideo’s SM90 attention implementation. Four workload cells represent two Wan2.1-T2V-1.3B configurations, LTX-2 and Kandinsky5, with head dimensions of 64 or 128 and different sequence lengths. Inputs remain BF16 while queries, keys, values and attention probabilities undergo the specified NVFP4 quantize–dequantize operations. Evaluation covers this attention layer rather than an entire video-model training run.",
       "interface": [
@@ -114,7 +108,7 @@
       "test_commands": "# Replace 1 with your candidate version.\ncd /app/workdir/attn_qat_lab\n./tools/run_public_tests.sh --candidate-version 1",
       "launch_setup": "# Select the whole GPU allocated to this run.\nnvidia-smi --query-gpu=index,uuid --format=csv,noheader\nGPU_UUID=GPU-...",
       "launch_command": "launch/attn-qat-train/run.sh \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --device-uuid \"$GPU_UUID\" --auth /path/to/auth.json",
-      "reader_overview": "Video models need attention calculations in both the forward pass and the gradient calculation during training. The agent speeds up this attention routine while preserving the specified simulation of four-bit rounding, so its outputs and gradients still match the required computation.",
+      "reader_overview": "Video models need attention calculations in both the forward pass and the gradient calculation during training. The agent speeds up this attention routine.",
       "reader_setup": [
         {
           "name": "Model and data",
@@ -126,7 +120,7 @@
         },
         {
           "name": "Starting point",
-          "description": "A working attention implementation written in Triton, a language for writing GPU kernels."
+          "description": "A working attention implementation written in Triton."
         },
         {
           "name": "What the agent changes",
@@ -134,7 +128,7 @@
         }
       ],
       "reader_metric": {
-        "meaning": "Measures attention training speed, including the required quantization and gradient computation. Effective TFLOPS counts prescribed work in trillions of operations per second, combined across the three model families.",
+        "meaning": "Measures attention training speed, including the required quantization and gradient computation.",
         "rule": "Score = attention training work ÷ (2 × forward time + backward time), expressed in TFLOPS and combined across cases."
       },
       "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
@@ -153,12 +147,6 @@
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "PyTorch 2.8 / CUDA 12.9 / Triton task environment.",
         "FP8 matrices, block scales, group lengths, and FP32 gradient buffers."
-      ],
-      "workflow": [
-        "Implement block-scaled accumulation for each actual `ks` group, including the `K = 0` path and masked loads/stores for irregular dimensions.",
-        "Run sanitizer and public boundary tests before optimizing the aligned scored grid.",
-        "Compare coarse- and fine-family throughput while tuning tiling, split-K or persistent scheduling; keep the general path working.",
-        "Run the full public grid, select the verified version with `FINAL_VERSION`, and submit with `sforge-submit --details`."
       ],
       "evaluation": "Measures effective TFLOPS across coarse and fine grouping workloads. Numerical references, complete writes, unchanged inputs, and memory-safety checks establish correctness.",
       "sources": [
@@ -199,7 +187,7 @@
           "sha256": "0725ea38d01df0504aa5e71f0dbb2146979ea72c16bfa68d0cff32c927ff85f8"
         }
       ],
-      "result_intro": "Implement the weight-gradient matrix multiplication used by mixture-of-experts training, starting from an empty Triton candidate. FP8 activation and gradient rows are grouped by expert along the reduction dimension; each group’s scaled matrix product is added to an existing FP32 gradient and written to a separate output buffer.",
+      "result_intro": "Implement the weight-gradient matrix multiplication used by mixture-of-experts training, starting from an empty Triton candidate.",
       "metric_summary": "The score is effective TFLOPS using the actual sum of group reduction lengths and the median of five throughput trials per case. Coarse and fine grouping families receive equal weight through geometric means.",
       "setting": "The workload follows DeepGEMM’s K-grouped training GEMM, but the Work image supplies no GEMM implementation. Seven scored configurations span coarse and fine expert groupings, with fresh group lengths in each trial. The supported domain also includes 1–128 groups, arbitrary output dimensions from 1 to 8192, and empty groups. An aligned fast path must therefore coexist with correct handling of irregular dimensions and reductions.",
       "interface": [
@@ -244,7 +232,7 @@
       "test_commands": "cd /app/workdir/k_grouped_wgrad_lab\n./tools/run_public_tests.sh --sanitize --candidate-version 1\n./tools/run_public_tests.sh --edge --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1",
       "launch_setup": "# Select the whole GPU allocated to this run.\nnvidia-smi --query-gpu=index,uuid --format=csv,noheader\nGPU_UUID=GPU-...",
       "launch_command": "launch/standalone-kgrouped-wgrad/run.sh \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --device-uuid \"$GPU_UUID\" --auth /path/to/auth.json",
-      "reader_overview": "Training a model with multiple experts requires calculating gradients that tell each expert how to adjust its weights. The agent builds a fast GPU routine for these grouped calculations, using eight-bit inputs while preserving the required scaling and accumulated gradients.",
+      "reader_overview": "Training a model with multiple experts requires calculating gradients that tell each expert how to adjust its weights. The agent builds a fast GPU routine for these grouped calculations, using eight-bit inputs.",
       "reader_setup": [
         {
           "name": "Workload",
@@ -252,7 +240,7 @@
         },
         {
           "name": "Test setup",
-          "description": "Seven performance configurations cover coarse and fine expert groupings. Group sizes change between trials; correctness checks also include empty groups and irregular sizes."
+          "description": "Seven performance configurations cover coarse and fine expert groupings. Group sizes change between trials."
         },
         {
           "name": "Starting point",
@@ -264,7 +252,7 @@
         }
       ],
       "reader_metric": {
-        "meaning": "Measures how quickly the kernel computes the required expert weight gradients. Throughput uses the actual group sizes; the coarse- and fine-group workloads have equal weight. TFLOPS expresses the task-defined operation count in trillions of operations per second.",
+        "meaning": "Measures how quickly the kernel computes the required expert weight gradients. Throughput uses the actual group sizes; the coarse- and fine-group workloads have equal weight.",
         "rule": "Score = useful matrix operations ÷ execution time, expressed in TFLOPS and combined across cases."
       },
       "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
@@ -283,12 +271,6 @@
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "PyTorch 2.8 / CUDA 12.9 runtime with bidirectional GPU peer access.",
         "Host CUDA PyTorch with NCCL and symmetric-memory support for the GPU-pair preflight."
-      ],
-      "workflow": [
-        "Trace how the seed pulls the peer shard, publishes data-ready flags and schedules local versus remote expert rows.",
-        "Create a candidate version and adjust producer/consumer allocation, matrix tiles or staging layout without changing routing order.",
-        "Use the quick suite to check both ranks, then inspect per-rank timings and public communication diagnostics to locate waits.",
-        "Run all five public cells, select the tested version in `FINAL_VERSION`, and submit with `sforge-submit --details`."
       ],
       "evaluation": "Measures useful per-rank throughput using the slower rank’s time. Output accuracy, complete writes, fresh-input execution, input preservation, and rank agreement must pass.",
       "sources": [
@@ -329,7 +311,7 @@
           "sha256": "4e2aebd0d20ff87a469d1637f9b11d7501acdeeee82006f972e027625d5441ef"
         }
       ],
-      "result_intro": "Optimize the input-side primitive of a tensor-parallel mixture-of-experts layer on two GPUs. Each rank gathers both token shards, scatters rows into the supplied expert order, and performs grouped matrix multiplication to produce its own output-channel shard.",
+      "result_intro": "Optimize the input-side primitive of a tensor-parallel mixture-of-experts layer on two GPUs.",
       "metric_summary": "Effective TFLOPS divides useful matrix work per rank by the slower rank’s time, including all-gather, scatter, GEMM and synchronization. Seven trials determine each case’s median time; geometric means give the heavy- and moderate-communication families equal weight.",
       "setting": "The seed is a self-contained Triton adaptation of Flux’s layer-0 path, using remote-pull producers and grouped-GEMM consumers on a peer-connected GPU pair. Five scored cells represent Qwen3-Next, Qwen3-MoE, gpt-oss, Mixtral and DeepSeek configurations. Expert counts, selected experts and per-rank channel widths vary across these cells. Routing decisions are supplied as inputs; applying routing weights or activation functions and combining expert outputs are outside this primitive.",
       "interface": [
@@ -397,7 +379,7 @@
         }
       ],
       "reader_metric": {
-        "meaning": "Measures how quickly the two GPUs complete token collection, expert routing, and matrix multiplication together. Each measurement uses the slower GPU’s time, and the two communication-load families have equal weight. TFLOPS expresses the task-defined operation count in trillions of operations per second.",
+        "meaning": "Measures how quickly the two GPUs complete token collection, expert routing, and matrix multiplication together. Each measurement uses the slower GPU’s time, and the two communication-load families have equal weight.",
         "rule": "Score = useful matrix operations per GPU ÷ complete execution time, expressed in TFLOPS and combined across cases."
       },
       "reader_compute": "Two GPUs connected by NVLink, shared by development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
@@ -416,12 +398,6 @@
         "Default allocation: one 2-GPU NVLink pair shared by Work and Judge.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "Qwen3-1.7B, TL;DR preference data, and the provided TRL 0.12.1 / FSDP runtime."
-      ],
-      "workflow": [
-        "Read `runtime/api.py` and the baseline, especially the distinct completion-only odds-ratio labels and full-sequence chosen NLL target.",
-        "Create a new complete objective version and implement equivalent projection/loss computation or supported RoPE, RMSNorm and SwiGLU patches.",
-        "Run CPU checks, then the quick two-GPU smoke; examine losses, auxiliary values and gradients before measuring performance.",
-        "Run the full public training workload, choose the verified version with `FINAL_VERSION`, record it in `notes.md`, and submit with `sforge-submit --details`."
       ],
       "evaluation": "Compares complete-step throughput with an official TRL reference measured in the same evaluation. Losses, gradients, optimizer state, nonzero parameter updates, and memory use must meet the reference checks.",
       "sources": [
@@ -458,8 +434,8 @@
           "sha256": "2f1d803437e0cc9e0cfe8c97b243a0553da5a947c26b2a84ea029718203850cf"
         }
       ],
-      "result_intro": "Accelerate complete Qwen3-1.7B preference-training steps while preserving the official TRL ORPO objective and full-parameter updates. The candidate receives hidden states for chosen/rejected text and the output-head weights, implements vocabulary projection and loss computation, and may supply permitted layer patches to reduce end-to-end training time.",
-      "metric_summary": "The score is 100 times geometric-mean training speedup across five workloads, using each workload’s median of four candidate/reference pairs. Throughput counts completion-target tokens over complete optimizer-step time, including communication and updates; a score of 150 means 1.5× the remeasured official TRL reference.",
+      "result_intro": "Accelerate complete Qwen3-1.7B preference-training steps while preserving the official TRL ORPO objective and full-parameter updates.",
+      "metric_summary": "The score is 100 times geometric-mean training speedup across five workloads, using each workload’s median of four candidate/reference pairs. Throughput counts completion-target tokens over complete optimizer-step time, including communication and updates.",
       "setting": "Qwen3-1.7B trains in BF16 on TL;DR chosen/rejected preferences using two GPUs and FSDP1 FULL_SHARD. Its tied embedding and output head has a 151,936-token vocabulary, making projection and materialized logits a substantial cost. Five workloads vary stored sequence length from 512 to 2048 and per-rank pair batch from 2 to 8. The provided seed invokes TRL 0.12.1; this is full-parameter AdamW training, not LoRA.",
       "interface": [
         {
@@ -507,7 +483,7 @@
       "test_commands": "# Select your version with FINAL_VERSION first.\ncd /app/workdir/orpo_lab\nbash /workspace/public_tests/run_public_tests.sh --cpu-only\nbash /workspace/public_tests/run_public_tests.sh --quick\nbash /workspace/public_tests/run_public_tests.sh",
       "launch_setup": "# Select an allocated NVLink pair and copy its UUIDs.\nnvidia-smi --query-gpu=index,uuid --format=csv,noheader\nexport ORPO_GPU_INDICES=0,1\nexport ORPO_GPU_UUIDS=GPU-...,GPU-...",
       "launch_command": "launch/qwen3-orpo/run.sh \\\n  --model MODEL_ID --effort max --hours 24 \\\n  --no-wait --auth /path/to/auth.json",
-      "reader_overview": "Qwen3-1.7B is trained on preferred and rejected summaries so that it learns to favor the preferred response. The agent accelerates the training computation while preserving the reference method’s loss, gradients and complete model updates across the fixed set of workloads.",
+      "reader_overview": "Qwen3-1.7B is trained on preferred and rejected summaries so that it learns to favor the preferred response. The agent accelerates the training computation.",
       "reader_setup": [
         {
           "name": "Model and data",
@@ -527,7 +503,7 @@
         }
       ],
       "reader_metric": {
-        "meaning": "Compares complete ORPO training-step throughput with the reference implementation in the TRL training library on the same hardware. A score of 100 matches the reference; larger scores mean faster training.",
+        "meaning": "Compares complete ORPO training-step throughput with the reference implementation in the TRL training library on the same hardware. A score of 100 matches the reference.",
         "rule": "Score = 100 × geometric mean of training speedup across five workloads."
       },
       "reader_compute": "Two GPUs connected by NVLink, shared by development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
@@ -547,12 +523,6 @@
         "Release hardware: H100 NVL 94 GB.",
         "Frozen Qwen3-4B teacher, trainable Qwen3-1.7B student, and TL;DR prompt/completion data.",
         "Provided PyTorch 2.8 / CUDA 12.9 / FSDP runtime with the official TRL objective."
-      ],
-      "workflow": [
-        "Read the objective interface and verify how shifted completion masks include answer EOS while excluding prompt and padding targets.",
-        "Create a new version; fuse or tile the projections and JSD computation, or use supported student/teacher patches.",
-        "Run CPU cases for masks, biases, mixture endpoints and temperatures, then the short two-GPU smoke.",
-        "Run full public training, check frozen-teacher and student-update evidence, select the candidate in `FINAL_VERSION`, and submit with `sforge-submit --details`."
       ],
       "evaluation": "Measures training-throughput speedup against the paired official TRL reference. Objective tests, student updates, frozen-teacher preservation, and memory checks must pass.",
       "sources": [
@@ -581,8 +551,8 @@
           "sha256": "cf9a1f1db21086d4fe9e3b5e9f5cc13423ae7334eaea4fcc1d9c5f1d76836d44"
         }
       ],
-      "result_intro": "Accelerate off-policy knowledge-distillation steps from a frozen Qwen3-4B teacher into a trainable Qwen3-1.7B student. Both models consume fixed prompt/completion records; the candidate computes their vocabulary projections and generalized Jensen–Shannon loss, preserving student gradients while reducing the time and memory of complete training steps.",
-      "metric_summary": "The score is 100 times geometric-mean speedup across five training workloads, taking the median of four paired candidate/reference ratios per workload. Timing includes teacher and student forwards, loss, backward, communication and optimizer updates; 194.8 means 1.948× official TRL throughput.",
+      "result_intro": "Accelerate off-policy knowledge-distillation steps from a frozen Qwen3-4B teacher into a trainable Qwen3-1.7B student.",
+      "metric_summary": "The score is 100 times geometric-mean speedup across five training workloads, taking the median of four paired candidate/reference ratios per workload. Timing includes teacher and student forwards, loss, backward, communication and optimizer updates.",
       "setting": "The frozen BF16 teacher is replicated on each of two GPUs; the BF16 student uses FSDP FULL_SHARD and full-parameter AdamW. Both read TL;DR prompts with fixed chosen completions, so the timed workload does not generate new student trajectories. The objective matches TRL 0.12.1’s generalized JSD, with a 151,936-token vocabulary. Five workload rows vary sequence length and batch size, while prompt and padding positions are excluded from the completion-target count.",
       "interface": [
         {
@@ -630,7 +600,7 @@
       "test_commands": "# Select your version with FINAL_VERSION first.\ncd /app/workdir/gkd_lab\nbash /workspace/public_tests/run_public_tests.sh --cpu-only\nbash /workspace/public_tests/run_public_tests.sh --quick\nbash /workspace/public_tests/run_public_tests.sh",
       "launch_setup": "# Select the NVLink pair allocated to this run.\nnvidia-smi --query-gpu=index,uuid --format=csv,noheader",
       "launch_command": "launch/qwen3-gkd/run.sh \\\n  --model MODEL_ID --effort max --hours 24 \\\n  --gpus 0,1 --no-wait --auth /path/to/auth.json",
-      "reader_overview": "A smaller Qwen3-1.7B student learns from the predictions of a frozen Qwen3-4B teacher on supplied summaries. The agent accelerates the complete training step, including the teacher’s computation, while keeping the student’s loss and updates equivalent to the reference training implementation.",
+      "reader_overview": "A smaller Qwen3-1.7B student learns from the predictions of a frozen Qwen3-4B teacher on supplied summaries. The agent accelerates the complete training step, including the teacher’s computation.",
       "reader_setup": [
         {
           "name": "Model and data",
@@ -650,7 +620,7 @@
         }
       ],
       "reader_metric": {
-        "meaning": "Compares complete teacher–student training-step throughput with the reference implementation in the TRL training library. Timing includes both models, loss computation, student gradients, communication, and optimizer updates. A score of 100 matches the reference.",
+        "meaning": "Compares complete teacher–student training-step throughput with the reference implementation in the TRL training library. A score of 100 matches the reference.",
         "rule": "Score = 100 × geometric mean of training speedup across five workloads."
       },
       "reader_compute": "Two GPUs connected by NVLink, shared by development and evaluation. H100 NVL (94 GB)."
@@ -672,12 +642,6 @@
         "Provided Miles runtime; 24-CPU quota and 256 GiB host RAM per container.",
         "Set `MILES_SCRATCH_ROOT` on a data disk with at least 200 GiB free; the system root filesystem also needs 20 GiB free.",
         "Export `SFORGE_CPUSET=auto` to use the CPU pinning policy of the released qualification."
-      ],
-      "workflow": [
-        "Implement teacher-only context handling and the top-256 reverse-KL loss in the existing Miles/Megatron training path.",
-        "Make `probe` and `run` share the same numerical implementation and emit all required step records.",
-        "Run the public fixed-trajectory probe, then the small online-training suite to check generation, updates and publication together.",
-        "Run public `perf`, inspect its audited duration and provisional medical accuracy, then submit `repo/`, `task_entry.py`, `config/` and `notes.md` with `sforge-submit --details`."
       ],
       "evaluation": "Measures held-out medical accuracy gained per audited training hour. The quality threshold and checks linking samples, training updates, published weights, and evaluated weights must pass.",
       "sources": [
@@ -738,8 +702,8 @@
           "sha256": "657e7a202fde4424a209893e527c8b4067873222b55eccfcaacdb43d583b3031"
         }
       ],
-      "result_intro": "Implement context distillation in Miles so a Qwen3-1.7B student learns medical answering behavior from its own initial weights acting as a frozen teacher with a medical system prompt. The student generates responses without that prompt, learns from teacher probabilities, and publishes updated weights; optimization targets the entire learning pipeline.",
-      "metric_summary": "The score is held-out MedMCQA accuracy gained in percentage points per audited training hour, averaged over three evaluations on 2,436 questions. At least 6.5 points of improvement is required; timing includes generation, learning and final weight publication, while model loading and authorized evaluation overhead are excluded.",
+      "result_intro": "Implement context distillation in Miles so a Qwen3-1.7B student learns medical answering behavior from its own initial weights acting as a frozen teacher with a medical system prompt.",
+      "metric_summary": "The score is held-out MedMCQA accuracy gained in percentage points per audited training hour, averaged over three evaluations on 2,436 questions. At least 6.5 points of improvement is required; timing includes generation, learning and final weight publication.",
       "setting": "The supplied Miles checkout combines SGLang generation, Megatron-Core training and Ray orchestration, but its context-distillation loss is unfinished. The fixed workload contains 32 rounds of 512 MedMCQA prompts with one response per prompt and a 512-token response limit. Teacher and student start from the same Qwen3-1.7B snapshot. Each round uses a training-side student top-256 distribution, performs one AdamW update and publishes new student weights.",
       "interface": [
         {
@@ -785,7 +749,7 @@
       "launch_setup": "export SFORGE_CPUSET=auto",
       "launch_command": "launch/miles-opcd/run.sh --config launch/miles-opcd/run.env --dry-run\nlaunch/miles-opcd/run.sh --config launch/miles-opcd/run.env --foreground",
       "config_setup": "cp launch/miles-opcd/codex.env.example launch/miles-opcd/run.env\n# Use the paper’s 24-hour budget.\nsed -i 's/^TASK_TIMEOUT=.*/TASK_TIMEOUT=86400/' launch/miles-opcd/run.env",
-      "reader_overview": "A Qwen3-1.7B student must learn medical knowledge from a frozen teacher that receives an additional medical instruction. The agent implements this learning process in the Miles training framework, then makes the full cycle of answer generation, teacher feedback and student updates faster while retaining learning progress.",
+      "reader_overview": "A Qwen3-1.7B student must learn medical knowledge from a frozen teacher that receives an additional medical instruction. The agent implements this learning process in the Miles training framework, then makes the full cycle of answer generation, teacher feedback and student updates faster.",
       "reader_setup": [
         {
           "name": "Model and data",
@@ -827,12 +791,6 @@
         "Provided Miles runtime; 24 CPUs and 256 GiB host RAM per container.",
         "Set `MILES_SCRATCH_ROOT` on a data disk with at least 200 GiB free; the system root filesystem also needs 20 GiB free.",
         "Export `SFORGE_CPUSET=auto` to use the CPU pinning policy of the released qualification."
-      ],
-      "workflow": [
-        "Implement teacher scoring and training-side pre-update student probabilities for the student’s sampled tokens.",
-        "Use those probabilities in the prescribed advantage and clipped loss, then connect optimizer updates to SGLang weight publication.",
-        "Pass the public trajectory probe and small online run, inspecting masks, step records and whether later rollouts use updated weights.",
-        "Measure the full public workload, then submit the complete source workspace with `sforge-submit --details`."
       ],
       "evaluation": "Measures held-out math-accuracy gain per audited training hour. Teacher/student probabilities, loss and gradients, sample usage, weight publication, and the quality threshold are checked.",
       "sources": [
@@ -905,7 +863,7 @@
           "sha256": "e38b1a964762b453f33267a4844537588c5d0643c58621b3fe53eb88a927ba8f"
         }
       ],
-      "result_intro": "Build sampled-token on-policy distillation inside Miles: Qwen3-1.7B generates mathematical solutions, a frozen Qwen3-4B teacher scores the sampled tokens, and the student learns from their probability differences. The implementation must connect rollout, teacher scoring, Megatron updates and weight publication, then accelerate that complete fixed-size training run.",
+      "result_intro": "Build sampled-token on-policy distillation inside Miles: Qwen3-1.7B generates mathematical solutions, a frozen Qwen3-4B teacher scores the sampled tokens, and the student learns from their probability differences.",
       "metric_summary": "The score is math-accuracy improvement in percentage points per audited training hour, using three evaluations on 2,000 held-out DAPO-Math problems. A gain of at least 1.6 points is required; timing includes rollout, teacher scoring, learning and final weight publication.",
       "setting": "The Miles starter can launch training and export weights, but the on-policy distillation feedback and step records are missing. A frozen Qwen3-4B teacher guides a Qwen3-1.7B student for 32 rounds of 128 DAPO-Math prompts. Each prompt produces one response of at most 4,096 tokens with thinking disabled. Student and teacher sampled-token log-probabilities define the fixed advantage, followed by a PPO-clipped update and publication each round.",
       "interface": [
@@ -952,7 +910,7 @@
       "launch_setup": "export SFORGE_CPUSET=auto",
       "launch_command": "launch/miles-opd/run.sh --config launch/miles-opd/run.env --dry-run\nlaunch/miles-opd/run.sh --config launch/miles-opd/run.env --foreground",
       "config_setup": "cp launch/miles-opd/codex.env.example launch/miles-opd/run.env\n# Use the paper’s 24-hour budget.\nsed -i 's/^TASK_TIMEOUT=.*/TASK_TIMEOUT=86400/' launch/miles-opd/run.env",
-      "reader_overview": "A Qwen3-1.7B student generates math solutions and learns from a frozen Qwen3-4B teacher’s assessment of those same responses. The agent builds this online learning loop in the Miles training framework and speeds up generation, feedback and training while preserving the required updates and improvement in math performance.",
+      "reader_overview": "A Qwen3-1.7B student generates math solutions and learns from a frozen Qwen3-4B teacher’s assessment of those same responses. The agent builds this online learning loop in the Miles training framework and speeds up generation, feedback and training.",
       "reader_setup": [
         {
           "name": "Model and data",
@@ -994,12 +952,6 @@
         "Provided Miles runtime; 24-CPU quota and 256 GiB host RAM per container.",
         "Set `MILES_SCRATCH_ROOT` on a data disk with at least 300 GiB free; the system root filesystem also needs 20 GiB free.",
         "Export `SFORGE_CPUSET=auto` to use the CPU pinning policy of the released qualification."
-      ],
-      "workflow": [
-        "Connect game creation, observation rendering and first-action-tag execution, keeping generated token history intact.",
-        "Build response-only masks and the prescribed game-group advantages, then implement shared probe/run GRPO updates.",
-        "Run the public probe followed by short real training; inspect environment replay, reward, token-mask and publication checks.",
-        "Run public `perf` on the complete workload, inspect game-success improvement as well as duration, and submit the source workspace with `sforge-submit --details`."
       ],
       "evaluation": "Measures held-out game-success gain per audited training hour. Environment replay, learning computation, sample-to-update consistency, final weights, and a success-improvement threshold are checked.",
       "sources": [
@@ -1060,7 +1012,7 @@
           "sha256": "d75522b682b63aa14e6e6fae74ba8d03ae324fa9a7d766f896302227492a9b9b"
         }
       ],
-      "result_intro": "Integrate ALFWorld’s text household games into Miles and train Qwen3-4B through multi-turn GRPO. The system must translate observations into prompts, execute the model’s actions, turn game success into learning updates and publish the trained policy; optimization focuses on environment concurrency, rollout scheduling, training and publication.",
+      "result_intro": "Integrate ALFWorld’s text household games into Miles and train Qwen3-4B through multi-turn GRPO.",
       "metric_summary": "The score is held-out game-success improvement in percentage points per audited training hour, measured over three greedy evaluations on 1,134 games. At least 15 points of improvement is required; the duration includes environment interaction and learning through final weight publication.",
       "setting": "Miles supplies the inference, training and checkpoint infrastructure, while the ALFWorld integration and run/probe entry points must be implemented. Training comprises 12 rounds of 16 games, with eight episodes per game for group-relative learning. Each episode allows at most 30 actions and 256 generated tokens per turn. Qwen3-4B receives the observation and admissible actions, preserves its full token history, and earns reward 1 only for winning.",
       "interface": [
@@ -1107,7 +1059,7 @@
       "launch_setup": "export SFORGE_CPUSET=auto",
       "launch_command": "launch/miles-alfworld/run.sh --config launch/miles-alfworld/run.env --dry-run\nlaunch/miles-alfworld/run.sh --config launch/miles-alfworld/run.env --foreground",
       "config_setup": "cp launch/miles-alfworld/codex.env.example launch/miles-alfworld/run.env\n# Use the paper’s 24-hour budget.\nsed -i 's/^TASK_TIMEOUT=.*/TASK_TIMEOUT=86400/' launch/miles-alfworld/run.env",
-      "reader_overview": "Qwen3-4B learns to complete household tasks by interacting with the ALFWorld text environment and receiving a reward when it succeeds. The agent connects these interactions to the Miles training framework, then accelerates game collection, model updates and weight transfer while preserving the required learning behavior.",
+      "reader_overview": "Qwen3-4B learns to complete household tasks by interacting with the ALFWorld text environment and receiving a reward when it succeeds. The agent connects these interactions to the Miles training framework, then accelerates game collection, model updates and weight transfer.",
       "reader_setup": [
         {
           "name": "Model and data",
@@ -1149,12 +1101,6 @@
         "Provided Miles Diffusion runtime with PaddleOCR; 256 GiB host RAM per container.",
         "Set `MILES_SCRATCH_ROOT` on a data disk with at least 500 GiB free; the system root filesystem also needs 20 GiB free.",
         "Export `SFORGE_CPUSET=auto` to use the CPU pinning policy of the released qualification."
-      ],
-      "workflow": [
-        "Implement teacher routing from row metadata, and evaluate each frozen teacher on the student’s sampled CPS states.",
-        "Compute the exact Gaussian transition KL and connect its gradients to the prescribed two student LoRA updates per round.",
-        "Run public probe and small suites to verify transitions, gradients, optimizer records and publication.",
-        "Measure public replay performance; use `perf --quality` to check the real training run and provisional OCR/PickScore closure before submitting source with `sforge-submit --details`."
       ],
       "evaluation": "Combines OCR/PickScore teacher-gap closure with replay throughput. Both route-specific quality and KL gates must pass, together with checks of the real training run, optimizer steps, and published LoRA.",
       "sources": [
@@ -1223,7 +1169,7 @@
           "sha256": "38f08740fe20aaa87b1001742e49136318cb099b5aa53768600de1d0892384d9"
         }
       ],
-      "result_intro": "Implement multi-teacher on-policy distillation for Stable Diffusion 3.5 Medium in miles_diffusion. One student LoRA learns from OCR and aesthetics teachers on its own sampled diffusion states; the candidate must route prompts to the appropriate teacher, compute transition-level distillation loss, update the student and publish its adapter efficiently.",
+      "result_intro": "Implement multi-teacher on-policy distillation for Stable Diffusion 3.5 Medium in miles_diffusion.",
       "metric_summary": "The score averages the fraction of the OCR and PickScore teacher gaps closed, then divides by median replay hours across three segments. Quality comes from the real training run’s final LoRA; both routes must close at least 25% of their gap and pass their KL-improvement gates.",
       "setting": "The starter has FSDP2 training, Ray and sglang-diffusion rollout infrastructure but no teacher path. Stable Diffusion 3.5 Medium trains a rank-32, alpha-64 LoRA over 64 rounds of eight routed prompt rows, with eight samples per row. Sampling uses 512×512 images and a ten-step CPS trajectory with a three-step stochastic window. Each round performs two AdamW updates and publishes the student LoRA before the next round begins.",
       "interface": [
@@ -1275,7 +1221,7 @@
       "launch_setup": "export SFORGE_CPUSET=auto",
       "launch_command": "launch/miles-diffusion-opd/run.sh --config launch/miles-diffusion-opd/run.env --dry-run\nlaunch/miles-diffusion-opd/run.sh --config launch/miles-diffusion-opd/run.env --foreground",
       "config_setup": "cp launch/miles-diffusion-opd/codex.env.example launch/miles-diffusion-opd/run.env\n# Use the paper’s 24-hour budget.\nsed -i 's/^TASK_TIMEOUT=.*/TASK_TIMEOUT=86400/' launch/miles-diffusion-opd/run.env",
-      "reader_overview": "A Stable Diffusion 3.5 Medium image generator learns from two teachers, one specializing in readable text and the other in visual aesthetics. The agent implements their guidance in the Miles Diffusion training framework and accelerates training of a small student adapter while preserving the fixed learning recipe.",
+      "reader_overview": "A Stable Diffusion 3.5 Medium image generator learns from two teachers, one specializing in readable text and the other in visual aesthetics. The agent implements their guidance in the Miles Diffusion training framework and accelerates training of a small student adapter.",
       "reader_setup": [
         {
           "name": "Model and data",
@@ -1295,7 +1241,7 @@
         }
       ],
       "reader_metric": {
-        "meaning": "Measures how much of the gap to the two teachers the student closes per hour of replayed training. Text-reading accuracy and aesthetics contribute equally. Both must close at least 25% of their teacher gap and pass the loss checks. A replay reuses recorded generation outputs to time the required training workflow; a separate real training run checks learning quality.",
+        "meaning": "Measures how much of the gap to the two teachers the student closes per hour of replayed training. Text-reading accuracy and aesthetics contribute equally. Both must close at least 25% of their teacher gap and pass the loss checks.",
         "rule": "Score = average fraction of the teacher quality gap closed ÷ replay hours."
       },
       "reader_compute": "Two GPUs connected by NVLink, shared by development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
@@ -1317,12 +1263,6 @@
         "Provided Miles Diffusion runtime; 256 GiB host RAM and 128 GiB shared memory per container.",
         "Set `MILES_SCRATCH_ROOT` on a data disk with at least 300 GiB free; the system root filesystem also needs 20 GiB free.",
         "Export `SFORGE_CPUSET=auto` to use the CPU pinning policy of the released qualification."
-      ],
-      "workflow": [
-        "Implement the whitelisted Dance-SDE and grouped-noise engine changes, then verify existing sampling branches remain unchanged.",
-        "Implement HPSv3 scoring for frames 0, 4 and 8 and the prescribed trainer-side old-policy probabilities, advantages and PPO update.",
-        "Run public CPU, reward and probe checks before the small real-training suite.",
-        "Run public replay performance, inspect gate results and complete publication/log events, then submit `repo/` and `notes.md` with `sforge-submit --details`."
       ],
       "evaluation": "Measures fixed-workload replay throughput after checking frame rewards, sampling, training updates, and publication. A separate evaluation of the real run’s final model must pass the HPSv3 quality gate.",
       "sources": [
@@ -1391,8 +1331,8 @@
           "sha256": "1f3a4418af27e9c9f42e11d13c9ea9faf6956e64e4ae44adbd188bcfed98bbc8"
         }
       ],
-      "result_intro": "Implement DanceGRPO video training for Wan2.2-TI2V-5B in miles_diffusion, including stochastic sampling transitions, grouped noise and official HPSv3 frame rewards. The candidate must run real training and a replay service, then accelerate reward evaluation, policy-probability recomputation, optimizer updates, durable logging and full-weight publication.",
-      "metric_summary": "The score is 3,600 divided by the median seconds for three fixed replays, each containing 16 prompts with eight videos per prompt. It measures replays per hour; the real run’s final-model HPSv3 reward must be at least the baseline minus 0.28, but quality is not a score multiplier.",
+      "result_intro": "Implement DanceGRPO video training for Wan2.2-TI2V-5B in miles_diffusion, including stochastic sampling transitions, grouped noise and official HPSv3 frame rewards.",
+      "metric_summary": "The score is 3,600 divided by the median seconds for three fixed replays, each containing 16 prompts with eight videos per prompt. It measures replays per hour; the real run’s final-model HPSv3 reward must be at least the baseline minus 0.28.",
       "setting": "Wan2.2-TI2V-5B runs in text-to-video mode with full transformer training; the text encoder and VAE stay frozen. The fixed recipe generates nine-frame 704×1280 videos using ten steps, CFG 5 and Dance-SDE noise. Groups of eight share initial noise but use independent stochastic-transition noise. A real run performs three rounds of eight prompts, with two optimizer steps and a complete transformer publication per round; separate replays measure the training-side throughput.",
       "interface": [
         {
@@ -1439,7 +1379,7 @@
       "launch_setup": "export SFORGE_CPUSET=auto",
       "launch_command": "launch/miles-diffusion-wan/run.sh --config launch/miles-diffusion-wan/run.env --dry-run\nlaunch/miles-diffusion-wan/run.sh --config launch/miles-diffusion-wan/run.env --foreground",
       "config_setup": "cp launch/miles-diffusion-wan/codex.env.example launch/miles-diffusion-wan/run.env\n# Use the paper’s 24-hour budget.\nsed -i 's/^TASK_TIMEOUT=.*/TASK_TIMEOUT=86400/' launch/miles-diffusion-wan/run.env",
-      "reader_overview": "Wan2.2 learns to produce videos using a fixed preference scorer that rewards the generated results. The agent adds the required video-training method to the Miles Diffusion training framework, then speeds up reward calculation, model training and transfer of updated weights while preserving the recipe and video quality.",
+      "reader_overview": "Wan2.2 learns to produce videos using a fixed preference scorer that rewards the generated results. The agent adds the required video-training method to the Miles Diffusion training framework, then speeds up reward calculation, model training and transfer of updated weights.",
       "reader_setup": [
         {
           "name": "Model and data",
@@ -1459,7 +1399,7 @@
         }
       ],
       "reader_metric": {
-        "meaning": "Measures how many fixed training replays can be completed per hour. The real trained model must retain a mean HPSv3 reward of at least the baseline minus 0.28; the replay duration determines the score. A replay reuses recorded generation outputs to time the required training workflow; a separate real training run checks learning quality.",
+        "meaning": "Measures how many fixed training replays can be completed per hour. The real trained model must retain a mean HPSv3 reward of at least the baseline minus 0.28; the replay duration determines the score.",
         "rule": "Score = 1 ÷ median replay duration in hours."
       },
       "reader_compute": "Two GPUs connected by NVLink, shared by development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
@@ -1478,12 +1418,6 @@
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "PyTorch 2.8 / CUDA 12.9 / Triton task environment.",
         "FP8 inputs, block scales, group boundaries, and BF16 output buffers."
-      ],
-      "workflow": [
-        "Implement both entry points in `candidates/kernel_v001/submission.py`, sharing the scale arithmetic while handling each layout’s row mapping.",
-        "Run the public quick grid, then edge and sanitizer modes to check empty groups, tile tails, and misleading row-count hints.",
-        "Compare full-grid measurements while tuning group scheduling, tile sizes, warps, and stages; retain a correct earlier version.",
-        "Write the selected integer to `FINAL_VERSION`, rerun the complete public grid, and submit with `sforge-submit --details`. Replace version 1 in the commands with the version being tested."
       ],
       "evaluation": "Measures effective TFLOPS across both layouts. Numerical correctness, complete writes, unchanged inputs, and memory safety are checked across scored and boundary cases.",
       "sources": [
@@ -1536,8 +1470,8 @@
           "sha256": "54a75bbcb9f03cde0bb1aee064050ea15f228af7be476f2a32feaa943df56320"
         }
       ],
-      "result_intro": "Implement the matrix multiplication used to process variable token batches in mixture-of-experts inference, starting from empty Triton code. The operator reads block-scaled FP8 activations and expert weights in two storage layouts, writes BF16 results, and must accelerate useful work across changing expert row counts.",
-      "metric_summary": "The score counts only valid expert rows and divides their matrix-multiplication work by the full synchronized call time. Five-trial median TFLOPS are combined geometrically across 32 cases, with equal weight for masked and packed layouts; padded rows earn no throughput credit.",
+      "result_intro": "Implement the matrix multiplication used to process variable token batches in mixture-of-experts inference, starting from empty Triton code.",
+      "metric_summary": "The score counts only valid expert rows and divides their matrix-multiplication work by the full synchronized call time. Five-trial median TFLOPS are combined geometrically across 32 cases, with equal weight for masked and packed layouts.",
       "setting": "The synthetic workload follows DeepGEMM’s grouped FP8 benchmark and uses no model weights. Its 32 scored configurations combine masked and packed layouts, four expert-count/token-count regimes, and four matrix shapes, with fresh valid row counts in every trial. The supported domain includes 1–64 experts, zero-row groups, and widths up to 8192. Optimization covers tiling, scale access, and scheduling across these changing group sizes.",
       "interface": [
         {
@@ -1581,15 +1515,15 @@
       "test_commands": "./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --edge --candidate-version 1\n./tools/run_public_tests.sh --sanitize --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1",
       "launch_setup": "nvidia-smi -L\nDEVICE_UUID=GPU-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
       "launch_command": "launch/standalone-fp8/run.sh \\\n  --device-uuid \"$DEVICE_UUID\" \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --auth /path/to/auth.json",
-      "reader_overview": "Mixture-of-experts inference sends different numbers of tokens to different expert networks, creating many matrix multiplications of uneven size. The agent builds a GPU implementation that processes these changing groups efficiently, supports both storage arrangements, and preserves the required numerical results.",
+      "reader_overview": "Mixture-of-experts inference sends different numbers of tokens to different expert networks, creating many matrix multiplications of uneven size. The agent builds a GPU implementation that processes these changing groups efficiently.",
       "reader_setup": [
         {
           "name": "Workload",
-          "description": "Generated matrix data follows the DeepGEMM grouped FP8 workload. Expert batches vary in size and use either padded storage or a packed arrangement; no model weights are loaded."
+          "description": "Generated matrix data follows the DeepGEMM grouped FP8 workload. Expert batches vary in size and use either padded storage or a packed arrangement."
         },
         {
           "name": "Test setup",
-          "description": "Evaluation times 32 configurations across the two storage arrangements, expert counts, token counts, and matrix sizes. Another 158 cases check correctness, including empty experts and small or irregular batches."
+          "description": "Evaluation times 32 configurations across the two storage arrangements, expert counts, token counts, and matrix sizes."
         },
         {
           "name": "Starting point",
@@ -1601,7 +1535,7 @@
         }
       ],
       "reader_metric": {
-        "meaning": "Measures matrix-multiplication throughput using only actual expert rows. Padded rows add no useful work. Masked and packed layouts have equal weight in the final score. TFLOPS expresses the task-defined operation count in trillions of operations per second.",
+        "meaning": "Measures matrix-multiplication throughput using only actual expert rows. Masked and packed layouts have equal weight in the final score.",
         "rule": "Score = useful matrix operations ÷ execution time, expressed in TFLOPS and combined across cases."
       },
       "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
@@ -1620,12 +1554,6 @@
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "PyTorch 2.8 / CUDA 12.9 / Triton task environment.",
         "BF16 Q/KV tensors, sparse indices, and sink/length inputs for the three MLA geometries."
-      ],
-      "workflow": [
-        "Implement slot-by-slot validity masks, KV gathering, FP32 online softmax, and all three outputs in the first candidate.",
-        "Check the quick scored grid, run sanitizer mode, then exercise the public edge suite, including empty rows and duplicate keys.",
-        "Tune head blocking, gather pipelining, and shape-based scheduling; compare the complete 13-case public grid across all three families.",
-        "Select a fully checked version with `FINAL_VERSION`, retain the measurement notes, and run `sforge-submit --details`. Replace version 1 in the commands when testing another candidate."
       ],
       "evaluation": "Measures effective throughput across three MLA geometry families. Reference output/statistics checks, input preservation, and memory-safety gates cover the supported domain.",
       "sources": [
@@ -1678,7 +1606,7 @@
           "sha256": "eb64b79a44fb0b4c2eba72c7383b884ea196c7cdf9ea6a6e867b9ace7b2e7d99"
         }
       ],
-      "result_intro": "Implement sparse multi-head latent attention for prefill from an empty Triton candidate. Each query gathers an indexed set of keys and returns a BF16 attention vector plus FP32 normalization statistics; the optimization target is the complete gather, attention, and output computation across three DeepSeek geometries.",
+      "result_intro": "Implement sparse multi-head latent attention for prefill from an empty Triton candidate.",
       "metric_summary": "Throughput counts the selected query–key interactions, including QK and value aggregation, over the complete synchronized call. The Judge takes seven-trial medians for 13 cases and geometrically combines the three DeepSeek families with equal weight, measuring sparse-attention TFLOPS.",
       "setting": "The scored workloads use DeepSeek V3.2, V4-Flash, and V4-Pro head geometries with 4096 query positions. Selected-key counts are 2048, 512, and 1024 respectively, while KV context lengths extend to 128K. Inputs are synthetic BF16 tensors with one shared KV head and a 512-dimensional value vector. Additional cases exercise arbitrary valid and invalid indices, optional sinks, variable selected-set lengths, and much larger query dimensions.",
       "interface": [
@@ -1723,7 +1651,7 @@
       "test_commands": "./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --sanitize --candidate-version 1\n./tools/run_public_tests.sh --edge --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1",
       "launch_setup": "nvidia-smi -L\nDEVICE_UUID=GPU-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
       "launch_command": "launch/standalone-sparse-mla-v2/run.sh \\\n  --device-uuid \"$DEVICE_UUID\" \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --auth /path/to/auth.json",
-      "reader_overview": "Sparse attention computes each query’s output from a selected list of context positions, reducing the number of attention interactions. The agent builds a GPU implementation that gathers those positions and computes the output faster while handling repeated, missing, and empty selections correctly.",
+      "reader_overview": "Sparse attention computes each query’s output from a selected list of context positions, reducing the number of attention interactions. The agent builds a GPU implementation that gathers those positions and computes the output faster.",
       "reader_setup": [
         {
           "name": "Workload",
@@ -1731,7 +1659,7 @@
         },
         {
           "name": "Test setup",
-          "description": "Evaluation times 13 configurations across three model families. Another 401 correctness cases cover repeated or invalid selections, empty selections, optional attention sinks, and irregular sizes."
+          "description": "Evaluation times 13 configurations across three model families."
         },
         {
           "name": "Starting point",
@@ -1743,7 +1671,7 @@
         }
       ],
       "reader_metric": {
-        "meaning": "Measures the speed of attention over the selected keys. Timing includes gathering keys, computing attention, and writing results. The three DeepSeek workload families have equal weight. TFLOPS expresses the task-defined operation count in trillions of operations per second.",
+        "meaning": "Measures the speed of attention over the selected keys. The three DeepSeek workload families have equal weight.",
         "rule": "Score = operations for selected query–key pairs ÷ execution time, expressed in TFLOPS and combined across cases."
       },
       "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
@@ -1762,12 +1690,6 @@
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "PyTorch 2.8 / CUDA 12.9 / Triton task environment.",
         "BF16 queries, physical KV pages, page tables, and per-request lengths."
-      ],
-      "workflow": [
-        "Implement physical-page lookup and query-to-KV-head mapping, followed by masked QK, stable softmax, and value accumulation.",
-        "Use sanitizer and edge modes to test shared pages, irregular head groups, query tails, and NaN or Inf in invisible cache slots.",
-        "Compare the complete public grid while tuning page-aware tiling, KV splitting, and reuse across grouped query heads.",
-        "Select a checked version in `FINAL_VERSION`, record the measurements, and submit with `sforge-submit --details`. Replace version 1 in the commands with the candidate under test."
       ],
       "evaluation": "Measures effective attention throughput for single-query and short multi-query workloads. Numerical references, complete output writes, input preservation, and memory safety must pass.",
       "sources": [
@@ -1820,7 +1742,7 @@
           "sha256": "6407907d318fdce60e9a5a4480e92b5f313deaf50a9477ca7197ea1c8a8aa062"
         }
       ],
-      "result_intro": "Implement grouped-query attention over a paged KV cache for single-token decode and short-query prefill. The Triton kernel maps logical tokens to physical pages, applies shared KV heads and per-request causal limits, and writes BF16 attention outputs while reducing the complete call latency.",
+      "result_intro": "Implement grouped-query attention over a paged KV cache for single-token decode and short-query prefill.",
       "metric_summary": "The score divides the QK and value-aggregation work for causally visible pairs by synchronized call time, including page lookup and softmax. Seven-trial median TFLOPS are geometrically aggregated across five head configurations in each of the equally weighted one-query and 16-query families.",
       "setting": "The ten scored cases pair query lengths 1 and 16 with head configurations from Llama-3.1-8B, Qwen-2.5-7B, Llama-3.1-70B, Mistral Large, and Llama-3.1-405B at TP8. The operator uses synthetic BF16 queries and caches with head dimension 128 and request lengths up to 32768. The broader support domain includes shared physical pages, oversized page tables, and arbitrary query lengths from 1 to 16. Model weights and text generation are outside this operator workload.",
       "interface": [
@@ -1869,11 +1791,11 @@
       "reader_setup": [
         {
           "name": "Workload",
-          "description": "Generated queries and paged caches represent five deployed-model head arrangements: Llama-3.1-8B, Qwen-2.5-7B, Llama-3.1-70B, Mistral Large, and Llama-3.1-405B. The workload evaluates the attention operation without loading model weights or generating text."
+          "description": "Generated queries and paged caches represent five deployed-model head arrangements: Llama-3.1-8B, Qwen-2.5-7B, Llama-3.1-70B, Mistral Large, and Llama-3.1-405B."
         },
         {
           "name": "Test setup",
-          "description": "Ten timed configurations combine the five head arrangements with one-token and 16-token queries. Another 160 correctness cases vary page mappings, cache lengths, shared pages, and boundary conditions."
+          "description": "Ten timed configurations combine the five head arrangements with one-token and 16-token queries."
         },
         {
           "name": "Starting point",
@@ -1885,7 +1807,7 @@
         }
       ],
       "reader_metric": {
-        "meaning": "Measures attention throughput for the query–key pairs allowed by the causal mask. Timing includes page lookup and the full attention call. Single-query and 16-query workloads have equal weight. TFLOPS expresses the task-defined operation count in trillions of operations per second.",
+        "meaning": "Measures attention throughput for the query–key pairs allowed by the causal mask. Timing includes page lookup and the full attention call. Single-query and 16-query workloads have equal weight.",
         "rule": "Score = useful attention operations ÷ execution time, expressed in TFLOPS and combined across cases."
       },
       "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
@@ -1904,12 +1826,6 @@
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "PyTorch 2.8 / CUDA 12.9 / Triton task environment.",
         "Synthetic workloads and real-layer fixtures from CogVideoX-2B and Llama-3.1-8B."
-      ],
-      "workflow": [
-        "Measure the seed on the public suite and inspect the global, per-head, and tail errors alongside its latency.",
-        "Create a new version to test quantization granularity, fused preprocessing, or attention scheduling across both workload families.",
-        "Run the full public suite, including the disclosed real-layer fixtures, and compare every accuracy measure with its reported limit.",
-        "Point `FINAL_VERSION` to the chosen implementation and submit with `sforge-submit --details`; use the desired version number in the public commands."
       ],
       "evaluation": "Measures dense-equivalent attention throughput after output-accuracy and input-integrity checks. Quantization and preprocessing remain part of the timed call.",
       "sources": [
@@ -1962,7 +1878,7 @@
           "sha256": "5205097a91a750e78c3e0067ee64699f4ff2838321351ff1cf61d8141939754b"
         }
       ],
-      "result_intro": "Accelerate an attention forward pass from BF16 Q, K, and V to a BF16 output, starting from a working SageAttention-style Triton implementation. The candidate controls smoothing, intermediate quantization, softmax, and value aggregation within the timed call, while retaining accuracy across video and language-model workloads.",
+      "result_intro": "Accelerate an attention forward pass from BF16 Q, K, and V to a BF16 output, starting from a working SageAttention-style Triton implementation.",
       "metric_summary": "The score uses dense attention work as a common numerator, while timing the entire candidate pipeline, including smoothing and quantization. Seven-trial median TFLOPS are combined geometrically across three video-DiT and two causal-LLM cells, with each family receiving half the weight.",
       "setting": "The seed computes key means, blockwise INT8 Q/K quantization, online softmax, and FP16 probability–value products. Five scored cells span noncausal video attention and causal language-model attention with head widths 64 or 128. Synthetic inputs vary token scales and channel offsets to expose quantization errors. Accuracy checks also use eight edge fixtures and captured activations from all 30 CogVideoX-2B layers and 32 Llama-3.1-8B layers.",
       "interface": [
@@ -2010,7 +1926,7 @@
       "test_commands": "./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1",
       "launch_setup": "nvidia-smi -L\nDEVICE_UUID=GPU-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
       "launch_command": "launch/sageattention-qattn/run.sh \\\n  --device-uuid \"$DEVICE_UUID\" \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --auth /path/to/auth.json",
-      "reader_overview": "Attention can run faster when intermediate values use fewer bits, but this introduces numerical error. The agent improves a working quantized-attention implementation, speeding up the complete operation from input preprocessing through output generation while keeping every tested result within the required accuracy limits.",
+      "reader_overview": "Attention can run faster when intermediate values use fewer bits, but this introduces numerical error. The agent improves a working quantized-attention implementation, speeding up the complete operation from input preprocessing through output generation.",
       "reader_setup": [
         {
           "name": "Workload",
@@ -2018,7 +1934,7 @@
         },
         {
           "name": "Test setup",
-          "description": "Five timed configurations comprise three video-attention and two causal-attention cases. Correctness checks also cover eight edge cases and all 30 CogVideoX-2B and 32 Llama-3.1-8B attention layers."
+          "description": "Five timed configurations comprise three video-attention and two causal-attention cases."
         },
         {
           "name": "Starting point",
@@ -2030,7 +1946,7 @@
         }
       ],
       "reader_metric": {
-        "meaning": "Measures the full attention pipeline, including smoothing and quantization, using dense attention work as the common operation count. Video and language-model workloads have equal weight. TFLOPS expresses the task-defined operation count in trillions of operations per second.",
+        "meaning": "Measures the full attention pipeline, including smoothing and quantization, using dense attention work as the common operation count. Video and language-model workloads have equal weight.",
         "rule": "Score = dense-equivalent attention operations ÷ execution time, expressed in TFLOPS and combined across cases."
       },
       "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
@@ -2049,12 +1965,6 @@
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "PyTorch 2.8 / CUDA 12.9 environment with Triton, Transformers, and FlashAttention.",
         "Llama-3.1-8B and RULER prompts for generating layer Q/K/V at multiple context lengths."
-      ],
-      "workflow": [
-        "Read the seed’s pattern estimator and repair path, then run CPU source admission and the boundary-only suite.",
-        "Modify pattern selection, sparse budgets, indexing, or Triton kernels in a new candidate; recompute all input-dependent choices inside each invocation.",
-        "Run the complete public real-prompt matrix and inspect uniform-row and tail-row errors across every task, length, and layer.",
-        "Record the measurements, select the admitted version with `FINAL_VERSION`, and run `sforge-submit`. Replace version 1 in the commands with the implementation being checked."
       ],
       "evaluation": "Measures dense-equivalent throughput across the prescribed text/length/layer workloads. Every timed call and boundary case must satisfy the vector-error and integrity checks.",
       "sources": [
@@ -2139,7 +2049,7 @@
           "sha256": "deed9f92afe0605b4713577ef3532271b75664e72821414cf2a54ef7a1264f28"
         }
       ],
-      "result_intro": "Optimize one long-context causal attention call on real Llama-3.1-8B activations, using a MInference-style sparse seed. The candidate receives BF16 Q/K/V and must produce an attention output within a fixed vector-error budget, trading pattern-selection overhead and sparse computation against any required dense-head repair.",
+      "result_intro": "Optimize one long-context causal attention call on real Llama-3.1-8B activations, using a MInference-style sparse seed.",
       "metric_summary": "The score divides full dense-causal attention work by the time for pattern estimation, index conversion, attention, repairs, and synchronized output handling. It geometrically averages 48 cell throughputs, each a median over three prompt trials, so the reported TFLOPS measure equivalent kernel work.",
       "setting": "Inputs are captured from Llama-3.1-8B-Instruct on four RULER task types: single-needle retrieval, multi-key retrieval, variable tracking, and frequent-word extraction. Each type is evaluated at 32K, 64K, and 128K context budgets and layers 1, 4, 15, and 27. Three prompts per cell produce 144 timed attention calls; their actual lengths remain below the context budget. Model execution prepares Q/K/V outside the measured candidate call.",
       "interface": [
@@ -2192,11 +2102,11 @@
       "reader_setup": [
         {
           "name": "Workload",
-          "description": "Llama-3.1-8B-Instruct produces the attention inputs from RULER benchmark prompts for single-needle retrieval, multi-key retrieval, variable tracking, and frequent-word extraction. Model execution prepares these inputs before the timed attention call."
+          "description": "Llama-3.1-8B-Instruct produces the attention inputs from RULER benchmark prompts for single-needle retrieval, multi-key retrieval, variable tracking, and frequent-word extraction."
         },
         {
           "name": "Test setup",
-          "description": "Four prompt types, three context budgets of 32K, 64K, and 128K, and four model layers form 48 evaluation cells. Three prompts per cell produce 144 timed calls; 11 additional cases check short and irregular lengths."
+          "description": "Four prompt types, three context budgets of 32K, 64K, and 128K, and four model layers form 48 evaluation cells. Three prompts per cell produce 144 timed calls."
         },
         {
           "name": "Starting point",
@@ -2208,7 +2118,7 @@
         }
       ],
       "reader_metric": {
-        "meaning": "Measures how much full-attention work the faster implementation replaces per second. Timing includes selecting the sparse pattern and any accuracy-repair computation. Results are combined across 48 task, length, and layer settings. TFLOPS expresses the task-defined operation count in trillions of operations per second.",
+        "meaning": "Measures how much full-attention work the faster implementation replaces per second. Timing includes selecting the sparse pattern and any accuracy-repair computation. Results are combined across 48 task, length, and layer settings.",
         "rule": "Score = dense-equivalent attention operations ÷ full call time, expressed in TFLOPS and combined across cases."
       },
       "reader_compute": "One GPU for development and a separate GPU for evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
@@ -2228,12 +2138,6 @@
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "At least 16 GiB of pinnable host memory for mapped-host transfers.",
         "PyTorch 2.8 / CUDA 12.9 build environment and KV-transfer descriptors."
-      ],
-      "workflow": [
-        "Read `transfer_abi.h` and trace the seed’s split/fused layouts, store/retrieve directions, and skipped-prefix handling.",
-        "Create a version that changes vector width, launch geometry, cross-layer tiling, or mapped-host access order.",
-        "Run the public suite to check bitwise transfer results, reverse transfers, and evolving trace state; compare all three bandwidth groups.",
-        "Set `FINAL_VERSION` to the checked implementation and submit with `sforge-submit --details`; replace version 1 in the commands when measuring another candidate."
       ],
       "evaluation": "Measures payload bandwidth across device, host, and trace workloads. Moved elements must match bit for bit, while source and uncovered destination regions remain unchanged.",
       "sources": [
@@ -2290,7 +2194,7 @@
           "sha256": "8af731a1574862d5a3bf4b0b0364910a304386d1eb01b302de22bd49306cbcd9"
         }
       ],
-      "result_intro": "Accelerate KV-cache movement between an inference engine’s paged buffers and LMCache’s contiguous chunks using the supplied CUDA seed. Inputs describe source and destination buffers, block mappings, and transfer direction; the candidate must preserve every transferred bit while improving complete-call bandwidth for GPU and mapped-host memory.",
+      "result_intro": "Accelerate KV-cache movement between an inference engine’s paged buffers and LMCache’s contiguous chunks using the supplied CUDA seed.",
       "metric_summary": "Each case measures logical KV payload bytes divided by the median of five synchronized transfer durations. Geometric group bandwidths receive weights 0.55 for device transfers, 0.15 for host transfers, and 0.30 for mixed-call traces; each required payload transfer is counted once.",
       "setting": "The workload moves whole 16-token blocks in store and retrieve directions across multiple layers and heads. It includes split K/V and fused layouts, 1–4 chunk objects per call, arbitrary unique block mappings, and skipped prefixes. Device cases keep chunks on the GPU, while host and trace cases use mapped pinned host memory accessed over PCIe. Twenty scored cases combine 16 direct transfers and four traces whose shared engine-pool state evolves across calls.",
       "interface": [
@@ -2338,7 +2242,7 @@
       "test_commands": "./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1",
       "launch_setup": "nvidia-smi -L\nDEVICE_UUID=GPU-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
       "launch_command": "launch/lmcache-kv-transfer/run.sh \\\n  --device-uuid \"$DEVICE_UUID\" \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --auth /path/to/auth.json",
-      "reader_overview": "Language model serving reuses cached attention data, which must move between paged engine buffers and contiguous cache storage. The agent improves a GPU transfer kernel to move this data faster across device and host-memory paths while preserving every transferred bit.",
+      "reader_overview": "Language model serving reuses cached attention data, which must move between paged engine buffers and contiguous cache storage. The agent improves a GPU transfer kernel to move this data faster across device and host-memory paths.",
       "reader_setup": [
         {
           "name": "Workload",
@@ -2346,7 +2250,7 @@
         },
         {
           "name": "Test setup",
-          "description": "Twenty timed cases include 16 direct transfers and four sequences of transfers that update shared cache state. Fourteen additional cases check boundaries, skipped regions, and untouched data."
+          "description": "Twenty timed cases include 16 direct transfers and four sequences of transfers that update shared cache state."
         },
         {
           "name": "Starting point",
@@ -2358,7 +2262,7 @@
         }
       ],
       "reader_metric": {
-        "meaning": "Measures logical KV-cache data moved per second. The final score combines device, host, and mixed-transfer workloads with weights of 55%, 15%, and 30%. Every transferred value must remain bit-exact.",
+        "meaning": "Measures logical KV-cache data moved per second. The final score combines device, host, and mixed-transfer workloads with weights of 55%, 15%, and 30%.",
         "rule": "Per-case bandwidth = transferred gigabytes ÷ transfer seconds; score = weighted geometric mean of group bandwidths."
       },
       "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
@@ -2378,12 +2282,6 @@
         "Release hardware: H100 NVL 94 GB.",
         "PyTorch 2.7.1 / CUDA 12.8 task environment.",
         "GPU-resident points, centroids, and precomputed point norms."
-      ],
-      "workflow": [
-        "Create `kernels/flash_kmeans_v001.py` with both entry points and write `1` to `FINAL_VERSION`.",
-        "Run the quick public checks for assignment, exact counts, centroid means, ties, and empty clusters.",
-        "Run the full public scale ladders and inspect large-K and large-N/high-D behavior while tuning distance tiles and update reductions.",
-        "Keep complete versions, select the best Judge-passing implementation in `FINAL_VERSION`, and submit with `sforge-submit --details`."
       ],
       "evaluation": "The Judge measures weighted workload latency after assignment, count, centroid, input-integrity, and memory checks. The website presents its documented equivalent-throughput conversion.",
       "sources": [
@@ -2432,8 +2330,8 @@
           "sha256": "267d7b4afe57ef134c60de404c7e617739ca23a301e460df13dc45bc738ec7bb"
         }
       ],
-      "result_intro": "Implement one exact Euclidean K-Means iteration from an empty GPU workspace: assign each point to its nearest centroid, then update counts and centroid means. Inputs are resident FP16 points and centroids plus FP32 point norms; optimization targets the latency of assignment, update, and combined workloads under bounded temporary memory.",
-      "metric_summary": "The Judge measures weighted geometric-mean latency across 14 workloads. The paper and website express this as equivalent TFLOPS using the workloads’ fixed operation counts: halving latency doubles the displayed score. Compilation is excluded from the scored, warmed calls.",
+      "result_intro": "Implement one exact Euclidean K-Means iteration from an empty GPU workspace: assign each point to its nearest centroid, then update counts and centroid means.",
+      "metric_summary": "The Judge measures weighted geometric-mean latency across 14 workloads. The paper and website express this as equivalent TFLOPS using the workloads’ fixed operation counts.",
       "setting": "Synthetic batched points and centroids are already on the GPU, with precomputed squared point norms supplied by the caller. The implementation performs a single Lloyd update using PyTorch and/or Triton. Fourteen scored workloads cover assignment, update, full iterations, fresh-process control, large-K, and large-N/high-dimension groups. Eight additional correctness cases test ties, empty clusters, and numerical boundaries; the task uses no model weights or external dataset.",
       "interface": [
         {
@@ -2477,15 +2375,15 @@
       "test_commands": "bash /workspace/public_tests/run_public_tests.sh --quick\nbash /workspace/public_tests/run_public_tests.sh",
       "launch_setup": "nvidia-smi -L\nDEVICE_UUID=GPU-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
       "launch_command": "launch/flash-kmeans/run.sh \\\n  --device-uuid \"$DEVICE_UUID\" \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --auth /path/to/auth.json",
-      "reader_overview": "One K-Means iteration assigns every point to its nearest cluster center and then updates each center from its assigned points. The agent implements these two operations efficiently on the GPU while preserving assignments, exact point counts, empty-cluster behavior, and the temporary-memory limits.",
+      "reader_overview": "One K-Means iteration assigns every point to its nearest cluster center and then updates each center from its assigned points. The agent implements these two operations efficiently on the GPU.",
       "reader_setup": [
         {
           "name": "Workload",
-          "description": "Generated batches of points and cluster centers are already on the GPU. The workload measures one clustering iteration with varying numbers of points, centers, and features, without model weights or an external dataset."
+          "description": "Generated batches of points and cluster centers are already on the GPU. The workload measures one clustering iteration with varying numbers of points, centers, and features."
         },
         {
           "name": "Test setup",
-          "description": "Fourteen timed workloads cover assignment, center updates, complete iterations, fresh-process runs, and large workloads. Eight additional correctness cases check ties, empty clusters, and numerical boundaries."
+          "description": "Fourteen timed workloads cover assignment, center updates, complete iterations, fresh-process runs, and large workloads."
         },
         {
           "name": "Starting point",
@@ -2497,7 +2395,7 @@
         }
       ],
       "reader_metric": {
-        "meaning": "The Judge measures execution latency across 14 workloads. The website converts that latency to equivalent TFLOPS using a fixed amount of work, so halving latency doubles the displayed score. TFLOPS expresses the task-defined operation count in trillions of operations per second.",
+        "meaning": "The Judge measures execution latency across 14 workloads. The website converts that latency to equivalent TFLOPS using a fixed amount of work.",
         "rule": "Displayed score = fixed workload operation count ÷ weighted geometric-mean latency, expressed in TFLOPS."
       },
       "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB)."
@@ -2517,12 +2415,6 @@
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "PyTorch 2.8 / CUDA 12.9 with TileLang 0.1.13.",
         "State-space tensors with Mamba-2, Codestral, and Falcon-H1 geometries."
-      ],
-      "workflow": [
-        "Run the seed on the quick public suite and inspect its four stages, intermediate memory, and warm-up cost.",
-        "Create a version that changes chunking, TileLang tiles, layouts, or stage fusion while preserving cross-chunk state.",
-        "Tune configurations in local scratch scripts, encode the selected shape-dependent choices in the candidate, and run the full public suite.",
-        "Record results in `notes.md`, set `FINAL_VERSION`, and submit with `sforge-submit --details`; replace version 1 in the commands when testing another implementation."
       ],
       "evaluation": "Measures recurrence-equivalent throughput across three model families. FP32-reference tolerances, complete finite outputs, unchanged inputs, and temporary-memory limits must pass.",
       "sources": [
@@ -2575,8 +2467,8 @@
           "sha256": "55225ec2f5c7397b59fa7667a7c4cd610d982cd4220265ed80c4e4dffe909db7"
         }
       ],
-      "result_intro": "Accelerate the Mamba-2 state-space forward operator from a correct four-stage TileLang seed. Given token features, time steps, decay parameters, state write/read tensors, and a skip coefficient, the implementation produces BF16 sequence outputs while preserving the recurrence and reducing scan, intermediate-storage, and synchronization costs.",
-      "metric_summary": "The score counts recurrence-equivalent state-update and output-projection work over the full synchronized forward call. Seven-trial median TFLOPS are geometrically averaged over six lengths in each of three equally weighted model families; the work count stays fixed when the implementation changes its internal chunk size.",
+      "result_intro": "Accelerate the Mamba-2 state-space forward operator from a correct four-stage TileLang seed.",
+      "metric_summary": "The score counts recurrence-equivalent state-update and output-projection work over the full synchronized forward call. Seven-trial median TFLOPS are geometrically averaged over six lengths in each of three equally weighted model families.",
       "setting": "The frozen synthetic workload uses head and state geometries from Mamba-2-2.7B, Mamba-Codestral-7B, and Falcon-H1-34B. Each family runs sequence lengths from 1024 to 32768, normally at batch eight; the longest Codestral case uses batch four. The seed splits decay accumulation, chunk-state formation, state passing, and chunk scanning into separate kernels with chunk length 256. Eighteen additional fixtures exercise short sequences, ragged tails, extreme decays, and isolated recurrence terms.",
       "interface": [
         {
@@ -2628,7 +2520,7 @@
       "test_commands": "./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1",
       "launch_setup": "nvidia-smi -L\nDEVICE_UUID=GPU-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
       "launch_command": "launch/tilelang-mamba2-ssd-v2/run.sh \\\n  --device-uuid \"$DEVICE_UUID\" \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --auth /path/to/auth.json",
-      "reader_overview": "State-space models carry a compact state through a sequence to compute each token’s output. The agent speeds up this forward operation by improving how work is divided and intermediate states are stored, while preserving the specified state updates and output accuracy.",
+      "reader_overview": "State-space models carry a compact state through a sequence to compute each token’s output. The agent speeds up this forward operation by improving how work is divided and intermediate states are stored.",
       "reader_setup": [
         {
           "name": "Workload",
@@ -2636,7 +2528,7 @@
         },
         {
           "name": "Test setup",
-          "description": "Each of the three model families has six timed sequence lengths from 1K to 32K tokens, giving 18 cases. Another 18 correctness cases cover short sequences, partial chunks, and extreme state decays."
+          "description": "Each of the three model families has six timed sequence lengths from 1K to 32K tokens, giving 18 cases."
         },
         {
           "name": "Starting point",
@@ -2648,7 +2540,7 @@
         }
       ],
       "reader_metric": {
-        "meaning": "Measures sequence-processing speed using the prescribed state-update and output-projection work. All work in the forward call is timed, and the three model families have equal weight. TFLOPS expresses the task-defined operation count in trillions of operations per second.",
+        "meaning": "Measures sequence-processing speed using the prescribed state-update and output-projection work. All work in the forward call is timed, and the three model families have equal weight.",
         "rule": "Score = recurrence-equivalent operations ÷ execution time, expressed in TFLOPS and combined across cases."
       },
       "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
@@ -2667,12 +2559,6 @@
         "Select 1 Work GPU and 1–8 separate Judge GPUs of the same model.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "Frozen Qwen3-8B and the supplied retrieval, aggregation, QA, and generation inputs."
-      ],
-      "workflow": [
-        "Read the positional baseline in `candidates/policy_v001/submission.py`, then implement a versioned `EvictionPolicy` using the supplied activation tensors.",
-        "Run a single case and the quick public suite to check retained-index shape, uniqueness, cache budgets, and unchanged inputs.",
-        "Run the full public suite and compare family fidelity, all three eviction fractions, selection overhead, and temporary memory.",
-        "Write the selected version number to `FINAL_VERSION`, record the result in `notes.md`, and wait for local tests to finish before `sforge-submit --details`."
       ],
       "evaluation": "Measures next-token distribution fidelity at three eviction fractions. Selection validity, cache budgets, input preservation, determinism, selection time, and temporary memory are checked.",
       "sources": [
@@ -2713,7 +2599,7 @@
           "sha256": "d5a6a23e20c00f50f5f5d58135e31f6b0fd08817d7ef157b94c57bb9a14b4651"
         }
       ],
-      "result_intro": "Design a policy that chooses which Qwen3-8B KV-cache positions to retain after prefill. The policy receives context activations and attention tensors, returns retained indices for each KV head, and aims to preserve the model’s next-token distribution at three cache-eviction settings.",
+      "result_intro": "Design a policy that chooses which Qwen3-8B KV-cache positions to retain after prefill.",
       "metric_summary": "The score measures output-distribution fidelity on a 0–100 scale. Each item’s mean token-level KL divergence is converted to fidelity; item means are combined geometrically across four task families, then averaged across the three eviction fractions. Identical distributions score 100.",
       "setting": "The frozen BF16 Qwen3-8B model has 36 layers, 32 query heads, and 8 KV heads. Selection happens after context prefill, before the downstream question is appended, at eviction fractions of 50%, 75%, and 87.5%. The private suite contains 5,000 contexts of 6K–28K tokens from RULER, LongBench, LooGLE, and Zero-SCROLLS, covering retrieval, aggregation, question answering, and generation. Trusted replay measures both distributions on the same full-cache reference continuation.",
       "interface": [
@@ -2801,12 +2687,6 @@
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "Frozen Qwen3-8B and the supplied retrieval, contextual-QA, and redundancy workloads."
       ],
-      "workflow": [
-        "Implement `KVScorer` in a complete `candidates/scorer_vNNN/submission.py`, producing globally comparable context-entry scores.",
-        "Run one case and the quick public suite; inspect finite values, determinism, context isolation, and scoring overhead.",
-        "Use the full public suite to compare retained answer quality across groups and keep fractions, then check submission size.",
-        "Set `FINAL_VERSION` to the chosen version, record any asset-training procedure in `notes.md`, and submit after local processes finish."
-      ],
       "evaluation": "Measures answer-quality retention relative to the full cache. Score shape/finite values, query isolation, deterministic behavior, unchanged inputs, and scoring-time/memory limits must pass.",
       "sources": [
         {
@@ -2846,7 +2726,7 @@
           "sha256": "9edff9c8e726b1977cb45cb7eec67babf9e109e1a78271969903ec55980e01c7"
         }
       ],
-      "result_intro": "Assign query-agnostic importance scores to Qwen3-8B context KV entries before the downstream question is supplied. A trusted runtime retains the highest-scoring entries across layers and heads at three memory budgets; the objective is to preserve answer quality using the compressed cache.",
+      "result_intro": "Assign query-agnostic importance scores to Qwen3-8B context KV entries before the downstream question is supplied.",
       "metric_summary": "The score averages compressed/full-cache answer-quality ratios within each dataset group, across the three groups, and across 10%, 20%, and 30% keep fractions, then multiplies by 100. Native answer scores are averaged over questions within each context row and then over rows; 100 denotes full-cache quality.",
       "setting": "A frozen BF16 Qwen3-8B supplies context activations, queries, keys, values, and projection weights to the scorer. One set of importance scores serves all three keep fractions, with global selection across the model’s 36 layers and 8 KV heads. The private suite has 1,812 context rows and about 7,000 questions across 12 tasks in retrieval, contextual QA, and redundancy. System-prefix positions remain protected, and questions are appended only after scoring.",
       "interface": [
@@ -2937,12 +2817,6 @@
         "Host: git-lfs on PATH and about 200 GiB free under INFRATHON_ASSETS_ROOT.",
         "Before fetching assets, accept the FLUX.1-Redux-dev license and authenticate with hf auth login or HF_TOKEN."
       ],
-      "workflow": [
-        "Create `mlsysforge_codec.py` in the initially empty submission directory and implement independently decodable K/V payloads.",
-        "Run the source-policy and codec tests; inspect shape coverage, reconstruction error, and complete payload storage.",
-        "Run Self-Forcing generation with VBench to compare video quality and runtime with the supplied BF16 references.",
-        "Keep the complete selected codec under `/workspace/submission`, record its measurements, and run `sforge-submit --details` after local jobs finish."
-      ],
       "evaluation": "Measures persistent-cache compression across both models. Reconstructed-cache correctness, video fidelity/quality, complete compression coverage, runtime, and memory checks must pass.",
       "sources": [
         {
@@ -2978,8 +2852,8 @@
           "sha256": "b5feceba528bd66d244e8873d8940800cc794b21002b0c7c6a46627b8d03cc5d"
         }
       ],
-      "result_intro": "Implement a persistent KV-cache codec that compresses CUDA BF16 key and value tensors and reconstructs them for video generation. The same codec must transfer across LongCat-Video and HY-WorldPlay, reducing stored bytes while preserving reconstructed-cache correctness, generated-video quality, and acceptable runtime.",
-      "metric_summary": "Each model’s compression factor is total original BF16 bytes divided by total stored payload bytes across its cases and compression calls. The score is the geometric mean of the two model factors, including all reconstruction metadata; an identity codec scores 1×.",
+      "result_intro": "Implement a persistent KV-cache codec that compresses CUDA BF16 key and value tensors and reconstructs them for video generation.",
+      "metric_summary": "Each model’s compression factor is total original BF16 bytes divided by total stored payload bytes across its cases and compression calls. The score is the geometric mean of the two model factors, including all reconstruction metadata.",
       "setting": "The codec receives contiguous four-dimensional tensors in batch, head, sequence, and feature order. Formal evaluation covers six LongCat-Video continuation cases and eleven HY-WorldPlay image-conditioned camera-trajectory cases, using one implementation for both models. The public end-to-end workload instead uses Self-Forcing with Wan2.1-1.3B to test transfer on a third model. Frozen BF16 generations provide reconstruction and video-quality references, while the evaluator accounts for every persistent payload allocation.",
       "interface": [
         {
@@ -3050,7 +2924,7 @@
         }
       ],
       "reader_metric": {
-        "meaning": "Measures persistent KV-cache storage reduction across both video models. All reconstruction metadata counts toward stored size. A score of 1 means no compression; 4 means the combined compression factor is fourfold.",
+        "meaning": "Measures persistent KV-cache storage reduction across both video models. All reconstruction metadata counts toward stored size. A score of 1 means no compression.",
         "rule": "Per-model compression = original BF16 bytes ÷ stored bytes; score = geometric mean of the two model factors."
       },
       "reader_compute": "One GPU for development and 1–8 separate GPUs of the same model for evaluation. H100 NVL (94 GB)."
@@ -3070,12 +2944,6 @@
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "Fixed Qwen3-8B target, EAGLE-3 draft head, and the supplied generation prompts.",
         "PyTorch 2.8 / CUDA 12.9, Transformers 4.53.1, Triton, and nvcc."
-      ],
-      "workflow": [
-        "Copy `solutions/engine_v001` to a new version and trace draft-tree construction, target verification, acceptance, and KV-cache commit.",
-        "Implement a concrete change to tree policy, batching, kernels, cache layout, or buffer reuse while keeping version dependencies self-contained.",
-        "Run CPU checks, then quick and full GPU evaluations; inspect all six workload cells and greedy-consistency diagnostics.",
-        "Record the hypothesis in `notes.md`, save the candidate with `sforge-save-version --label <hypothesis>`, select it through `FINAL_VERSION`, and submit."
       ],
       "evaluation": "Measures generated-token throughput across six workload cells. A fresh target checks calibrated greedy consistency; stopping rules, request isolation, determinism, execution, and resource checks must pass.",
       "sources": [
@@ -3116,8 +2984,8 @@
           "sha256": "085fc60eb81a7bf19e15bcdb0a01306ace1d2400baee06d36cc489c04d0bf5df"
         }
       ],
-      "result_intro": "Accelerate the complete EAGLE-3 speculative-decoding engine for a frozen Qwen3-8B target and draft head. Given tokenized prompts and a generation specification, the engine builds draft trees, verifies them with the target, accepts tokens, and updates its KV cache while preserving calibrated greedy-decoding behavior.",
-      "metric_summary": "Each workload cell pools emitted tokens and synchronized generation seconds, including prefill and an emitted EOS. The final score is the equally weighted geometric mean of six cell throughputs in tokens/s; model construction, warm-up, and reference checks are outside the timed calls.",
+      "result_intro": "Accelerate the complete EAGLE-3 speculative-decoding engine for a frozen Qwen3-8B target and draft head.",
+      "metric_summary": "Each workload cell pools emitted tokens and synchronized generation seconds, including prefill and an emitted EOS. The final score is the equally weighted geometric mean of six cell throughputs in tokens/s.",
       "setting": "The task supplies frozen BF16 Qwen3-8B target weights and an EAGLE-3 draft head, plus a working speculative-decoding seed. Six workload cells cover chat, math, code, long context, thinking-mode math, and mixed batches, using MT-Bench, GSM8K, HumanEval, and UltraChat prompts. Calls contain one to eight requests with cell-specific output budgets of 256, 512, or 1,024 tokens. A fresh target checks each candidate’s emitted trajectory under calibrated numerical tolerances.",
       "interface": [
         {
@@ -3164,7 +3032,7 @@
       "test_commands": "cd /app/workdir/spec_lab\n/workspace/public_tests/run_public_tests.sh --cpu-only\n/workspace/public_tests/run_public_tests.sh --quick --candidate-version 1\n/workspace/public_tests/run_public_tests.sh --full --candidate-version 1",
       "launch_command": "launch/eagle3-spec-decode/run.sh \\\n  --model MODEL_ID \\\n  --effort max \\\n  --hours 24 \\\n  --device-uuid \"$DEVICE_UUID\" \\\n  --judge-port 18386 \\\n  --auth /path/to/auth.json",
       "launch_setup": "nvidia-smi -L\nDEVICE_UUID=GPU-REPLACE-WITH-YOUR-UUID",
-      "reader_overview": "Speculative decoding uses a small drafting component to propose several tokens for a larger model to check together. The agent accelerates this complete proposal-and-check process, including accepted-token handling and memory reuse, while preserving the target model’s required greedy-decoding behavior.",
+      "reader_overview": "Speculative decoding uses a small drafting component to propose several tokens for a larger model to check together. The agent accelerates this complete proposal-and-check process.",
       "reader_setup": [
         {
           "name": "Model and data",
@@ -3184,7 +3052,7 @@
         }
       ],
       "reader_metric": {
-        "meaning": "Measures generated tokens per second over complete generation calls, including prompt processing. The final score gives equal weight to the six workloads; generated tokens must pass the target-model consistency checks.",
+        "meaning": "Measures generated tokens per second over complete generation calls, including prompt processing. The final score gives equal weight to the six workloads.",
         "rule": "Per-workload throughput = generated tokens ÷ generation seconds; score = geometric mean of six throughputs."
       },
       "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
@@ -3204,12 +3072,6 @@
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "LLaDA-8B-Instruct, its tokenizer, and GSM8K, MATH, HumanEval, and MBPP workloads.",
         "PyTorch 2.7.1 / CUDA 12.8 / Transformers 4.49 task environment."
-      ],
-      "workflow": [
-        "Keep `solutions/decoder_v001` as the recovery seed and create a new decoder version for changes to token selection, iteration scheduling, or request-local reuse.",
-        "Run the CPU interface check and quick GPU suite; verify the full output-buffer contract and deterministic behavior.",
-        "Run the full public suite and inspect throughput, useful-token counts, and answer-quality diagnostics for all four benchmarks.",
-        "Write the selected version number to `FINAL_VERSION`, document the comparison in `notes.md`, and use `sforge-submit --details` for formal quality evaluation."
       ],
       "evaluation": "Measures useful-token throughput across twelve workload rows. Reference-relative answer quality, useful-token retention, determinism, request isolation, model integrity, time, and memory checks must pass.",
       "sources": [
@@ -3262,7 +3124,7 @@
           "sha256": "d065f222659ed4dd7c346487f68451283d8f894d1103e7cc901e2f427307333c"
         }
       ],
-      "result_intro": "Accelerate the iterative masked-token decoder for frozen LLaDA-8B-Instruct. The engine receives a tokenized prompt and generation settings, fills a complete output buffer through model predictions, and returns the prompt plus generated tokens while retaining useful completions and benchmark answer quality.",
+      "result_intro": "Accelerate the iterative masked-token decoder for frozen LLaDA-8B-Instruct.",
       "metric_summary": "Pool useful completion tokens and complete decoding time within each workload row, then take the geometric mean of all twelve row throughputs in tokens/s. Useful-token counting follows benchmark-specific stop rules; frozen-reference quality and token-retention checks determine whether the throughput is accepted.",
       "setting": "The task runs frozen BF16 LLaDA-8B-Instruct with batch size one and a 4,096-token context limit. Its twelve workload rows combine GSM8K, MATH, HumanEval, and MBPP with few-shot settings and output budgets of 256, 512, or 1,024 tokens. Formal evaluation contains 520 generations, with 130 targets per benchmark. The supplied decoder fills masked positions iteratively, and the candidate may change decoding control and request-local reuse while preserving model weights and the output contract.",
       "interface": [
@@ -3348,12 +3210,6 @@
         "PyTorch 2.6 / CUDA 12.4 runtime, frozen StreamDiffusionV2 computation, video chunks, and prompt embeddings.",
         "Host: CUDA-enabled PyTorch in the python3 first on PATH for the GPU-pair preflight."
       ],
-      "workflow": [
-        "Copy `candidates/runtime_v001` into a new version and trace VAE stages, the 30 DiT blocks, and persistent state across chunks.",
-        "Change stage placement, transport, overlap, or buffer reuse; move complete block state at safe boundaries when changing ownership.",
-        "Run one public stream, then quick and full suites to verify every latent/frame and compare FPS, tail latency, construction, and memory.",
-        "Select the version in `FINAL_VERSION`, record the experiment, and submit once local workers and device work have finished."
-      ],
       "evaluation": "Measures latency-weighted streaming FPS. Every latent and decoded frame must match the seed bit for bit; ordering, causal execution, latency, construction, memory, and cleanup checks must pass.",
       "sources": [
         {
@@ -3401,7 +3257,7 @@
           "sha256": "84dc0cd0c895dc65f1eab3f916d741650d35cc579a7284f45fcb6a48a0dc223c"
         }
       ],
-      "result_intro": "Optimize a live video-to-video runtime around frozen StreamDiffusionV2 computation on two GPUs. The runtime receives prompt embeddings and successive frame chunks, schedules VAE and DiT work, and emits latents and decoded frames while preserving causal execution and bit-exact reference outputs.",
+      "result_intro": "Optimize a live video-to-video runtime around frozen StreamDiffusionV2 computation on two GPUs.",
       "metric_summary": "For each stream, multiply steady-state FPS by the fourth root of the seed-to-candidate p99 latency ratio. The score is the geometric mean across twelve streams, retaining FPS units; throughput and push-to-emit latency use the same post-warm-up chunks.",
       "setting": "The frozen StreamDiffusionV2 pipeline uses Wan2.1-T2V-1.3B with 30 DiT blocks, VAE encoding and decoding, and persistent stream state. The supplied runtime splits the blocks 15/15 across two GPUs, then processes four-frame chunks after a five-frame preparation chunk. Six public cases vary resolution, stream length, and two or four denoising steps; twelve private cases extend these settings to one through four steps. Stage placement, communication, overlap, and complete state migration are candidate-controlled.",
       "interface": [
@@ -3449,7 +3305,7 @@
       "test_commands": "cd /app/workdir/sdv2_pipeline_lab\ntools/run_one.sh --version 1 --case public_bbb_480p_129_s2\ntools/run_public_tests.sh --candidate-version 1 --quick\ntools/run_public_tests.sh --candidate-version 1",
       "launch_command": "JUDGE_PORT=18612 launch/sdv2-pipeline/run.sh \\\n  --model MODEL_ID \\\n  --effort max \\\n  --hours 24 \\\n  --gpus 0,1 \\\n  --auth /path/to/auth.json",
       "launch_setup": "",
-      "reader_overview": "Live video transformation must process incoming frames quickly without allowing delays to build up. The agent improves how StreamDiffusionV2 schedules model stages, moves data, and reuses memory, increasing sustained output speed while producing exactly the same frames as the reference pipeline.",
+      "reader_overview": "Live video transformation must process incoming frames quickly without allowing delays to build up. The agent improves how StreamDiffusionV2 schedules model stages, moves data, and reuses memory, increasing sustained output speed.",
       "reader_setup": [
         {
           "name": "Model and data",
@@ -3469,7 +3325,7 @@
         }
       ],
       "reader_metric": {
-        "meaning": "Balances video frame rate with tail latency. The latency term uses the delay below which 99% of chunks finish. Higher frame rate and shorter tail delay both increase the score, which is combined across twelve streams.",
+        "meaning": "Balances video frame rate with tail latency. The latency term uses the delay below which 99% of chunks finish.",
         "rule": "Per-stream score = FPS × fourth root of (reference tail latency ÷ candidate tail latency); score = geometric mean across streams."
       },
       "reader_compute": "Two GPUs connected by NVLink, shared by development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
@@ -3492,13 +3348,6 @@
         "Host tools: Docker with Compose v2, the repository virtual environment, jq, and flock.",
         "A CONNECT proxy at 127.0.0.1:18080 that reaches the agent model API.",
         "Hidden and public Direct baselines measured on the current backend boot, plus a registered candidate-history store."
-      ],
-      "workflow": [
-        "Read the runtime contract and starter architecture, then record a resource model and program lifecycle in `ARCHITECTURE.md`.",
-        "Implement a restorable admission or scheduling change using observed request traffic and bounded per-program state.",
-        "Run compilation, shell syntax, and loopback protocol checks after changes to transport, cancellation, or scheduling.",
-        "Run `kvbench doctor` and the public candidate workload, compare the evidence, and record the exact checkpoint and keep/reject decision.",
-        "Submit a tested checkpoint with `sforge-submit --details`; keep or restore the strongest Judge-valid implementation in `/app/submission`."
       ],
       "evaluation": "Measures valid executable tool steps per minute across all workflows. Protocol transparency, one-to-one forwarding, request success, valid-step proportion, waiting, backend work per step, and accounting checks must pass.",
       "sources": [
@@ -3547,8 +3396,8 @@
           "sha256": "fd92c85d230e77284566fa550e4310141425c6ea8a547ac08d442d046a2d47c4"
         }
       ],
-      "result_intro": "Optimize an OpenAI-compatible scheduling gateway between concurrent coding agents and a fixed Qwen3.6-27B backend. The gateway observes multi-turn request traffic, controls admission and queueing, and returns backend responses unchanged, with the objective of increasing completed executable agent steps across the workload.",
-      "metric_summary": "The score is the total number of valid executable steps completed across all workflows during an exact 1,800-second window, divided by 30 minutes. A completed tool return counts regardless of its exit code; warm-up completions and completions after the cutoff are excluded.",
+      "result_intro": "Optimize an OpenAI-compatible scheduling gateway between concurrent coding agents and a fixed Qwen3.6-27B backend.",
+      "metric_summary": "The score is the total number of valid executable steps completed across all workflows during an exact 1,800-second window, divided by 30 minutes. A completed tool return counts regardless of its exit code.",
       "setting": "The workload runs 192 distinct SWE-bench Lite coding agents concurrently, each capped at 100 steps. Agents alternate between model requests and tool execution against one fixed vLLM 0.24.0 backend serving Qwen3.6-27B with tensor parallelism across two GPUs. Work and Judge are CPU-only; the candidate changes the gateway while the model server and agent environments remain fixed. Formal evaluation uses 300 seconds of warm-up followed by a 1,800-second scored window.",
       "interface": [
         {
@@ -3599,7 +3448,7 @@
       "test_commands": "cd /app\npython3 -m py_compile /app/submission/*.py\nbash -n /app/submission/launch.sh\nbash /workspace/protocol_tests/run_protocol_smoke.sh\nkvbench doctor\nkvbench run --mode baseline --profile public-swe192-distinct\nkvbench run --mode candidate --profile public-swe192-distinct\nkvbench compare",
       "launch_command": "launch/concurrent-serving/run.sh \\\n  --config launch/concurrent-serving/run.env \\\n  --model MODEL_ID \\\n  --effort max \\\n  --hours 24 \\\n  --auth /path/to/auth.json",
       "launch_setup": "",
-      "reader_overview": "Many coding agents share one model server while alternating between generating actions and running tools. The agent builds a scheduling gateway that decides which requests proceed and which wait, increasing completed tool steps while preserving every model request and response.",
+      "reader_overview": "Many coding agents share one model server while alternating between generating actions and running tools. The agent builds a scheduling gateway that decides which requests proceed and which wait, increasing completed tool steps.",
       "reader_setup": [
         {
           "name": "Model and data",
@@ -3619,7 +3468,7 @@
         }
       ],
       "reader_metric": {
-        "meaning": "Measures completed tool steps per minute across all 192 coding agents. A step counts when the tool returns within the 30-minute scoring window, including returns with a nonzero exit code.",
+        "meaning": "Measures completed tool steps per minute across all 192 coding agents.",
         "rule": "Score = total completed tool steps ÷ 30 minutes."
       },
       "reader_compute": "The scheduling gateway runs on CPUs. A separate model server uses two GPUs. H100 NVL (94 GB) or H100 SXM (80 GB)."
