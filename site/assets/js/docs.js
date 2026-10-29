@@ -55,6 +55,7 @@ window.InfrathonDocs = (() => {
   });
   let observer;
   function refresh(key) {
+    if (page === "docs") { wireCopyButtons(); return; }
     sidebar.querySelectorAll("[data-doc-task]").forEach(link => {
       if (link.dataset.docTask === key) link.setAttribute("aria-current", "page");
       else link.removeAttribute("aria-current");

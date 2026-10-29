@@ -87,3 +87,5 @@
 @media (max-width: 800px) { #task-metric-details > .metric-details > summary, #task-running > .task-run-commands > summary { font-size: 22px; } }
 @media (max-width: 1200px) { .docs-mobile-contents { display: block; } }
 .docs-sidebar a[hidden], .docs-sidebar details[hidden], .docs-empty[hidden] { display: none; }
+
+body[data-page="docs"] .doc-section[hidden] { display: none; }
