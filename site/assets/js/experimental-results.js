@@ -21,7 +21,7 @@
   if (dialog && dialogImage) {
     document.querySelectorAll("[data-expand-figure]").forEach((button) => button.addEventListener("click", () => {
       const figure = button.closest("figure"), img = figure.querySelector("img");
-      $("#figure-dialog-title").textContent = `${figure.querySelector(".label").textContent} · ${figure.querySelector("h3").textContent}`;
+      $("#figure-dialog-title").textContent = figure.querySelector("h3").textContent;
       dialogImage.src = img.src; dialogImage.alt = img.alt;
       dialog.showModal();
     }));

@@ -13,12 +13,13 @@ DATA = json.loads((ROOT / "data/behavior_figures.json").read_text())
 
 
 class BehaviorFigures(unittest.TestCase):
-    def test_current_paper_figure_numbers(self):
+    def test_current_paper_figure_mapping(self):
         self.assertEqual(DATA["figure_numbers"], [9, 10, 11, 12])
         self.assertEqual([DATA[f"fig{n}"]["page"] for n in DATA["figure_numbers"]], [15, 16, 16, 17])
         html = (ROOT / "site/agent-behavior.html").read_text()
-        labels = re.findall(r'class="label">Figure (\d+)([ab]?)', html)
-        self.assertEqual(labels, [("9", ""), ("10", ""), ("11", ""), ("12", "")])
+        sources = re.findall(r'<img src="assets/img/(behavior_[^"]+)"', html)
+        self.assertEqual(sources, ["behavior_task_fidelity.svg", "behavior_execution_mismatch.svg",
+                                   "behavior_workload_reversal.svg", "behavior_search.svg"])
 
     def test_contract_figures(self):
         rows = DATA["fig9"]["logprob"]

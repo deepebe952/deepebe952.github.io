@@ -102,7 +102,7 @@
     <details class="notes" id="score-notes" style="margin-top:12px">
       <summary>Scoring and token definitions</summary>
       <p>Rank score follows paper Eq. 5: rank the six models by each task’s best valid within-budget score, then average 100 × (6 − rank) / 5 equally across tasks. Exact ties share average rank; a run without a valid scored submission receives zero. The 95% task-bootstrap confidence intervals use 10,000 resamples for the full suite and 3,000 for filtered groups.</p>
-      <p>Visible tokens use <code>o200k_base</code> for agent text and tool-call content, excluding tool responses, repeated code-diff displays, and reasoning traces. Full-suite totals follow Figure 8; filtered totals sum rounded Figure 15 values (≈). First-score time is the median across scored runs in the selected tasks.</p>
+      <p>Visible tokens use <code>o200k_base</code> for agent text and tool-call content, excluding tool responses, repeated code-diff displays, and reasoning traces. Full-suite totals aggregate all 25 tasks; filtered totals sum rounded per-task values (≈). First-score time is the median across scored runs in the selected tasks.</p>
     </details>
   </div></section>
 
