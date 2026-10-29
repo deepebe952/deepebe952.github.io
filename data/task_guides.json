@@ -778,7 +778,8 @@
       "reader_compute": "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair. H100 NVL (94 GB) or H100 SXM (80 GB).",
       "launch_note": "This launcher uses the same GPU pair for Worker and Judge.",
       "launch_check_command": "launch/miles-opcd/run.sh --config launch/miles-opcd/run.env --dry-run",
-      "launch_description": "Start the full run in the current terminal:"
+      "launch_description": "Start the full run in the current terminal:",
+      "config_values": "MODEL=MODEL_ID\nREASONING_EFFORT=max\nCODEX_AUTH_JSON_PATH=/absolute/path/to/auth.json\n\n# Agent runtime and candidate-history store from the setup guide.\nCODEX_CLI_VERSION=0.159.3\nSFORGE_AGENT_RUNTIME_DIR=/absolute/path/to/agent_runtimes/codex-0.159.3\nSFORGE_VERSION_STORE_ROOT=/absolute/path/to/infrathon-version-store\n\n# 24 hours; 5 minutes between submissions.\nTASK_TIMEOUT=86400\nSUBMISSION_COOLDOWN=300\n\n# An available NVLink GPU pair and Judge port.\nGPU_INDICES=0,1\nJUDGE_PORT=18650"
     },
     "opd": {
       "task_id": "miles_qwen3_opd_scratch_2xh100_v2",
@@ -942,7 +943,8 @@
       "reader_compute": "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair. H100 NVL (94 GB) or H100 SXM (80 GB).",
       "launch_note": "This launcher uses the same GPU pair for Worker and Judge.",
       "launch_check_command": "launch/miles-opd/run.sh --config launch/miles-opd/run.env --dry-run",
-      "launch_description": "Start the full run in the current terminal:"
+      "launch_description": "Start the full run in the current terminal:",
+      "config_values": "MODEL=MODEL_ID\nREASONING_EFFORT=max\nCODEX_AUTH_JSON_PATH=/absolute/path/to/auth.json\n\n# Agent runtime and candidate-history store from the setup guide.\nCODEX_CLI_VERSION=0.159.3\nSFORGE_AGENT_RUNTIME_DIR=/absolute/path/to/agent_runtimes/codex-0.159.3\nSFORGE_VERSION_STORE_ROOT=/absolute/path/to/infrathon-version-store\n\n# 24 hours; 5 minutes between submissions.\nTASK_TIMEOUT=86400\nSUBMISSION_COOLDOWN=300\n\n# An available NVLink GPU pair and Judge port.\nGPU_INDICES=0,1\nJUDGE_PORT=18660"
     },
     "alfworld": {
       "task_id": "miles_qwen3_alfworld_agentic_rl_2xh100_v1",
@@ -1094,7 +1096,8 @@
       "reader_compute": "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair. H100 NVL (94 GB) or H100 SXM (80 GB).",
       "launch_note": "This launcher uses the same GPU pair for Worker and Judge.",
       "launch_check_command": "launch/miles-alfworld/run.sh --config launch/miles-alfworld/run.env --dry-run",
-      "launch_description": "Start the full run in the current terminal:"
+      "launch_description": "Start the full run in the current terminal:",
+      "config_values": "MODEL=MODEL_ID\nREASONING_EFFORT=max\nCODEX_AUTH_JSON_PATH=/absolute/path/to/auth.json\n\n# Agent runtime and candidate-history store from the setup guide.\nCODEX_CLI_VERSION=0.159.3\nSFORGE_AGENT_RUNTIME_DIR=/absolute/path/to/agent_runtimes/codex-0.159.3\nSFORGE_VERSION_STORE_ROOT=/absolute/path/to/infrathon-version-store\n\n# 24 hours; 5 minutes between submissions.\nTASK_TIMEOUT=86400\nSUBMISSION_COOLDOWN=300\n\n# An available NVLink GPU pair and Judge port.\nGPU_INDICES=0,1\nJUDGE_PORT=18690"
     },
     "sd35": {
       "task_id": "miles_diffusion_sd35m_mopd_2xh100_v2",
@@ -1259,7 +1262,8 @@
       "reader_compute": "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair. H100 NVL (94 GB) or H100 SXM (80 GB).",
       "launch_note": "This launcher uses the same GPU pair for Worker and Judge.",
       "launch_check_command": "launch/miles-diffusion-opd/run.sh --config launch/miles-diffusion-opd/run.env --dry-run",
-      "launch_description": "Start the full run in the current terminal:"
+      "launch_description": "Start the full run in the current terminal:",
+      "config_values": "MODEL=MODEL_ID\nREASONING_EFFORT=max\nCODEX_AUTH_JSON_PATH=/absolute/path/to/auth.json\n\n# Agent runtime and candidate-history store from the setup guide.\nCODEX_CLI_VERSION=0.159.3\nSFORGE_AGENT_RUNTIME_DIR=/absolute/path/to/agent_runtimes/codex-0.159.3\nSFORGE_VERSION_STORE_ROOT=/absolute/path/to/infrathon-version-store\n\n# 24 hours; 5 minutes between submissions.\nTASK_TIMEOUT=86400\nSUBMISSION_COOLDOWN=300\n\n# An available NVLink GPU pair and Judge port.\nGPU_INDICES=0,1\nJUDGE_PORT=18660"
     },
     "wan22": {
       "task_id": "miles_diffusion_wan22_dancegrpo_2xh100_v2",
@@ -1420,7 +1424,8 @@
       "reader_compute": "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair. H100 NVL (94 GB) or H100 SXM (80 GB).",
       "launch_note": "This launcher uses the same GPU pair for Worker and Judge.",
       "launch_check_command": "launch/miles-diffusion-wan/run.sh --config launch/miles-diffusion-wan/run.env --dry-run",
-      "launch_description": "Start the full run in the current terminal:"
+      "launch_description": "Start the full run in the current terminal:",
+      "config_values": "MODEL=MODEL_ID\nREASONING_EFFORT=max\nCODEX_AUTH_JSON_PATH=/absolute/path/to/auth.json\n\n# Agent runtime and candidate-history store from the setup guide.\nCODEX_CLI_VERSION=0.159.3\nSFORGE_AGENT_RUNTIME_DIR=/absolute/path/to/agent_runtimes/codex-0.159.3\nSFORGE_VERSION_STORE_ROOT=/absolute/path/to/infrathon-version-store\n\n# 24 hours; 5 minutes between submissions.\nTASK_TIMEOUT=86400\nSUBMISSION_COOLDOWN=300\n\n# An available NVLink GPU pair and Judge port.\nGPU_INDICES=0,1\nJUDGE_PORT=18670"
     },
     "grouped-fp8": {
       "task_id": "standalone_dynamic_grouped_fp8_h100_scratch_v3",

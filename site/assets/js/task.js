@@ -39,8 +39,10 @@
     if (miles[t.key]) {
       const entry = miles[t.key];
       setup.append(h("p", { text: "Choose a scratch directory on your data disk:" }), Docs.code(guide.scratch_setup));
-      if (guide.config_setup) setup.append(h("p", {}, "Create the run configuration:") , Docs.code(guide.config_setup),
-        h("p", {}, "Set the model, credentials, GPU indices, Judge port, ", h("code", { text: "SFORGE_AGENT_RUNTIME_DIR" }), ", and ", h("a", { class: "link", href: "docs.html#history", text: "candidate-history store" }), " in ", h("code", { text: `launch/${entry}/run.env` }), ". Use KEY=VALUE entries with absolute paths. Export asset and Hugging Face cache paths in your shell."));
+      if (guide.config_setup) setup.append(h("h3", { text: "Configure run.env" }), Docs.code(guide.config_setup),
+        h("p", {}, "Edit ", h("code", { text: `launch/${entry}/run.env` }), " with the following values. Replace MODEL_ID and the absolute paths, and select an available GPU pair and Judge port:"),
+        Docs.code(guide.config_values),
+        h("p", {}, "Use the runtime and ", h("a", { class: "link", href: "docs.html#history", text: "candidate-history store" }), " prepared in the setup guide. Export asset and Hugging Face cache paths in your shell."));
     } else if (t.key === "serving") {
       setup.replaceChildren(Docs.code(`TASK=${directoryName}\nTASK_DIR="${guide.directory}"\n"$TASK_DIR/assets/fetch.sh"\n.venv/bin/python scripts/infrathon/assets.py check "$TASK"\nINFRATHON_PULL=1 DOCKER_BUILD_NETWORK=host bash "$TASK_DIR/scripts/build_images.sh"`));
       setup.append(
