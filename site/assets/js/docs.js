@@ -5,7 +5,7 @@ window.InfrathonDocs = (() => {
   const page = document.body.dataset.page;
   const isTask = page === "task", isCatalog = page === "tasks";
   const sidebar = $("#docs-nav");
-  const getStarted = [["requirements", "Requirements"], ["installation", "Installation"], ["assets", "Models and data"], ["containers", "Docker images"], ["history", "Candidate history"], ["run", "Run a task"], ["outputs", "Results and logs"]];
+  const getStarted = [["requirements", "Requirements"], ["installation", "Installation"], ["versions", "Harness and agent versions"], ["assets", "Models and data"], ["containers", "Docker images"], ["history", "Candidate history"], ["run", "Run a task"], ["outputs", "Results and logs"]];
   if (isTask || isCatalog) {
     sidebar.append(h("a", { href: "tasks.html", text: "All tasks", "data-task-index": "" }));
     for (const stage of ["training", "inference"]) for (const level of ["operator", "module", "system"]) {

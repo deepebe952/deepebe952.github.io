@@ -110,6 +110,10 @@
     {
       "path": "tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/scripts/run_single_gpu_fixed_budget.sh",
       "sha256": "0aaf10640ce3542e587cb2812876f94dab57aa0eb2dc62554310a768de42dd15"
+    },
+    {
+      "path": "scripts/infrathon/publish_images.sh",
+      "sha256": "7aa254dc63ada8f03bfb7eb8ac77694c0e1f40fe89e68d28a53d104daad9e22a"
     }
   ],
   "mock_resources": {

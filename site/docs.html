@@ -34,13 +34,35 @@ docker run --rm -e NVIDIA_VISIBLE_DEVICES=all \
   nvidia/cuda:12.8.1-base-ubuntu24.04 nvidia-smi -L</code></pre></div>
     </section>
     <section class="doc-section" id="installation"><h2>Installation</h2>
-      <p>From the root of the <code>infrathon</code> checkout, install the Python environment and the agent runtime:</p>
-      <div class="doc-code"><pre><code>uv sync --frozen --dev --python 3.12
+      <p>Clone the repository and install the SForge harness and agent runtime:</p>
+      <div class="doc-code"><pre><code>git clone https://github.com/deepebe952/infrathon.git
+cd infrathon
+uv sync --frozen --dev --python 3.12
 uv pip install --python .venv/bin/python numpy==2.5.2
 uv pip install --python .venv/bin/python \
   --index-url https://download.pytorch.org/whl/cpu torch==2.14.1
 launch/build-agent-runtime.sh --agent codex
 .venv/bin/sforge --help</code></pre></div>
+      <h3 id="versions">Harness and agent versions</h3>
+      <p>The harness is the <code>sforge/</code> code in this repository. To select a version, check out its Git commit or tag and reinstall its locked dependencies:</p>
+      <div class="doc-code"><pre><code>git fetch origin --tags
+# Replace with the commit or tag you want to run.
+HARNESS_REF=eb72a9ce8a4067766b0ffaf99ea23659102b617a
+git switch --detach "$HARNESS_REF"
+uv sync --frozen --dev --python 3.12
+uv pip install --python .venv/bin/python numpy==2.5.2
+uv pip install --python .venv/bin/python \
+  --index-url https://download.pytorch.org/whl/cpu torch==2.14.1
+git rev-parse HEAD</code></pre></div>
+      <p>The example selects the repository revision used for this guide. After changing revisions, prepare the task images using that checkout’s publication records.</p>
+      <p>The agent CLI has a separate version. To build and select a Codex runtime, set <code>CODEX_CLI_VERSION</code> to the version you want:</p>
+      <div class="doc-code"><pre><code>export CODEX_CLI_VERSION=0.159.3
+export SFORGE_AGENT_RUNTIME_DIR="$(realpath -m "../agent_runtimes/codex-$CODEX_CLI_VERSION")"
+if [ ! -d "$SFORGE_AGENT_RUNTIME_DIR" ]; then
+  launch/build-agent-runtime.sh --agent codex --version "$CODEX_CLI_VERSION"
+fi
+PATH="$SFORGE_AGENT_RUNTIME_DIR/bin:$PATH" "$SFORGE_AGENT_RUNTIME_DIR/bin/codex" --version</code></pre></div>
+      <p>Save these two values in <code>launch/mlsysforge.env</code>, or the task’s <code>run.env</code> for Miles. Changing the agent CLI does not require rebuilding task images.</p>
       <h3>Configuration</h3>
       <div class="doc-code"><pre><code>cp launch/mlsysforge.env.example launch/mlsysforge.env</code></pre></div>
       <p>Edit <code>launch/mlsysforge.env</code> with your model credentials and local asset paths. For this first run, leave <code>SFORGE_VERSION_STORE_ROOT</code> unset and set <code>SFORGE_VERSION_STORE_OPTIONAL=1</code> to retain submission archives without a separate candidate-history store.</p>
@@ -72,11 +94,23 @@ TASK_DIR="tasks/latest/$TASK"
       <p>To use an existing local copy of the release dataset, set <code>INFRATHON_ASSETS_SOURCE</code> before fetching.</p>
     </section>
     <section class="doc-section" id="containers"><h2>Docker images</h2>
-      <p>Pull the task’s Work and Judge images and complete the local setup:</p>
+      <p>Each task publishes a Work image and a public Judge image. Select your hardware and read their tags from <code>images/published.json</code>:</p>
+      <div class="doc-code"><pre><code>export INFRATHON_HARDWARE=h100-94gb-400w
+IMAGE_REPOSITORY="$(jq -r '.repository' scripts/infrathon/registry.json)"
+PUBLISHED="$TASK_DIR/images/published.json"
+WORK_TAG="$(jq -er --arg hw "$INFRATHON_HARDWARE" '.hardware[$hw].work_tag' "$PUBLISHED")"
+JUDGE_TAG="$(jq -er --arg hw "$INFRATHON_HARDWARE" '.hardware[$hw].judge_public_tag' "$PUBLISHED")"
+docker pull "$IMAGE_REPOSITORY:$WORK_TAG"
+docker pull "$IMAGE_REPOSITORY:$JUDGE_TAG"</code></pre></div>
+      <p>Use <code>h100-94gb-400w</code> for H100 NVL or <code>h100-80gb-700w</code> for H100 SXM. The image repository comes from <code>scripts/infrathon/registry.json</code>.</p>
+      <p>Tags follow <code>&lt;hardware&gt;-&lt;task-directory&gt;-&lt;role&gt;-&lt;release&gt;</code>. For this FP8 task, the Work tag is <code>h100-94gb-400w-standalone-dynamic-grouped-fp8-h100-v3-scratch-work-r1</code>; the Judge tag ends in <code>judge-public-r1</code>. The publication file also records each image’s SHA-256 digest.</p>
+      <h3>Prepare images for launch</h3>
+      <p>Run the task helper to pull by the recorded digest, assign local image names, prepare the Judge’s private-data layer, and write the build record:</p>
       <div class="doc-code"><pre><code>INFRATHON_PULL=1 bash "$TASK_DIR/scripts/build_images.sh"</code></pre></div>
-      <p>To build the images from source:</p>
-      <div class="doc-code"><pre><code>bash "$TASK_DIR/scripts/build_images.sh"</code></pre></div>
-      <p>Miles and MInference use <code>scripts/infrathon/pull_images.sh</code>; their task pages show the corresponding command.</p>
+      <p>For Miles and MInference, use:</p>
+      <div class="doc-code"><pre><code>scripts/infrathon/pull_images.sh "$TASK"</code></pre></div>
+      <details class="metric-details"><summary>Build images from source</summary>
+      <div class="doc-code"><pre><code>bash "$TASK_DIR/scripts/build_images.sh"</code></pre></div></details>
     </section>
     <section class="doc-section" id="history"><h2>Candidate history</h2><p>Miles and Concurrent serving use a store for candidate versions. With <code>TASK_DIR</code> set to your task, initialize and register it:</p><details class="metric-details"><summary>Initialize the store</summary><div class="doc-code"><pre><code>export SFORGE_VERSION_STORE_ROOT=&quot;$PWD/../infrathon-version-store&quot;
 .venv/bin/python - &quot;$SFORGE_VERSION_STORE_ROOT&quot; &quot;$TASK_DIR&quot; &lt;&lt;&#x27;PY&#x27;

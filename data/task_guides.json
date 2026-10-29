@@ -488,7 +488,7 @@
       "reader_setup": [
         {
           "name": "Model and data",
-          "description": "Qwen3-1.7B and TL;DR summary preference pairs, using the TRL training library as the reference."
+          "description": "Qwen3-1.7B uses the TL;DR summarization dataset: Reddit posts with preferred and rejected summaries. The reference implementation uses the TRL training library."
         },
         {
           "name": "Test setup",
@@ -606,7 +606,7 @@
       "reader_setup": [
         {
           "name": "Model and data",
-          "description": "A Qwen3-4B teacher, Qwen3-1.7B student and TL;DR prompts with fixed summary completions."
+          "description": "A Qwen3-4B teacher and Qwen3-1.7B student use the TL;DR summarization dataset: Reddit posts paired with short summaries. Both models receive the same posts and preselected summaries."
         },
         {
           "name": "Test setup",
