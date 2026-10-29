@@ -25,25 +25,14 @@
     $("#t-results-link").href = X.taskResultsHref(t.key);
     $("#task-run-commands").open = false;
     $("#t-meta").replaceChildren(h("span", { text: `Experiment budget: ${t.budget_h} hours` }));
-    $("#task-technical").open = false;
     const readerFacts = [...guide.reader_setup, { name: "Hardware", description: guide.reader_compute }];
     $("#t-reader-setup").replaceChildren(...readerFacts.map(row => h("div", {}, h("dt", { text: row.name }), h("dd", { text: row.description }))));
-    $("#t-interface").replaceChildren(...guide.interface.map(row => h("div", {}, h("dt", { text: row.name }), h("dd", {}, ...inline(row.description)))));
-    $("#t-components").replaceChildren(h("table", { class: "doc-table task-components" },
-      h("caption", { class: "sr-only", text: `Workspace components for ${t.name}` }),
-      h("thead", {}, h("tr", {}, h("th", { scope: "col", text: "Component" }), h("th", { scope: "col", text: "Purpose" }))),
-      h("tbody", {}, guide.components.map(row => h("tr", {}, h("th", { scope: "row" }, ...inline(row.name)), h("td", {}, ...inline(row.description)))))));
     $("#t-resources").replaceChildren(...items(guide.requirements));
-    $("#t-constraints").replaceChildren(...items(guide.constraints));
     $("#t-metric-title").textContent = t.metric_info.label;
     $("#t-metric-meaning").textContent = guide.reader_metric.meaning;
     $("#t-score-rule").textContent = guide.reader_metric.rule;
     $("#t-score-example").hidden = !t.metric_info.example;
     $("#t-score-example").textContent = t.metric_info.example || "";
-    $("#t-validation").replaceChildren(...items(guide.validation));
-    const publicTests = $("#t-public-tests");
-    publicTests.replaceChildren();
-    if (guide.test_commands) publicTests.append(h("h3", { text: "Public test" }), h("p", { text: "Inside the running Work environment:" }), Docs.code(guide.test_commands));
 
     const setup = $("#t-setup"), directoryName = guide.directory.split("/").pop();
     const pull = miles[t.key] || t.key === "minference" ? 'scripts/infrathon/pull_images.sh "$TASK"' : 'INFRATHON_PULL=1 bash "$TASK_DIR/scripts/build_images.sh"';
@@ -101,13 +90,11 @@
       return;
     }
     const showCommands = section === "run";
-    const showTechnical = ["workspace", "instructions", "implementation"].includes(section);
     const showMetric = section === "evaluation";
-    section = { workspace: "running", instructions: "running", implementation: "running", resources: "running", setup: "running", run: "running", evaluation: "metric" }[section] || section;
+    section = { workspace: "setting", instructions: "setting", implementation: "setting", resources: "running", setup: "running", run: "running", evaluation: "metric" }[section] || section;
     const changed = currentKey !== t.key;
     if (changed) { currentKey = t.key; render(t); }
     if (showCommands) $("#task-run-commands").open = true;
-    if (showTechnical) $("#task-technical").open = true;
     if (showMetric) $("#metric-calculation").open = true;
     if (section) requestAnimationFrame(() => document.getElementById(`task-${section}`)?.scrollIntoView());
     else window.scrollTo(0, 0);
