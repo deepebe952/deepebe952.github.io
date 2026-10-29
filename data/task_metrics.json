@@ -5,34 +5,266 @@
     "section": "Appendix A: task definitions, metrics, validity checks, and final scores"
   },
   "documentation": {
-    "project": "ultrainfrabench-release",
-    "revision": "ae21f8a6a8abf9470e089d3fed20e3d3ef459871",
+    "project": "https://github.com/deepebe952/infrathon",
+    "revision": "eb72a9ce8a4067766b0ffaf99ea23659102b617a",
+    "checkout": "../infrathon",
     "source_sha256": {
-      "docs/tasks/attn-qat-nvfp4-training-attention-h100-v1-seed.md": "49e2cd60caaf0200d436acef769a8efc10112aa555e54e19b8ff6cd773cd7590",
-      "docs/tasks/standalone-k-grouped-fp8-wgrad-h100-v2-scratch.md": "73110444ab0a1a1e628a9b0ebe63db1036c0d6e5fa95b7f5d06d764a4e168b45",
-      "docs/tasks/flux-moe-ag-scatter-grouped-gemm-dual-h100-v1-seed.md": "4a61f77989e1c1bed2bf0efc9cdddac7fcc9e38e56815d9893a59ada8affd1db",
-      "docs/tasks/qwen3-1p7b-orpo-training-optimizer-dual-h100-v4-cross-matrix-seed.md": "0591d72b60c11739f6a694dead5470e6d0c67d7fad88e86086ef361bf0953f98",
-      "docs/tasks/qwen3-4b-to-1p7b-gkd-distillation-optimizer-dual-h100-v1-official-trl-seed.md": "6163a34b6781dd79d9c8a3d240263a29c53a264ee48f1f6f8e08f2521ef42f70",
-      "docs/tasks/miles-opcd.md": "f8b217020c5ffa737680bfc6b850794ce34615b29563debd81966de2d3dcc282",
-      "docs/tasks/miles-opd-from-scratch.md": "b72a14922f8893eede05ada67a38d542ecdcfe3bc69c8ef1b908038b5cc5a8ed",
-      "docs/tasks/miles-alfworld-agentic-rl.md": "e0dcbfa43124d6cf938b161d82e589f459eb58bc98e0e27d0a6a969f2c2f7ad5",
-      "docs/tasks/miles-sd35m-multi-teacher-distillation.md": "c73423ed657183aec637ccbfce4c4095db84307b593ad4b6faa5090f38461122",
-      "docs/tasks/miles-wan22-dancegrpo.md": "d4b90e90d721ecb17f7d3df81bd7911dba13f68a3645370fa005d0c5f3218030",
-      "docs/tasks/standalone-dynamic-grouped-fp8-h100-v3-scratch.md": "58f5175fce7ac18bfce3e5014bb35db1024384b3ade8f206f15a26358b95e764",
-      "docs/tasks/standalone-sparse-mla-prefill-h100-v2-scratch.md": "6b6314616ef62b166d7a0aab1998139c860c4668990081203c4991e2348752d6",
-      "docs/tasks/standalone-paged-gqa-decode-bf16-h100-v2-scratch.md": "ff20dd3771383d1b7872ca82645f5c0a41f139e20c4833b6b6f1d1e638ea1ace",
-      "docs/tasks/sageattention-quantized-attention-bf16-h100-v2-seed.md": "8418a3a4d737ede438831046b2fbfd6ac72e7a3727427d7d01b0b0c587392ff7",
-      "docs/tasks/minference-sparse-prefill-h100-v3-seed.md": "b413038888c8449b0a279e32494dfaffa149758f75d9d700ee9a39e12f2b5245",
-      "docs/tasks/lmcache-paged-kv-block-transfer-h100-v1-seed.md": "78696c616c757b46614edb424091a643c7632733fb11af8c9b3d241204f5f47f",
-      "docs/tasks/flash-kmeans-paper-h100-v7-scratch.md": "35883e0fba1566c4f299551343a617b2b0c21dba4fba20cff758ffaa91d9261d",
-      "docs/tasks/tilelang-mamba2-ssd-forward-h100-v2-seed.md": "ddf79bb771531540cff456b94c00547aa83b88561d5b0be9f80f27ca0e18b3ad",
-      "docs/tasks/kvpress-kv-eviction-policy-qwen3-8b-h100-v2-scratch.md": "65b57eb808a3cdb4fe9c49533552f18a795f682c79f0292fc2b62bea175bdcc2",
-      "docs/tasks/kvzip-query-agnostic-kv-scoring-qwen3-8b-h100-v2-scratch.md": "07fa79b425174cf8e6eaa520c60b5861901ce477581e923ccba83cacc9ebca2e",
-      "docs/tasks/quant-videogen-cross-model-kv-codec-h100-v4-scratch.md": "46b8ffe9206520844b8e90a009feea4746c30fec8bca78c2638dbedd0b372671",
-      "docs/tasks/eagle3-spec-decode-engine-qwen3-8b-h100-v1-seed.md": "b680a28c88a07da2cbc5a41113617da4e1b34df25926c26dd7d5fac78faf454e",
-      "docs/tasks/llada-h100-decoder-optimization-v2-vanilla-seed.md": "5955c87700273d554f338d6dff2680d63e5f9aa5433d0783315396d48d614a75",
-      "docs/tasks/streamdiffusionv2-dual-h100-pipeline-runtime-v2-seed.md": "e6c53d7957589e820f5a761ba930c4ed5eaf6cb85b6837095b413cc62e37c533",
-      "docs/tasks/concurrent-agent-serving-optimizer-qwen36-swe192-v24.md": "32731bbc2bff7e7314f03c4b4b813cb704cb781cce5167605da3e41f1ebcef4f"
+      "tasks/latest/attn-qat-nvfp4-training-attention-h100-v1-seed/README.md": "8c01bd51323dbca1369976b878c3d56b7b38c2ffb806c15fa1c622a8033e127a",
+      "scripts/infrathon/tasks.json": "c9a05bf640ff1bd397fe2b94ddfe88242b59e0de906bd684d5a90da76ac8cbf8",
+      "tasks/latest/attn-qat-nvfp4-training-attention-h100-v1-seed/images/work/AGENT_TASK.md": "cce86d7a6a89654846f17f712902481d35d5ef3baf43c41bef8ed265fa6b531f",
+      "tasks/latest/attn-qat-nvfp4-training-attention-h100-v1-seed/images/work/workdir/attn_qat_lab/tools/run_public_tests.sh": "f72c44762ff78c3215b5953e05e6ebaee3b425292245a4d4ce2133cde289aed2",
+      "tasks/latest/attn-qat-nvfp4-training-attention-h100-v1-seed/images/work/benchmark/run_public_tests.sh": "08a34f45975fb17f0a6a8545f7534eaf6332c56c599d698f97ac624c0f928284",
+      "tasks/latest/attn-qat-nvfp4-training-attention-h100-v1-seed/assets/manifest.json": "1b0061c96fd8235190453bf18da9af69e11e78c5fcba1f92d2b88e8956cba993",
+      "launch/attn-qat-train/run.sh": "fe43df858852a9ee62b14bd2a1f0e7caf86884339572b61b991b78811cafa0b5",
+      "tasks/latest/attn-qat-nvfp4-training-attention-h100-v1-seed/images/judge/verify_attn_qat.py": "e4cad0cd23de4a4303ad38747362ac3665032bcaba2d74ce25efa9e7f1cc8f26",
+      "tasks/latest/attn-qat-nvfp4-training-attention-h100-v1-seed/scripts/run_single_gpu_fixed_budget.sh": "5a9249565828ec1a0462c87045e71eb6a6104e16744aa0f28cfe3cfb3d90f2cf",
+      "tasks/latest/attn-qat-nvfp4-training-attention-h100-v1-seed/tasks/attn_qat_nvfp4_training_attention_h100_seed_v1.json": "265b5bdddf2c3c07e499630713fae43cc0908c690fe8d847f8bfcb0cb1219499",
+      "tasks/latest/standalone-k-grouped-fp8-wgrad-h100-v2-scratch/README.md": "d59de9267ca1dc644a8a8af4bfb7be966e52ab9d2adde88c220c501fc9b248dc",
+      "tasks/latest/standalone-k-grouped-fp8-wgrad-h100-v2-scratch/images/work/AGENT_TASK.md": "7b530b9ca10c5417d34bbd12ac7c98c43d8f9b7de9ab2dddfa68fbb51f06e083",
+      "tasks/latest/standalone-k-grouped-fp8-wgrad-h100-v2-scratch/images/work/benchmark/run_public_tests.sh": "43d42d675bc869c05ea275259a0491bd3b1e86a6633058e441fccd89114925fd",
+      "tasks/latest/standalone-k-grouped-fp8-wgrad-h100-v2-scratch/assets/manifest.json": "ae322d22f11acc5856127d97cdf6f24d1785d933b261a62f2e277ab7163768dd",
+      "launch/standalone-kgrouped-wgrad/run.sh": "8c1b591f0e3a037d3f41aae70b1bc888b89b4c5aac22c30ca2a356dc402aed41",
+      "tasks/latest/standalone-k-grouped-fp8-wgrad-h100-v2-scratch/images/judge/verify_wgrad.py": "4e702637dd8c8013166590d3b247032a6116e1b52854200c901e0cd924b6d756",
+      "tasks/latest/standalone-k-grouped-fp8-wgrad-h100-v2-scratch/scripts/run_single_gpu_fixed_budget.sh": "708e1e7de88a626fdbb187c835696cf7c63f1c0547e85bc31633577cf5773d4e",
+      "tasks/latest/standalone-k-grouped-fp8-wgrad-h100-v2-scratch/tasks/standalone_k_grouped_fp8_wgrad_h100_scratch_v2.json": "0725ea38d01df0504aa5e71f0dbb2146979ea72c16bfa68d0cff32c927ff85f8",
+      "tasks/latest/flux-moe-ag-scatter-grouped-gemm-dual-h100-v1-seed/README.md": "3691eb7a28787a81deb61d668e9b091bb76e0592f48ef631eb9ffef774401ca1",
+      "tasks/latest/flux-moe-ag-scatter-grouped-gemm-dual-h100-v1-seed/images/work/AGENT_TASK.md": "074d91df0eb6d610e2285f03d84048419f5fbc7af5108ea287a5db035280cb08",
+      "tasks/latest/flux-moe-ag-scatter-grouped-gemm-dual-h100-v1-seed/scripts/preflight.py": "65bc8ec8f9beb610f363e9ca67a62aae30f90e9e9956b1454d0b4166ccb380eb",
+      "tasks/latest/flux-moe-ag-scatter-grouped-gemm-dual-h100-v1-seed/scripts/launch_fixed_budget_after_gpu_pair_idle.sh": "8cecf0cd5ede408ebb83a27c7f7eefb84be0663aa6cc5644482683daf7b34560",
+      "tasks/latest/flux-moe-ag-scatter-grouped-gemm-dual-h100-v1-seed/assets/manifest.json": "f22232283c20f46447d1afeb47a23b5a997004565f4eb5ada9a42c3f294c04de",
+      "launch/flux-moe-ag/run.sh": "bc5015493a18ce067aa9779569771813cd723aa53c194d2aeae31d53c422f360",
+      "tasks/latest/flux-moe-ag-scatter-grouped-gemm-dual-h100-v1-seed/images/judge/verify_moe_ag.py": "af4504934240fbac1eaa8635df7c1690161a1f5bbddda575fddec6b43885f2b0",
+      "tasks/latest/flux-moe-ag-scatter-grouped-gemm-dual-h100-v1-seed/tasks/flux_moe_ag_scatter_grouped_gemm_dual_h100_seed_v1.json": "4e2aebd0d20ff87a469d1637f9b11d7501acdeeee82006f972e027625d5441ef",
+      "tasks/latest/qwen3-1p7b-orpo-training-optimizer-dual-h100-v4-cross-matrix-seed/README.md": "6ed147b7e7f6269eb9fdf5f167fe3f83e4a46e747ef8607bc012531950e0c793",
+      "tasks/latest/qwen3-1p7b-orpo-training-optimizer-dual-h100-v4-cross-matrix-seed/images/work/public_tests/run_public_tests.sh": "85c947475150f515f3dd15b6f8815996f2eb6e2eb4b88fdd6472cc45938480c9",
+      "tasks/latest/qwen3-1p7b-orpo-training-optimizer-dual-h100-v4-cross-matrix-seed/assets/manifest.json": "15e48e30d03776cd165464ec83b326321d55e58fe53a8d699f227a50d4c896d8",
+      "launch/qwen3-orpo/run.sh": "24731e7c57335794c4b0f8f6624fb08461b366007f92983de2dd50fcfd2c8280",
+      "tasks/latest/qwen3-1p7b-orpo-training-optimizer-dual-h100-v4-cross-matrix-seed/images/judge/verifier/e2e_formal_controller.py": "2e7c3002da9efe0e06aad5e1d23f5ab84e20ae1b7cf44e233064a49a743f301a",
+      "tasks/latest/qwen3-1p7b-orpo-training-optimizer-dual-h100-v4-cross-matrix-seed/scripts/launch_fixed_budget_after_gpu67_idle.sh": "c4eea9f72f3c30f17d762d3f6b98957e80bd1ef3aaffbed930a0fe7b9667cc23",
+      "tasks/latest/qwen3-1p7b-orpo-training-optimizer-dual-h100-v4-cross-matrix-seed/tasks/qwen3_1p7b_orpo_training_optimizer_dual_h100_v4.json": "2f1d803437e0cc9e0cfe8c97b243a0553da5a947c26b2a84ea029718203850cf",
+      "tasks/latest/qwen3-4b-to-1p7b-gkd-distillation-optimizer-dual-h100-v1-official-trl-seed/README.md": "a968a6542501d6af11003d9aee0244be0fa48505c31e8b4efbbec1a3a9530283",
+      "tasks/latest/qwen3-4b-to-1p7b-gkd-distillation-optimizer-dual-h100-v1-official-trl-seed/assets/manifest.json": "ceded101540c66f31602e933685722bfbd813bce734608a3d9e3984a81145525",
+      "launch/qwen3-gkd/run.sh": "cbcb947a6c234fdc184d5d9d6146c13ed35d1030e344851e48c24f7ad1bf1619",
+      "tasks/latest/qwen3-4b-to-1p7b-gkd-distillation-optimizer-dual-h100-v1-official-trl-seed/images/judge/verifier/e2e_formal_controller.py": "1c06be8324fb4cbf63e35820bfa99340f7caa57720068b70d1aa55fe97cc1d49",
+      "tasks/latest/qwen3-4b-to-1p7b-gkd-distillation-optimizer-dual-h100-v1-official-trl-seed/tasks/qwen3_4b_to_1p7b_gkd_distillation_optimizer_dual_h100_v1.json": "cf9a1f1db21086d4fe9e3b5e9f5cc13423ae7334eaea4fcc1d9c5f1d76836d44",
+      "tasks/latest/miles-qwen3-opcd-2xh100-v3-seed/README.md": "f7993d5a5f632b77e31f7767cd4501580dcfac312a8fd241c490a6c8076107ab",
+      "tasks/latest/miles-qwen3-opcd-2xh100-v3-seed/docs/INTERFACE.md": "0456424116aca657f748c1b0fa28d0767004115217d7a2c738f67c71b3350fca",
+      "scripts/miles_opcd/v3/run_public_v3.py": "bf28e623c414cace353730e6363e9647396d36c8af290cfa116e097590464916",
+      "scripts/miles_common/host_config.py": "58e4a5039fd558c29799629d6b81f6536d30611c6550b3f3ab409191e39d1557",
+      "tasks/latest/miles-qwen3-opcd-2xh100-v3-seed/scripts/run_task.py": "0257fd3da5a151c190ae530f0c4aeecc46fa6f0fca400f1e016d26dd89b1085f",
+      "tasks/latest/miles-qwen3-opcd-2xh100-v3-seed/images/release.json": "4ce142f08137a0073a46dd54749c2203adc2fa9d2e56a5d22eff4fba96a18290",
+      "tasks/latest/miles-qwen3-opcd-2xh100-v3-seed/assets/manifest.json": "32128fac4c6e2e97e851b0095d9811f1e70e0f96419683f5d90b6c714f666ce2",
+      "launch/miles-opcd/run.sh": "f74c1d3f440a4bbb583bec7da4076ab0df8cb6fe3816ad151912ec989e98205b",
+      "tasks/latest/miles-qwen3-opcd-2xh100-v3-seed/runtime/contract.json": "3d60333ccb8b2f41aef8701ba171dab97dd77c29cf2d69a0f5f9483abdadc65e",
+      "tasks/latest/miles-qwen3-opcd-2xh100-v3-seed/runtime/qualification.json": "d2669f4d70ef2984efdc6c95f2521d76f1991d82083fb86d57c47bd4f43e1166",
+      "launch/miles-opcd/codex.env.example": "6daa867c6632f36763d98ab1f18afa95c886abb213ff04548a64d251dce8a004",
+      "scripts/miles_common/cpu_pinning.py": "de32c61bb4c0ad201c3e1b738b30b6cd35088154b91c948416877423638c8a2d",
+      "tasks/latest/miles-qwen3-opcd-2xh100-v3-seed/tasks/miles_qwen3_opcd_2xh100_v3.json": "657e7a202fde4424a209893e527c8b4067873222b55eccfcaacdb43d583b3031",
+      "tasks/latest/miles-qwen3-opd-scratch-2xh100-v2-seed/README.md": "6d1f620a6c7941537be110e60ff6454172b1a88c0292301ca183fa0dd550cf0b",
+      "tasks/latest/miles-qwen3-opd-scratch-2xh100-v2-seed/docs/INTERFACE.md": "158b87161f5091cb632bbfde42c3b1dd70790ee893777b9a21eb6ead1840fa72",
+      "tasks/latest/miles-qwen3-opd-scratch-2xh100-v2-seed/scripts/run_task.py": "3d4707408f33bd069fb6f62f8150ef584783eaa25745d13750343e96b77dbd99",
+      "tasks/latest/miles-qwen3-opd-scratch-2xh100-v2-seed/images/release.json": "683e4700ac26c02c561fb87dea30667f8c0b21c3511cb068e6f3e14792ef155d",
+      "tasks/latest/miles-qwen3-opd-scratch-2xh100-v2-seed/assets/manifest.json": "464580527413a7de634cc2949682ff19e6a2c8d46c999cac0e6ba87415fc78d2",
+      "launch/miles-opd/run.sh": "87d53b3169a2ab2cd506a2612d145a209ca0b38719cd4024835549f4a2fb83e3",
+      "tasks/latest/miles-qwen3-opd-scratch-2xh100-v2-seed/runtime/contract.json": "7fc7b17555bc5ebcda2b1697dcf134496d3404f736afb299a45db20ca350b217",
+      "tasks/latest/miles-qwen3-opd-scratch-2xh100-v2-seed/runtime/qualification.json": "311f6518446c32453a58714308b9b5f7ac3aa58054897b78a0949e73182626ae",
+      "launch/miles-opd/codex.env.example": "200b289720d56d6bc62e4d86eeda3bcec36c2739ad10d623804d2b456e399122",
+      "scripts/miles_opd/v2/run_public.py": "6e8d372b89b13202af0b59ad56103e9b87d84247ee981b9b6fbd7e5732cb0065",
+      "tasks/latest/miles-qwen3-opd-scratch-2xh100-v2-seed/scripts/build_images.sh": "49b59d57870704400fbf0195fbe80f8494883d646ab8b5693fecf71d539af57c",
+      "scripts/miles_opd/v2/make_split.py": "f76b89d4d568573b742bf7d06d0e4bfcae949a819369249a93d8871514be2cd1",
+      "scripts/miles_opd/v2/run_judge.py": "f53689bf7f2793666232b467cbf464e13590864addee4324ea96bad97a13e383",
+      "tasks/latest/miles-qwen3-opd-scratch-2xh100-v2-seed/tasks/miles_qwen3_opd_scratch_2xh100_v2.json": "e38b1a964762b453f33267a4844537588c5d0643c58621b3fe53eb88a927ba8f",
+      "tasks/latest/miles-qwen3-alfworld-agentic-rl-2xh100-v1-seed/README.md": "102b34e81a20a7267113a808a1713ff24f79c738d45ef0d436308aa6612b4b18",
+      "tasks/latest/miles-qwen3-alfworld-agentic-rl-2xh100-v1-seed/docs/INTERFACE.md": "615a28fa3d678dfa5fc6753dcc973e23e7776bc7ef8e5d52221b42144a8ed9b9",
+      "scripts/miles_alfworld/run_public.py": "9e69155901c6bf5577ddf7bd1947a753c99ee2056717663dc64b355ece0df7e5",
+      "tasks/latest/miles-qwen3-alfworld-agentic-rl-2xh100-v1-seed/scripts/run_task.py": "ed5a3e6cc99e32fd59e4a5d9233fc85ecc43158797b13c945a95703c771f3d4b",
+      "tasks/latest/miles-qwen3-alfworld-agentic-rl-2xh100-v1-seed/images/release.json": "8bacf68dc91fc387d330a93e05089c49107a78b29bb9a84db366ba8872a4d2b1",
+      "tasks/latest/miles-qwen3-alfworld-agentic-rl-2xh100-v1-seed/assets/manifest.json": "401b4a1be4f03a0fa6bf4fc83551cc6a992ca99e58d70875bb1e425b7b46ff9a",
+      "launch/miles-alfworld/run.sh": "13441015a58faeac06dd881271b15b0bc5895b8d2adb18e1ef5df8bd533ce9cc",
+      "tasks/latest/miles-qwen3-alfworld-agentic-rl-2xh100-v1-seed/runtime/contract.json": "1a0ef42c6b3e968efa9bc15169983ce6eca6ca9805327834855be0b62915d555",
+      "tasks/latest/miles-qwen3-alfworld-agentic-rl-2xh100-v1-seed/runtime/qualification.json": "202c39cf06b2d7ac43590d1baf7011d06a2f2e4b5e2b8532525fe7f6ff82a5d5",
+      "launch/miles-alfworld/codex.env.example": "804a6c6b1a934de5ae3b97dbfb273ec75d837be06877bb11e729b551d60c6632",
+      "tasks/latest/miles-qwen3-alfworld-agentic-rl-2xh100-v1-seed/tasks/miles_qwen3_alfworld_agentic_rl_2xh100_v1.json": "d75522b682b63aa14e6e6fae74ba8d03ae324fa9a7d766f896302227492a9b9b",
+      "tasks/latest/miles-diffusion-sd35m-mopd-2xh100-v2-seed/README.md": "6dc6e3046ea4b6c62f3c4edc26960abadd8aa704af7ba1888ccf7f1971a05355",
+      "tasks/latest/miles-diffusion-sd35m-mopd-2xh100-v2-seed/docs/INTERFACE.md": "b8b44387ca5d44c33c08adc76e51290bb264c73572f26d326f53861a63841930",
+      "scripts/miles_diffusion_opd/judge_v2/run_public.py": "4144d69c70c0d768714d24fa560bb3732e2316087b69a299b123c89781fa3ba0",
+      "tasks/latest/miles-diffusion-sd35m-mopd-2xh100-v2-seed/scripts/run_task.py": "7bf3694cd3e7f7b63843442242421290f9758456abd182c2329c7c7109f6e673",
+      "tasks/latest/miles-diffusion-sd35m-mopd-2xh100-v2-seed/images/release.json": "bb673715af954ab2e68ff03df424fae1b48861d15a05baa5f81dcfeb32f8ffe8",
+      "scripts/infrathon/assets.py": "d427226c34ffb242eeb198c7103e135d931c89363441df7d4b2410a3a8f892cc",
+      "scripts/infrathon/pull_images.sh": "fba75ad54f3bbd5d626bc091c15a81d225afdfd3ca8347b7fad18b228c0ac7ea",
+      "tasks/latest/miles-diffusion-sd35m-mopd-2xh100-v2-seed/assets/manifest.json": "800d5d2d1538e0e8127756be325064899435ebfe1e0391a8c8fdf8f551aa2df8",
+      "launch/miles-diffusion-opd/run.sh": "f58d0f4f5c663bd70f18fbcc45bdbbab7fa55d5d0e20e52385e9e0fb77322400",
+      "tasks/latest/miles-diffusion-sd35m-mopd-2xh100-v2-seed/runtime/contract.json": "5a9592eab072bc78bfb514df23aa05188599a89689a0952227c235c82809dccb",
+      "tasks/latest/miles-diffusion-sd35m-mopd-2xh100-v2-seed/runtime/qualification.json": "c5b5773c28041cb3e46f5fc6c4e2f3de9979d55e4b9c95a6bce8b77fa2852018",
+      "launch/miles-diffusion-opd/codex.env.example": "3b9b2b5000f59a5157cdcbab480552ef146697017ec3b4ae83fe7459c5620861",
+      "tasks/latest/miles-diffusion-sd35m-mopd-2xh100-v2-seed/tasks/miles_diffusion_sd35m_mopd_2xh100_v2.json": "38f08740fe20aaa87b1001742e49136318cb099b5aa53768600de1d0892384d9",
+      "tasks/latest/miles-diffusion-wan22-dancegrpo-2xh100-v2-seed/README.md": "060c8276c543978b148c7d6b2a3f767d6e7f083472c2a4c802e6dd5eea28451a",
+      "tasks/latest/miles-diffusion-wan22-dancegrpo-2xh100-v2-seed/docs/INTERFACE.md": "7216261b302b761c4c92a9adef2426b9e8f0c9d0116b4bfded55a6c3c8400323",
+      "scripts/miles_diffusion_wan/judge_v2/run_public.py": "1eb57a5ee73b8306aa966bb20a648137516a94df971b493f24e9da46ba9d877b",
+      "tasks/latest/miles-diffusion-wan22-dancegrpo-2xh100-v2-seed/scripts/run_task.py": "f8061a23ed9f5748ad15f4f6db093ff91129f87dcbadb3f34066cba06a8e8cbc",
+      "tasks/latest/miles-diffusion-wan22-dancegrpo-2xh100-v2-seed/images/release.json": "e7004917cf82ef536503c91dbcd146d5e09bd7415a677d12884134f87e900eb7",
+      "tasks/latest/miles-diffusion-wan22-dancegrpo-2xh100-v2-seed/assets/manifest.json": "1b8c6505c860ab4570c854aaea5c64de47b8077433cf5be006c680410d1437c9",
+      "launch/miles-diffusion-wan/run.sh": "ef6ac73663462b5c5a37982a3716847987b112e3f9af1d1f603db104838bac89",
+      "tasks/latest/miles-diffusion-wan22-dancegrpo-2xh100-v2-seed/runtime/contract.json": "bce07d7c463b9fc4b8367a13e80ce12ec80bf594202347cbae82241179761c5b",
+      "tasks/latest/miles-diffusion-wan22-dancegrpo-2xh100-v2-seed/runtime/qualification.json": "f013eb3bfb88424dac01805ae78b011f5b568152e0d1a7195e7aeb860d3343fc",
+      "launch/miles-diffusion-wan/codex.env.example": "c47d8aa2516f5bf33d2db287e961e5592abc94106ba30ebc0898a64bdd1e257e",
+      "tasks/latest/miles-diffusion-wan22-dancegrpo-2xh100-v2-seed/tasks/miles_diffusion_wan22_dancegrpo_2xh100_v2.json": "1f3a4418af27e9c9f42e11d13c9ea9faf6956e64e4ae44adbd188bcfed98bbc8",
+      "tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/README.md": "de19714197495d359f6393416eaf743ff11d3d12d336f446e7e4e9f92315174e",
+      "tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/images/work/workdir/grouped_fp8_lab/README_AGENT.md": "1821a34f75b25f35c6ce2f1e6e01b28b3131c23011a99751a9d128d9afb275f8",
+      "tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/images/work/AGENT_TASK.md": "8795cf0953a230a8fe83cfd4495abb7619ee6f91017699dda4a94eabe9649989",
+      "launch/standalone-fp8/run.sh": "565b059d615f37b6337af4d598dfc88226225eb654dfb635ff02962600e2cc8f",
+      "tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/images/judge/verify_grouped.py": "384d19117cd7ec6ca89e7638a798f6739bd2cfa4d903cf6b70ea752812f4db2a",
+      "tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/assets/manifest.json": "3185cca2edd1a05abccfff4fa89c576d25b4d4390bcf956d37cd315513ce24f3",
+      "tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/runtime/grouped_fp8_runtime.py": "49eda08d00f422b7bfa0c928560547ddbf95e002218ad30732037cb9056cb740",
+      "tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/images/work/benchmark/run_public_tests.sh": "caaead307c8b1f634a73c7a262efe88ddcd1e65b0bdd6078a2772b6ab3ffd384",
+      "tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/images/work/workdir/grouped_fp8_lab/tools/run_public_tests.sh": "f72c44762ff78c3215b5953e05e6ebaee3b425292245a4d4ce2133cde289aed2",
+      "tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/scripts/run_single_gpu_fixed_budget.sh": "0aaf10640ce3542e587cb2812876f94dab57aa0eb2dc62554310a768de42dd15",
+      "tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/tasks/standalone_dynamic_grouped_fp8_h100_scratch_v3.json": "54a75bbcb9f03cde0bb1aee064050ea15f228af7be476f2a32feaa943df56320",
+      "tasks/latest/standalone-sparse-mla-prefill-h100-v2-scratch/README.md": "94e67908631da94a7ae7a6c966c4a3ac0124efe516891bf2b6472a72586ff922",
+      "tasks/latest/standalone-sparse-mla-prefill-h100-v2-scratch/images/work/workdir/sparse_mla_prefill_lab/README_AGENT.md": "ecb64f0fab848eaab25ae255a3d988fe300ec37fdd7e9700d06e41a3a5136c9b",
+      "launch/standalone-sparse-mla-v2/run.sh": "0f3370a6e888ab42ace98386bec91701532d684efd874de671e51e68be63b020",
+      "tasks/latest/standalone-sparse-mla-prefill-h100-v2-scratch/images/work/AGENT_TASK.md": "05e0c477db7f4966f4ce5f7be535491a4819fdc6253df4c00b68829fdfd04496",
+      "tasks/latest/standalone-sparse-mla-prefill-h100-v2-scratch/images/judge/verify_sparse_mla.py": "fa4da42089b2df59ccfb6da0944f7004f4aa85ecf8f947d7c305784e69657877",
+      "tasks/latest/standalone-sparse-mla-prefill-h100-v2-scratch/assets/manifest.json": "d53b6b4fbbda4ff87e9016e8434f67002546502fc821784ac56b33aa9c321c36",
+      "tasks/latest/standalone-sparse-mla-prefill-h100-v2-scratch/runtime/sparse_mla_prefill_runtime.py": "239200a520c0da3a64394625e4fd28efaca9f4425ff88bcf182a284c50b15c53",
+      "tasks/latest/standalone-sparse-mla-prefill-h100-v2-scratch/images/work/benchmark/run_public_tests.sh": "67f79e7158429b1381f9ad1d6c3a692657fc5bd35d3b0fa1dda85393ee7a4ab3",
+      "tasks/latest/standalone-sparse-mla-prefill-h100-v2-scratch/images/work/workdir/sparse_mla_prefill_lab/tools/run_public_tests.sh": "f72c44762ff78c3215b5953e05e6ebaee3b425292245a4d4ce2133cde289aed2",
+      "tasks/latest/standalone-sparse-mla-prefill-h100-v2-scratch/scripts/run_single_gpu_fixed_budget.sh": "f31fbc619bd0924f821e2742521444abd2d7a1dacb565a7f129db8a8d3a47d1a",
+      "tasks/latest/standalone-sparse-mla-prefill-h100-v2-scratch/tasks/standalone_sparse_mla_prefill_h100_scratch_v2.json": "eb64b79a44fb0b4c2eba72c7383b884ea196c7cdf9ea6a6e867b9ace7b2e7d99",
+      "tasks/latest/standalone-paged-gqa-decode-bf16-h100-v2-scratch/README.md": "ed7b697de0b36c2c69c5cd04ef58dcaf66a175c4001cb2e1e2084b1ab7d59f68",
+      "tasks/latest/standalone-paged-gqa-decode-bf16-h100-v2-scratch/images/work/workdir/paged_gqa_decode_lab/README_AGENT.md": "527619d9993a9d083e60e3553eb56ee52e63ca6f48a2cde868879ac5c688988b",
+      "launch/standalone-paged-gqa-v2/run.sh": "ce1bde62712e933fec18267651897bc7866e3c38ea0a17655bb4a7bc24ce6c3a",
+      "tasks/latest/standalone-paged-gqa-decode-bf16-h100-v2-scratch/images/work/AGENT_TASK.md": "3539026f199c695c2a962eedc68b448a307b7acb021d1062d825b838030d7ae6",
+      "tasks/latest/standalone-paged-gqa-decode-bf16-h100-v2-scratch/images/judge/verify_paged_gqa.py": "ce59cf36c28728337a38fd80736b714f4bdaf0d75caee1cbcde47b091c37dbeb",
+      "tasks/latest/standalone-paged-gqa-decode-bf16-h100-v2-scratch/assets/manifest.json": "af6d1926531f47ce34b403a2df562d09b75293ef5bf004a88970928137c51661",
+      "tasks/latest/standalone-paged-gqa-decode-bf16-h100-v2-scratch/runtime/paged_gqa_decode_runtime.py": "1ca99863dc2a467df83d5a0d29b6c34c7a29229c53efec664b1563ecbe8ba064",
+      "tasks/latest/standalone-paged-gqa-decode-bf16-h100-v2-scratch/images/work/benchmark/run_public_tests.sh": "40202ba44cf1ff03c5149c72e196b155c797efa570be1a408ae642a20f07bf6c",
+      "tasks/latest/standalone-paged-gqa-decode-bf16-h100-v2-scratch/images/work/workdir/paged_gqa_decode_lab/tools/run_public_tests.sh": "f72c44762ff78c3215b5953e05e6ebaee3b425292245a4d4ce2133cde289aed2",
+      "tasks/latest/standalone-paged-gqa-decode-bf16-h100-v2-scratch/scripts/run_single_gpu_fixed_budget.sh": "7f6910930fc4ce18572121b4eefcb0ba4e7c1e84c68cb710aa3ea7183b159335",
+      "tasks/latest/standalone-paged-gqa-decode-bf16-h100-v2-scratch/tasks/standalone_paged_gqa_decode_bf16_h100_scratch_v2.json": "6407907d318fdce60e9a5a4480e92b5f313deaf50a9477ca7197ea1c8a8aa062",
+      "tasks/latest/sageattention-quantized-attention-bf16-h100-v2-seed/README.md": "255b2fa610d0546f1c3958a05bed052ab256088f98e4fe5907ca1e93010fa3f4",
+      "tasks/latest/sageattention-quantized-attention-bf16-h100-v2-seed/images/work/workdir/quant_attention_lab/README_AGENT.md": "f653e44e24c3e54d28765df80a22ee0954910c68d81034777865fd2bed0cca2d",
+      "tasks/latest/sageattention-quantized-attention-bf16-h100-v2-seed/images/work/AGENT_TASK.md": "ad1fe69bc87be4d57c06c5a510ba0ccd067e09a5339b0e5e1e0c3265db6d9732",
+      "launch/sageattention-qattn/run.sh": "c3f7a74f7d05c5e20fd85526bb0bbb7f2007a9ea34d8f2644be74e2cf9e8c2aa",
+      "tasks/latest/sageattention-quantized-attention-bf16-h100-v2-seed/images/judge/verify_quant_attention.py": "77afa45d8184a87405e5b904158fc2bb5eeda64b16cdf458563a7f693ea012e0",
+      "tasks/latest/sageattention-quantized-attention-bf16-h100-v2-seed/assets/manifest.json": "4acf9d16a9be24c1af3837e21ee40d4b9c92cd68ff45b578fbff8114ac150e5f",
+      "tasks/latest/sageattention-quantized-attention-bf16-h100-v2-seed/runtime/quant_attention_runtime.py": "7fcb896b08f159d107e39e942a5cbea11725517c2f4429aeafc9d4286dd4ed5f",
+      "tasks/latest/sageattention-quantized-attention-bf16-h100-v2-seed/images/work/benchmark/run_public_tests.sh": "bfdb0bbd4e9a11c42485806f4f7928ab012e3fafa0798847f2f2d5a59da21347",
+      "tasks/latest/sageattention-quantized-attention-bf16-h100-v2-seed/images/work/workdir/quant_attention_lab/tools/run_public_tests.sh": "f72c44762ff78c3215b5953e05e6ebaee3b425292245a4d4ce2133cde289aed2",
+      "tasks/latest/sageattention-quantized-attention-bf16-h100-v2-seed/scripts/run_single_gpu_fixed_budget.sh": "e0d79bae60b027dc0644667fc020d07ff490ca6c04d178eab62ea7bc71f3f38a",
+      "tasks/latest/sageattention-quantized-attention-bf16-h100-v2-seed/tasks/sageattention_quantized_attention_bf16_h100_seed_v2.json": "5205097a91a750e78c3e0067ee64699f4ff2838321351ff1cf61d8141939754b",
+      "tasks/latest/minference-sparse-prefill-h100-v3-seed/README.md": "fe7a1bd80ff1e5246ad01ee5bee9a626081a18553512cb71c49e20b407889212",
+      "tasks/latest/minference-sparse-prefill-h100-v3-seed/images/work/workdir/minference_prefill_lab/README_AGENT.md": "1a820351169ed4a28137c3b16debd1a4c5b0637b6a88a6c8aafc3c8044dbd54f",
+      "tasks/latest/minference-sparse-prefill-h100-v3-seed/images/work/AGENT_TASK.md": "1a820351169ed4a28137c3b16debd1a4c5b0637b6a88a6c8aafc3c8044dbd54f",
+      "launch/minference-v3/run.sh": "312bcb03a589e834de841ce8b429e95b31e793a7e56b09062cc73439ff9e1d20",
+      "tasks/latest/minference-sparse-prefill-h100-v3-seed/images/judge/verify_minference_prefill.py": "a479560f6a09d110e5d11e776280870b586f020543ef38a7ec744ed5809f9edc",
+      "tasks/latest/minference-sparse-prefill-h100-v3-seed/assets/manifest.json": "7ec4fa7f2876bf02512dec1d3e8c93cbd87996ead03a0b7c52052255c4383df3",
+      "tasks/latest/minference-sparse-prefill-h100-v3-seed/runtime/activation_archive_v3.py": "50c47021e86891130d1a4189ace9793166669e8e0daaf5e24d2728541aa685ae",
+      "tasks/latest/minference-sparse-prefill-h100-v3-seed/runtime/kernel_fidelity_v3.py": "ea70b5c6a0c2c2fbdd2c1ccf9f8aec5f445b6d21d804288fea0895aa18b122cf",
+      "tasks/latest/minference-sparse-prefill-h100-v3-seed/runtime/measure_single_prompt_v3.py": "c5c76bd2e1f2d9c9ca44a8f658b15635d5908e2eb026cae0cc19ea7c35b62eae",
+      "tasks/latest/minference-sparse-prefill-h100-v3-seed/runtime/minference_prefill_runtime.py": "238d1fdf7d0135ae102759ba56e41a30c3842fc5670369bb1bb726a77afee9e5",
+      "tasks/latest/minference-sparse-prefill-h100-v3-seed/runtime/on_demand_suite_v3.py": "f18d76d1b819693c54fc5305439135f57c3d78b4b440c17de5e0945dc9cbef7d",
+      "tasks/latest/minference-sparse-prefill-h100-v3-seed/runtime/prepare_single_prompt_v3.py": "31a9fddf068af7fa6c71c98dcce10029060e80d6246437977cc4ff508610557d",
+      "tasks/latest/minference-sparse-prefill-h100-v3-seed/runtime/run_single_prompt_worker_v3.py": "16463804fbbaa81ddbced9be92322e8138e39a5659c89f0fa386469ab0d95f07",
+      "tasks/latest/minference-sparse-prefill-h100-v3-seed/runtime/single_prompt_archive_v3.py": "c30fde486cf01f08b6d4bc4a2e1cc02fd105d4777881a1a80e455ba837201ca5",
+      "tasks/latest/minference-sparse-prefill-h100-v3-seed/runtime/stream_parent_v3.py": "72d33534f05a34b49695c3968c41688fb45c2a4b3e746a25fc536642035c3ada",
+      "tasks/latest/minference-sparse-prefill-h100-v3-seed/images/work/benchmark/run_public_tests.sh": "97d7acb665887ab1753a45bbd456e0648f1b91d772a78003f1ef360a4e343ae2",
+      "tasks/latest/minference-sparse-prefill-h100-v3-seed/images/work/workdir/minference_prefill_lab/tools/run_public_tests.sh": "f72c44762ff78c3215b5953e05e6ebaee3b425292245a4d4ce2133cde289aed2",
+      "tasks/latest/minference-sparse-prefill-h100-v3-seed/images/work/workdir/minference_prefill_lab/tools/check_source.sh": "1ecc4a4016346d5dddbe970bc715d807b5197481d8265f550e49e6fddb619cd3",
+      "tasks/latest/minference-sparse-prefill-h100-v3-seed/tasks/minference_sparse_prefill_h100_seed_v3.json": "deed9f92afe0605b4713577ef3532271b75664e72821414cf2a54ef7a1264f28",
+      "tasks/latest/lmcache-paged-kv-block-transfer-h100-v1-seed/README.md": "7a2d8010fc5b0907ab314045d6b969604f079afc81836531a0b5620f699f4382",
+      "tasks/latest/lmcache-paged-kv-block-transfer-h100-v1-seed/images/work/workdir/kv_transfer_lab/README_AGENT.md": "2d05639a0729cc5f0a5675f6aa69930b4dd7ae56078a6151e91704b7aa4d4ef0",
+      "tasks/latest/lmcache-paged-kv-block-transfer-h100-v1-seed/images/work/AGENT_TASK.md": "61fb3d0f97f8878ca72fa2806ad1b9f6b8f0a3c4e875a0d72e7ca472c9e54cae",
+      "launch/lmcache-kv-transfer/run.sh": "ef05962a95908d38d1e444cf7baee5567c7eb1a310fe89e297191b843e25f8c6",
+      "tasks/latest/lmcache-paged-kv-block-transfer-h100-v1-seed/images/judge/verify_kv_transfer.py": "273f2e1982df5ebf693aa1d307528c8c4994cc5a4be9999b6397ba6c53a6eece",
+      "tasks/latest/lmcache-paged-kv-block-transfer-h100-v1-seed/assets/manifest.json": "d50d77027bec81e2f255392158802f73cb6ce81966fc8b3d0ee86138b5e2b805",
+      "tasks/latest/lmcache-paged-kv-block-transfer-h100-v1-seed/runtime/kv_transfer_runtime.py": "aed973a841666a2870afe1d8d7000adb87d52b657edf544e1fe742e1c9f6136c",
+      "tasks/latest/lmcache-paged-kv-block-transfer-h100-v1-seed/images/work/benchmark/run_public_tests.sh": "4fa1880def7a5d63bef72cc872d52df4d6e2ae6689b4dedd8725ec1d6f9d15c1",
+      "tasks/latest/lmcache-paged-kv-block-transfer-h100-v1-seed/images/work/workdir/kv_transfer_lab/tools/run_public_tests.sh": "f72c44762ff78c3215b5953e05e6ebaee3b425292245a4d4ce2133cde289aed2",
+      "tasks/latest/lmcache-paged-kv-block-transfer-h100-v1-seed/scripts/run_single_gpu_fixed_budget.sh": "da928357a731a294b0ae2a7c57f18c9d1a3f3f1dc9baf93e13461c563dbb3f89",
+      "tasks/latest/lmcache-paged-kv-block-transfer-h100-v1-seed/images/work/workdir/kv_transfer_lab/transfer_abi.h": "f75a4c2ed2a14c74435ac0e5369a2345e69b5e0c7f3def6a8bcc94ca701de3b2",
+      "tasks/latest/lmcache-paged-kv-block-transfer-h100-v1-seed/tasks/lmcache_paged_kv_block_transfer_h100_seed_v1.json": "8af731a1574862d5a3bf4b0b0364910a304386d1eb01b302de22bd49306cbcd9",
+      "tasks/latest/flash-kmeans-paper-h100-v7-scratch/README.md": "2cf7e05397881ee8336ecc2ccd212d03edf6fb7301b8f74dc5bf1327a10fb8d4",
+      "tasks/latest/flash-kmeans-paper-h100-v7-scratch/images/work/workdir/flash_kmeans_lab/README_AGENT.md": "92a119aa9af9a69b348da03ff956b2c4c9b94ddf914e36afb15ef95aed4a1e8d",
+      "tasks/latest/flash-kmeans-paper-h100-v7-scratch/images/work/AGENT_TASK.md": "8b95bd40f4b8df327a665d33b5c79d26c3a39054cae5441c294e974fafc620d9",
+      "launch/flash-kmeans/run.sh": "e5136bbb08109a81f1d081f4463b9bf7d579c7a2b3805f53ca96e95effe9678a",
+      "tasks/latest/flash-kmeans-paper-h100-v7-scratch/images/judge/verify_flash_kmeans.py": "786a9975d85c010b64120b6dd26d22f19a78d0f9f2ac46602b1e0bd37db6d029",
+      "tasks/latest/flash-kmeans-paper-h100-v7-scratch/assets/manifest.json": "780d2c5b1e1ce6d505437b9cc6db89f78159b6c44d07b715c6cdd5990b172717",
+      "tasks/latest/flash-kmeans-paper-h100-v7-scratch/images/work/public_tests/run_public_tests.sh": "c940467486469f03710c9d45b769032daa58e6515bd6824f1be77cac02729f51",
+      "tasks/latest/flash-kmeans-paper-h100-v7-scratch/scripts/run_single_gpu_fixed_budget.sh": "89bdfaabe692fed3aed8b1dbc87a73bbeb531722f710761a581ca72c1314e74a",
+      "tasks/latest/flash-kmeans-paper-h100-v7-scratch/images/judge/benchmark/benchmark_cases.py": "2a7673517dd89c658542635a8c09d8bc407f9bd434bc56e5bf24faef5da9f936",
+      "tasks/latest/flash-kmeans-paper-h100-v7-scratch/tasks/flash_kmeans_paper_h100_kernel_lab_v7_scratch.json": "267d7b4afe57ef134c60de404c7e617739ca23a301e460df13dc45bc738ec7bb",
+      "tasks/latest/tilelang-mamba2-ssd-forward-h100-v2-seed/README.md": "a5e834c15fa279758f0d8575823cfbea2c6b021072e3f0b5ed9258d5fcc73bb7",
+      "tasks/latest/tilelang-mamba2-ssd-forward-h100-v2-seed/images/work/workdir/mamba2_ssd_lab/README_AGENT.md": "034c9708bdd3380fc38d38b5c988e5c6499769b6924eab858d9cdd1be6cc42ae",
+      "launch/tilelang-mamba2-ssd-v2/run.sh": "e58aa44adf0dd798ca670f95f9432f978a0957e8c91c887e3fa0ab850b319dcb",
+      "tasks/latest/tilelang-mamba2-ssd-forward-h100-v2-seed/images/work/AGENT_TASK.md": "0a4835c3321c50a8e2f4f8db92ffb6344a647d1c26cd60f41368d8deae93a8b2",
+      "tasks/latest/tilelang-mamba2-ssd-forward-h100-v2-seed/images/judge/verify_ssd.py": "fe4e2461ec80a190bb7cf6fcd87ccfddbbf33c4e2f3ea59665f5942d782dc238",
+      "tasks/latest/tilelang-mamba2-ssd-forward-h100-v2-seed/assets/manifest.json": "03a4639b9ae4e892b0be795e9b990ffe371c41e283c50f4c9d02689957101c73",
+      "tasks/latest/tilelang-mamba2-ssd-forward-h100-v2-seed/runtime/mamba2_ssd_runtime.py": "b3fc301c63fec02f98ca9c773b2f863461bb1603b28062b1a484a4f536c50e82",
+      "tasks/latest/tilelang-mamba2-ssd-forward-h100-v2-seed/images/work/benchmark/run_public_tests.sh": "ddb01788174ea9fc4c56345c1074e612795f3cac3e0d901e2c522c4c9dfcaf89",
+      "tasks/latest/tilelang-mamba2-ssd-forward-h100-v2-seed/images/work/workdir/mamba2_ssd_lab/tools/run_public_tests.sh": "f72c44762ff78c3215b5953e05e6ebaee3b425292245a4d4ce2133cde289aed2",
+      "tasks/latest/tilelang-mamba2-ssd-forward-h100-v2-seed/scripts/run_single_gpu_fixed_budget.sh": "363ecf7ce5d12a46dd0898a896a4943a90747813165c055c43d784eea47e49b8",
+      "tasks/latest/tilelang-mamba2-ssd-forward-h100-v2-seed/tasks/tilelang_mamba2_ssd_forward_h100_seed_v2.json": "55225ec2f5c7397b59fa7667a7c4cd610d982cd4220265ed80c4e4dffe909db7",
+      "tasks/latest/kvpress-kv-eviction-policy-qwen3-8b-h100-v2-scratch/README.md": "72b4a39babd77a197003c4a16600ede3a6b1bd591bd17e48b2fa7881aff87e79",
+      "tasks/latest/kvpress-kv-eviction-policy-qwen3-8b-h100-v2-scratch/images/work/AGENT_TASK.md": "6ac1e70e5fece4a7bf8cf9ede50612d67016122f294caff98a124c746257349e",
+      "tasks/latest/kvpress-kv-eviction-policy-qwen3-8b-h100-v2-scratch/runtime/kv_eviction_runtime.py": "cee0175ecec3bb2eb087a7fae8a9982a3225b99ddd85dd7b3bda558b3b77d3dd",
+      "tasks/latest/kvpress-kv-eviction-policy-qwen3-8b-h100-v2-scratch/images/judge/verify_kv_eviction.py": "cbf57b261008f523f7ae9c99692941c23e456e777e697fe6a5392e6e37887c8e",
+      "tasks/latest/kvpress-kv-eviction-policy-qwen3-8b-h100-v2-scratch/images/work/workdir/kv_eviction_lab/tools/run_public_tests.sh": "d833d6e3b4d74ccf467e8133252242885458c439900e67ab5e7520c7c9fdd232",
+      "tasks/latest/kvpress-kv-eviction-policy-qwen3-8b-h100-v2-scratch/images/work/workdir/kv_eviction_lab/tools/run_one.sh": "dcbff4f2c9dea2a0d8eb90df05151d12b74e953eb4df1de96bce7e302175aaa4",
+      "launch/kvpress-kv-eviction-scratch/run.sh": "3259c2ae0cb7ccddfbfc0a87962a59c5635cd70fb310caf24b6462999804634d",
+      "tasks/latest/kvpress-kv-eviction-policy-qwen3-8b-h100-v2-scratch/tasks/kvpress_kv_eviction_policy_qwen3_8b_h100_scratch_v2.json": "d5a6a23e20c00f50f5f5d58135e31f6b0fd08817d7ef157b94c57bb9a14b4651",
+      "tasks/latest/kvzip-query-agnostic-kv-scoring-qwen3-8b-h100-v2-scratch/README.md": "e30783bc44fd45fdc5373b156b37c61570aa201075323d1235f9f55d699f53ad",
+      "tasks/latest/kvzip-query-agnostic-kv-scoring-qwen3-8b-h100-v2-scratch/images/work/AGENT_TASK.md": "c4f44d8870e6b5ec98f2f2c6dddc1db435e295c38dfd17333441a418fa136a0b",
+      "tasks/latest/kvzip-query-agnostic-kv-scoring-qwen3-8b-h100-v2-scratch/runtime/kv_scoring_runtime.py": "6a88429c16367f4618c738d6a2cfc077b9a76390a6f534d1e31396f8d10f2658",
+      "tasks/latest/kvzip-query-agnostic-kv-scoring-qwen3-8b-h100-v2-scratch/runtime/kv_scoring_metric.py": "c2c4d34b9a9bb9e72dc358cb734b0949b83865978e3a4bd95fb19e67a89f17ae",
+      "tasks/latest/kvzip-query-agnostic-kv-scoring-qwen3-8b-h100-v2-scratch/images/work/workdir/kv_scoring_lab/tools/run_public_tests.sh": "d833d6e3b4d74ccf467e8133252242885458c439900e67ab5e7520c7c9fdd232",
+      "tasks/latest/kvzip-query-agnostic-kv-scoring-qwen3-8b-h100-v2-scratch/images/work/workdir/kv_scoring_lab/tools/run_one.sh": "fe16fc7136ebc237befbb72720245238ab4f5e3f87187648d1a630266d5ec971",
+      "launch/kvzip-kv-scoring/run.sh": "84b91a8d9f88ef05e367eb6fe09673ea86f6d2bc77bf1a1caebcc207debfe39c",
+      "tasks/latest/kvzip-query-agnostic-kv-scoring-qwen3-8b-h100-v2-scratch/tasks/kvzip_query_agnostic_kv_scoring_qwen3_8b_h100_scratch_v2.json": "9edff9c8e726b1977cb45cb7eec67babf9e109e1a78271969903ec55980e01c7",
+      "tasks/latest/quant-videogen-cross-model-kv-codec-h100-v4-scratch/README.md": "164bb8775860f5d971de3500dfa368fe0d29c88c4ba27e92142447f1243037bf",
+      "tasks/latest/quant-videogen-cross-model-kv-codec-h100-v4-scratch/images/work/AGENT_TASK.md": "3eafe0c2c9d6d3ff273427d2ad8a21e729e93b3447b5d263805a5ce4e746462e",
+      "docs/HOST_PREREQUISITES.md": "5a910d69ffebd435214cfb8668e00930d7c9b088bd0083237d393af6edd8d20c",
+      "tasks/latest/quant-videogen-cross-model-kv-codec-h100-v4-scratch/judge/evaluate_hidden.py": "98907755f567af2ac0d5edd0e02b47d8820971f3ff9bd41893f53882b0cca7fb",
+      "tasks/latest/quant-videogen-cross-model-kv-codec-h100-v4-scratch/judge/run_judge.py": "2803902abd65aa0c824802b4f87c4dc0e770a1603a53dac88a6888fa583ea4a7",
+      "launch/quant-videogen/run.sh": "bdd00c33f832b928fc57fbbc8f8eed7e0fcb5870bb3df65d8e00edd29072a4a5",
+      "tasks/latest/quant-videogen-cross-model-kv-codec-h100-v4-scratch/tasks/quant_videogen_cross_model_kv_codec_h100_scratch_v4.json": "b5feceba528bd66d244e8873d8940800cc794b21002b0c7c6a46627b8d03cc5d",
+      "tasks/latest/eagle3-spec-decode-engine-qwen3-8b-h100-v1-seed/README.md": "0be7ca203ce5eea9b16fa900539d3bdaf2b159e5b8ab2c7b4623391e40c190d2",
+      "tasks/latest/eagle3-spec-decode-engine-qwen3-8b-h100-v1-seed/images/work/AGENT_TASK.md": "b7f69cbade428d7af933b25cfa7a1ac6fc88c4598e5e5a0fa58a7e173be94a05",
+      "tasks/latest/eagle3-spec-decode-engine-qwen3-8b-h100-v1-seed/images/work/workdir/spec_lab/runtime/api.py": "477fd276807239a04180003cd318d8c9289321fe96ae4043a6206274869b38ed",
+      "tasks/latest/eagle3-spec-decode-engine-qwen3-8b-h100-v1-seed/images/work/workdir/spec_lab/runtime/evaluate.py": "d71a4c1121d7997f0ccffe445946cbeb4263c54907c4b59d950cf85bf5bc32ca",
+      "tasks/latest/eagle3-spec-decode-engine-qwen3-8b-h100-v1-seed/images/work/public_tests/run_public_tests.sh": "6d62c0d610314f2d58747e44eee8633b1b1986b52f152f6bcd9c87aa75ca8ea6",
+      "tasks/latest/eagle3-spec-decode-engine-qwen3-8b-h100-v1-seed/images/work/public_tests/public_eval.py": "32885c01e0205f90b230777d60e73d385edc6b51c9cf73f712587da6a96ef7af",
+      "launch/eagle3-spec-decode/run.sh": "be7fa1f8b0d0a2dfa11113a9559fd97c26d53d4aa38153a074b254958232a913",
+      "tasks/latest/eagle3-spec-decode-engine-qwen3-8b-h100-v1-seed/tasks/eagle3_spec_decode_engine_qwen3_8b_h100_v1.json": "085fc60eb81a7bf19e15bcdb0a01306ace1d2400baee06d36cc489c04d0bf5df",
+      "tasks/latest/llada-h100-decoder-optimization-v2-vanilla-seed/README.md": "a61eb5e18943d15d6930cf1921c864f2ce04cd30851a6b654d5a3b0dfeb23e34",
+      "tasks/latest/llada-h100-decoder-optimization-v2-vanilla-seed/images/work/AGENT_TASK.md": "4fc8d9f0abe8a43c26b6de306750e08c33ea54c49f7ee0c86c2a0b085187a617",
+      "tasks/latest/llada-h100-decoder-optimization-v2-vanilla-seed/scripts/make_reference_archives.py": "832544aabebb11b6d2a392fbd4a7fc34abb3af2b56da598e9fdee66a2ef19e74",
+      "tasks/latest/llada-h100-decoder-optimization-v2-vanilla-seed/images/work/workdir/decoder_lab/runtime/api.py": "d059b29724c2691712052a120362eb0ac9fc804e32c329ac14e7a7dd831bb3f4",
+      "tasks/latest/llada-h100-decoder-optimization-v2-vanilla-seed/images/judge/verifier/verify_decoder.py": "3ea865104521e89b81ff4cf01af79ff2a1c8a12fc12a5919b196ef6b68430957",
+      "tasks/latest/llada-h100-decoder-optimization-v2-vanilla-seed/images/judge/verifier/quality_threshold.py": "bb9256d89abb1b58f7af84cdbebbd443a21afad7330428188cbc2711dc1ef3e4",
+      "tasks/latest/llada-h100-decoder-optimization-v2-vanilla-seed/images/work/public_tests/run_public_tests.sh": "0c99832b7d4db9ffa51316ff954a4ba37321f7af9cc1afb7ebd282f871507e75",
+      "tasks/latest/llada-h100-decoder-optimization-v2-vanilla-seed/images/work/public_tests/public_eval.py": "03339056e438ae87b4834da33a66868be4c1d6ee6b93e489258d425f645fca09",
+      "launch/llada-h100/run.sh": "399e16b100d0f3c59c874dbf6a8eb1c0e2bfc0a5c3b773c7756aa6ceb497ae01",
+      "tasks/latest/llada-h100-decoder-optimization-v2-vanilla-seed/tasks/llada_h100_decoder_optimization_v2.json": "d065f222659ed4dd7c346487f68451283d8f894d1103e7cc901e2f427307333c",
+      "tasks/latest/streamdiffusionv2-dual-h100-pipeline-runtime-v2-seed/README.md": "6a4a132d828c74ba4d1d159aacc628ba9eb6052f3aad4476e96e152ed6ca5474",
+      "tasks/latest/streamdiffusionv2-dual-h100-pipeline-runtime-v2-seed/images/work/AGENT_TASK.md": "9c342ee7261eea61eba1eaf339137f055c558ea69c1c7d1504e790f31b937ada",
+      "tasks/latest/streamdiffusionv2-dual-h100-pipeline-runtime-v2-seed/runtime/scoring.py": "69f30703a3d96e6bcb545a33447261b0714ac983ac41226930eb1bf09e58a31b",
+      "tasks/latest/streamdiffusionv2-dual-h100-pipeline-runtime-v2-seed/runtime/evaluation.py": "10417e90e090ab948164ea145c4cfeffa322c868fffd8fd3eb9ca4bd409e820b",
+      "tasks/latest/streamdiffusionv2-dual-h100-pipeline-runtime-v2-seed/runtime/evaluation_protocol.json": "28b654f49c4d503f4fc13c0d92cbe25ed7e0aa4608e8cc8c68cf8fdc08f24527",
+      "tasks/latest/streamdiffusionv2-dual-h100-pipeline-runtime-v2-seed/images/work/workdir/sdv2_pipeline_lab/tools/run_public_tests.sh": "f72c44762ff78c3215b5953e05e6ebaee3b425292245a4d4ce2133cde289aed2",
+      "tasks/latest/streamdiffusionv2-dual-h100-pipeline-runtime-v2-seed/images/work/workdir/sdv2_pipeline_lab/tools/run_one.sh": "263c1f9643d7b02e411d7700f2869a16e03a9e01455b811cd5155199dffb917a",
+      "launch/sdv2-pipeline/run.sh": "019b5a8abb9be704e4c3bdb849e619c96a87c07f81733aa0c4c0b5a0b6995f9e",
+      "tasks/latest/streamdiffusionv2-dual-h100-pipeline-runtime-v2-seed/tasks/streamdiffusionv2_dual_h100_pipeline_runtime_seed_v2.json": "84dc0cd0c895dc65f1eab3f916d741650d35cc579a7284f45fcb6a48a0dc223c",
+      "tasks/latest/concurrent-agent-serving-optimizer-qwen36-swe192-v24/README.md": "0940f43358dbf426b09ce12b8bf0109eaec0b0dbf5231aa6864dca34acccb1cf",
+      "launch/concurrent-serving/run.sh": "f6f03c0b071b8f106523d0895374f7a66abe9a89b5fa88d054df1b7074fd3f0d",
+      "launch/common.sh": "e0bd20e4918d2e44b965ad0aaecacca51293fd84dbddc3a8a32d3dbe34b6414a",
+      "tasks/latest/concurrent-agent-serving-optimizer-qwen36-swe192-v24/scripts/host_vllm_backend.sh": "fdd78681eb08f814b5cd02213a3080ddd62cea0fcacdef56b333df50c08a7bd5",
+      "tasks/latest/concurrent-agent-serving-optimizer-qwen36-swe192-v24/images/work/AGENT_TASK.md": "506e3126bcc32f0a94c2fd8613bae49109c8d07e0c7178826a0c904177944da2",
+      "tasks/latest/concurrent-agent-serving-optimizer-qwen36-swe192-v24/runtime/frozen/harbor_tasks/concurrent-agent-serving-optimizer-qwen36-27b-swe192-v2.1-gpu45/environment/bench-controller/runner/workload.py": "6dfb348abb56b032204cb80693496d7ff9a02cc99d9ed505ab79c359ca847018",
+      "tasks/latest/concurrent-agent-serving-optimizer-qwen36-swe192-v24/runtime/frozen/harbor_tasks/concurrent-agent-serving-optimizer-qwen36-27b-swe192-v2.1-gpu45/environment/bench-controller/runner/metrics.py": "adf1833c713fa9def5994efbabe1b2da597db0fbdd05ee6d4a5cd767e97e197f",
+      "tasks/latest/concurrent-agent-serving-optimizer-qwen36-swe192-v24/images/work/submission/launch.sh": "55a18ba551db3a651d97a5b3a1348765ab38aa147bd7dc9e158ec99d887e8e60",
+      "tasks/latest/concurrent-agent-serving-optimizer-qwen36-swe192-v24/images/work/submission/gateway.py": "d27e8cff1fff5d22de87ea34af905d3bca74c7bd9527bd3c478a113a89d601b8",
+      "tasks/latest/concurrent-agent-serving-optimizer-qwen36-swe192-v24/tasks/concurrent_agent_serving_optimizer_qwen36_swe192_v24.json": "fd92c85d230e77284566fa550e4310141425c6ea8a547ac08d442d046a2d47c4"
     }
   },
   "selection": "The website shows the best valid within-budget submission. These formulas define each candidate metric; independent post-budget final evaluations do not change the displayed results.",
@@ -40,11 +272,11 @@
     "attn-qat": {
       "label": "Effective TFLOPS",
       "home_label": "TFLOPS",
-      "formula": "F = 26 × B × H × S_q × S_k × d_h\nt = 2 × t_forward + t_backward\nq_case = median₇(F / t / 10¹²)\nscore = (G_Wan13B × G_LTX2 × G_Kandinsky5)^(1/3)",
+      "formula": "F = 26 × B × H × S_q × S_k × d_h\nt = 2 × t_forward + t_backward\nq_case = median₇(F / t / 10¹²)\nscore = (G_Wan × G_LTX2 × G_Kandinsky5)^(1/3)",
       "details": [
         "B is batch size, H is the number of heads, S_q/S_k are query/key lengths, and d_h is head size. Durations are in seconds; the doubled forward term models activation recomputation.",
         "Each case uses seven timed trials. Forward and backward time are combined within each trial before taking the median throughput.",
-        "G is the geometric mean of case TFLOPS within a family. Four scored cells cover Wan13B (two cells), LTX2 (one), and Kandinsky5 (one); the three families receive equal weight.",
+        "G is the geometric mean of case TFLOPS within a family. Four scored cells cover Wan2.1-T2V-1.3B (two cells), LTX-2 (one), and Kandinsky5 (one); the three families receive equal weight.",
         "Timing includes required scheduling and synchronization and excludes reference computation and validation."
       ],
       "conditions": [
@@ -53,8 +285,8 @@
       ],
       "sources": [
         {
-          "doc": "docs/tasks/attn-qat-nvfp4-training-attention-h100-v1-seed.md",
-          "section": "Metric (lines 163–209)",
+          "doc": "tasks/latest/attn-qat-nvfp4-training-attention-h100-v1-seed/README.md",
+          "section": "Task definition and evaluation",
           "paper": "Appendix A: Attn-QAT NVFP4 Attention; eq:attnqat_metric and eq:operator_aggregation"
         }
       ]
@@ -75,8 +307,8 @@
       ],
       "sources": [
         {
-          "doc": "docs/tasks/standalone-k-grouped-fp8-wgrad-h100-v2-scratch.md",
-          "section": "Metric (lines 85–106); 5.2 validity checks",
+          "doc": "tasks/latest/standalone-k-grouped-fp8-wgrad-h100-v2-scratch/README.md",
+          "section": "Task definition and evaluation",
           "paper": "Appendix A: K-grouped FP8 Wgrad; eq:wgrad_metric and eq:operator_aggregation"
         }
       ]
@@ -96,8 +328,8 @@
       ],
       "sources": [
         {
-          "doc": "docs/tasks/flux-moe-ag-scatter-grouped-gemm-dual-h100-v1-seed.md",
-          "section": "Metric (lines 145–198)",
+          "doc": "tasks/latest/flux-moe-ag-scatter-grouped-gemm-dual-h100-v1-seed/README.md",
+          "section": "Task definition and evaluation",
           "paper": "Appendix A: Flux/Comet MoE Primitive; eq:moe_metric and eq:operator_aggregation"
         }
       ]
@@ -118,8 +350,8 @@
       ],
       "sources": [
         {
-          "doc": "docs/tasks/qwen3-1p7b-orpo-training-optimizer-dual-h100-v4-cross-matrix-seed.md",
-          "section": "Metric (lines 110–128); 5.2 validity checks",
+          "doc": "tasks/latest/qwen3-1p7b-orpo-training-optimizer-dual-h100-v4-cross-matrix-seed/README.md",
+          "section": "Task definition and evaluation",
           "paper": "Appendix A: Training: Module Tasks / Qwen3 ORPO; eq:training_step_throughput and eq:orpo_metric"
         }
       ],
@@ -141,8 +373,8 @@
       ],
       "sources": [
         {
-          "doc": "docs/tasks/qwen3-4b-to-1p7b-gkd-distillation-optimizer-dual-h100-v1-official-trl-seed.md",
-          "section": "Metric (lines 127–197)",
+          "doc": "tasks/latest/qwen3-4b-to-1p7b-gkd-distillation-optimizer-dual-h100-v1-official-trl-seed/README.md",
+          "section": "Task definition and evaluation",
           "paper": "Appendix A: Training: Module Tasks / Qwen3 GKD; eq:training_step_throughput and eq:gkd_metric"
         }
       ],
@@ -164,8 +396,8 @@
       ],
       "sources": [
         {
-          "doc": "docs/tasks/miles-opcd.md",
-          "section": "Metric (lines 113–132)",
+          "doc": "tasks/latest/miles-qwen3-opcd-2xh100-v3-seed/README.md",
+          "section": "Task definition and evaluation",
           "paper": "Appendix A: Training: System Tasks / Miles Qwen3 OPCD; eq:training_quality_gain and eq:opcd_metric"
         }
       ]
@@ -187,8 +419,8 @@
       ],
       "sources": [
         {
-          "doc": "docs/tasks/miles-opd-from-scratch.md",
-          "section": "Metric (lines 77–92); 5. Judge hidden tests",
+          "doc": "tasks/latest/miles-qwen3-opd-scratch-2xh100-v2-seed/README.md",
+          "section": "Task definition and evaluation",
           "paper": "Appendix A: Training: System Tasks / Miles Qwen3 OPD; eq:training_quality_gain and eq:opd_metric"
         }
       ]
@@ -209,8 +441,8 @@
       ],
       "sources": [
         {
-          "doc": "docs/tasks/miles-alfworld-agentic-rl.md",
-          "section": "Metric (lines 110–131; metric v2)",
+          "doc": "tasks/latest/miles-qwen3-alfworld-agentic-rl-2xh100-v1-seed/README.md",
+          "section": "Task definition and evaluation",
           "paper": "Appendix A: Training: System Tasks / Miles ALFWorld RL; eq:training_quality_gain and eq:alf_metric"
         }
       ]
@@ -232,8 +464,8 @@
       ],
       "sources": [
         {
-          "doc": "docs/tasks/miles-sd35m-multi-teacher-distillation.md",
-          "section": "Metric (lines 94–127; metric v3)",
+          "doc": "tasks/latest/miles-diffusion-sd35m-mopd-2xh100-v2-seed/README.md",
+          "section": "Task definition and evaluation",
           "paper": "Appendix A: Miles SD3.5-M Multi-teacher OPD; eq:sd35_kl_gate and eq:sd35_metric"
         }
       ]
@@ -254,8 +486,8 @@
       ],
       "sources": [
         {
-          "doc": "docs/tasks/miles-wan22-dancegrpo.md",
-          "section": "Metric (lines 107–130); 5.3 分数 (lines 291–318)",
+          "doc": "tasks/latest/miles-diffusion-wan22-dancegrpo-2xh100-v2-seed/README.md",
+          "section": "Task definition and evaluation",
           "paper": "Appendix A: Miles Wan2.2 DanceGRPO; eq:wan22_metric"
         }
       ]
@@ -277,8 +509,8 @@
       ],
       "sources": [
         {
-          "doc": "docs/tasks/standalone-dynamic-grouped-fp8-h100-v3-scratch.md",
-          "section": "Metric; 5.2 门; 5.3 分数",
+          "doc": "tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/README.md",
+          "section": "Task definition and evaluation",
           "paper": "Dynamic Grouped FP8 GEMM, main.tex:1489–1505; Shared Evaluation Conventions, main.tex:1232–1241"
         }
       ]
@@ -300,8 +532,8 @@
       ],
       "sources": [
         {
-          "doc": "docs/tasks/standalone-sparse-mla-prefill-h100-v2-scratch.md",
-          "section": "Task Definition; Metric; Public / Private Test",
+          "doc": "tasks/latest/standalone-sparse-mla-prefill-h100-v2-scratch/README.md",
+          "section": "Task definition and evaluation",
           "paper": "Sparse-MLA Prefill, main.tex:1507–1523; Shared Evaluation Conventions, main.tex:1232–1241"
         }
       ]
@@ -323,8 +555,8 @@
       ],
       "sources": [
         {
-          "doc": "docs/tasks/standalone-paged-gqa-decode-bf16-h100-v2-scratch.md",
-          "section": "Task Definition; Metric; Public / Private Test",
+          "doc": "tasks/latest/standalone-paged-gqa-decode-bf16-h100-v2-scratch/README.md",
+          "section": "Task definition and evaluation",
           "paper": "Paged-GQA Decode, main.tex:1525–1542; Shared Evaluation Conventions, main.tex:1232–1241"
         }
       ]
@@ -346,8 +578,8 @@
       ],
       "sources": [
         {
-          "doc": "docs/tasks/sageattention-quantized-attention-bf16-h100-v2-seed.md",
-          "section": "Metric: 计数、聚合、精度先过门; 5.2 九条有效性硬门",
+          "doc": "tasks/latest/sageattention-quantized-attention-bf16-h100-v2-seed/README.md",
+          "section": "Task definition and evaluation",
           "paper": "SageAttention, main.tex:1544–1564; Shared Evaluation Conventions, main.tex:1232–1241"
         }
       ]
@@ -369,8 +601,8 @@
       ],
       "sources": [
         {
-          "doc": "docs/tasks/minference-sparse-prefill-h100-v3-seed.md",
-          "section": "Metric; 5.1 数值预算的标定证据; 5.2 执行流程与硬门",
+          "doc": "tasks/latest/minference-sparse-prefill-h100-v3-seed/README.md",
+          "section": "Task definition and evaluation",
           "paper": "MInference, main.tex:1566–1583"
         }
       ]
@@ -392,8 +624,8 @@
       ],
       "sources": [
         {
-          "doc": "docs/tasks/lmcache-paged-kv-block-transfer-h100-v1-seed.md",
-          "section": "Metric: 单个 case、从 case 到总分; 5.2 计时协议; 5.3 正确性门",
+          "doc": "tasks/latest/lmcache-paged-kv-block-transfer-h100-v1-seed/README.md",
+          "section": "Task definition and evaluation",
           "paper": "LMCache KV Block Transfer, main.tex:1585–1604"
         }
       ]
@@ -415,8 +647,8 @@
       ],
       "sources": [
         {
-          "doc": "docs/tasks/flash-kmeans-paper-h100-v7-scratch.md",
-          "section": "Metric; 5.1 最终 holdout 的生成规则; 5.2 硬门",
+          "doc": "tasks/latest/flash-kmeans-paper-h100-v7-scratch/README.md",
+          "section": "Task definition and evaluation",
           "paper": "Flash-KMeans, main.tex:1606–1633; equivalent-work conversion checked against website scripts/build_data.py:29–48"
         }
       ],
@@ -438,8 +670,8 @@
       ],
       "sources": [
         {
-          "doc": "docs/tasks/tilelang-mamba2-ssd-forward-h100-v2-seed.md",
-          "section": "Metric; 5.1 参考答案与精度门; 5.2 十条有效性硬门",
+          "doc": "tasks/latest/tilelang-mamba2-ssd-forward-h100-v2-seed/README.md",
+          "section": "Task definition and evaluation",
           "paper": "Mamba-2 SSD Forward, main.tex:1635–1651; Shared Evaluation Conventions, main.tex:1232–1241"
         }
       ]
@@ -461,8 +693,8 @@
       ],
       "sources": [
         {
-          "doc": "docs/tasks/kvpress-kv-eviction-policy-qwen3-8b-h100-v2-scratch.md",
-          "section": "Metric (lines 114–127)",
+          "doc": "tasks/latest/kvpress-kv-eviction-policy-qwen3-8b-h100-v2-scratch/README.md",
+          "section": "Task definition and evaluation",
           "paper": "kvpress KV Eviction — main.tex lines 1656–1682"
         }
       ]
@@ -484,8 +716,8 @@
       ],
       "sources": [
         {
-          "doc": "docs/tasks/kvzip-query-agnostic-kv-scoring-qwen3-8b-h100-v2-scratch.md",
-          "section": "Metric (lines 106–121)",
+          "doc": "tasks/latest/kvzip-query-agnostic-kv-scoring-qwen3-8b-h100-v2-scratch/README.md",
+          "section": "Task definition and evaluation",
           "paper": "KVzip KV Scoring — main.tex lines 1684–1701"
         }
       ]
@@ -507,8 +739,8 @@
       ],
       "sources": [
         {
-          "doc": "docs/tasks/quant-videogen-cross-model-kv-codec-h100-v4-scratch.md",
-          "section": "Metric (lines 157–194)",
+          "doc": "tasks/latest/quant-videogen-cross-model-kv-codec-h100-v4-scratch/README.md",
+          "section": "Task definition and evaluation",
           "paper": "Quant-VideoGen KV Codec — main.tex lines 1703–1720"
         }
       ],
@@ -530,8 +762,8 @@
       ],
       "sources": [
         {
-          "doc": "docs/tasks/eagle3-spec-decode-engine-qwen3-8b-h100-v1-seed.md",
-          "section": "Metric → Token 计数与计时边界 / 从请求到综合吞吐 / 参考与硬门分别做什么 (lines 109–166)",
+          "doc": "tasks/latest/eagle3-spec-decode-engine-qwen3-8b-h100-v1-seed/README.md",
+          "section": "Task definition and evaluation",
           "paper": "EAGLE-3 Speculative Decoding — main.tex lines 1725–1741"
         }
       ]
@@ -552,8 +784,8 @@
       ],
       "sources": [
         {
-          "doc": "docs/tasks/llada-h100-decoder-optimization-v2-vanilla-seed.md",
-          "section": "Metric → TPS 数什么、计时包含什么 / 从每条请求到最终分数 / 参考用于质量门，不用于速度归一化 (lines 133–192)",
+          "doc": "tasks/latest/llada-h100-decoder-optimization-v2-vanilla-seed/README.md",
+          "section": "Task definition and evaluation",
           "paper": "LLaDA Decoding — main.tex lines 1743–1760"
         }
       ]
@@ -574,8 +806,8 @@
       ],
       "sources": [
         {
-          "doc": "docs/tasks/streamdiffusionv2-dual-h100-pipeline-runtime-v2-seed.md",
-          "section": "Metric (lines 98–125)",
+          "doc": "tasks/latest/streamdiffusionv2-dual-h100-pipeline-runtime-v2-seed/README.md",
+          "section": "Task definition and evaluation",
           "paper": "StreamDiffusionV2 — main.tex lines 1762–1777"
         }
       ]
@@ -596,8 +828,8 @@
       ],
       "sources": [
         {
-          "doc": "docs/tasks/concurrent-agent-serving-optimizer-qwen36-swe192-v24.md",
-          "section": "Metric → 什么算一个有效 step / 用固定墙钟窗口计算总速率 / Direct 对照做什么、不做什么 / 为什么界面可能显示另一个 0–100 分数 (lines 118–190)",
+          "doc": "tasks/latest/concurrent-agent-serving-optimizer-qwen36-swe192-v24/README.md",
+          "section": "Task definition and evaluation",
           "paper": "Concurrent Agent Serving — main.tex lines 1779–1794"
         }
       ],

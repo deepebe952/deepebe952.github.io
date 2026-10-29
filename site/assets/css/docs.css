@@ -54,6 +54,15 @@
 .task-components th:first-child { width: 34%; }
 .task-components tbody th { background: none; font-size: 13px; overflow-wrap: anywhere; }
 .task-components td { overflow-wrap: anywhere; }
+.task-reader-facts { margin: 0; }
+.task-reader-facts > div { margin-bottom: 24px; }
+.task-reader-facts dt { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+.task-reader-facts dd { margin: 0; color: var(--ink-2); font-size: 16px; line-height: 1.75; }
+.doc-section > .task-metric-title { margin-top: 0; }
+.task-score-rule { padding: 16px 20px; margin: 18px 0; border-left: 3px solid var(--m-sol); background: var(--panel-2); font-size: 16px; line-height: 1.7; }
+.task-technical { margin-top: 22px; }
+.task-technical > summary { cursor: pointer; color: var(--ink); font-size: 15px; }
+.task-technical h3 { font-size: 18px; margin: 28px 0 14px; }
 .doc-callout { margin: 18px 0; padding: 2px 0 2px 18px; border-left: 3px solid var(--hair-2); }
 .doc-task-id { color: var(--ink-3); font-size: 12px; overflow-wrap: anywhere; }
 .doc-article .task-back { margin: 0 0 18px; height: auto; padding: 0; border: 0; background: none; color: var(--ink-3); font-size: 13px; cursor: pointer; }

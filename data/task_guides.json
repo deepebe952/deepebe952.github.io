@@ -1,7 +1,8 @@
 {
   "source": {
-    "project": "https://github.com/deepebe952/mlsys_forge",
-    "revision": "ae21f8a6a8abf9470e089d3fed20e3d3ef459871"
+    "project": "https://github.com/deepebe952/infrathon",
+    "revision": "eb72a9ce8a4067766b0ffaf99ea23659102b617a",
+    "checkout": "../infrathon"
   },
   "tasks": {
     "attn-qat": {
@@ -14,10 +15,10 @@
         "Edit candidates/kernel_vNNN/submission.py, keeping the forward and backward interfaces."
       ],
       "requirements": [
-        "Default allocation: Work 1 GPU + Judge 1 GPU (2 GPUs per run).",
+        "Default allocation: one whole GPU shared serially by Work and Judge; Work pauses during evaluation.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "PyTorch 2.8 / CUDA 12.9 / Triton task environment.",
-        "BF16 attention tensors with Wan13B, LTX2, and Kandinsky5 geometries."
+        "BF16 attention tensors with Wan2.1-T2V-1.3B, LTX-2, and Kandinsky5 geometries."
       ],
       "workflow": [
         "Read the two entry points in `kernel_v001` and identify where the quantized probabilities and saved intermediates are produced.",
@@ -28,16 +29,12 @@
       "evaluation": "Measures effective training throughput across three model families after FP32-reference output and gradient checks, edge fixtures, input preservation, and intermediate-storage checks pass.",
       "sources": [
         {
-          "doc": "docs/tasks/attn-qat-nvfp4-training-attention-h100-v1-seed.md",
-          "sha256": "49e2cd60caaf0200d436acef769a8efc10112aa555e54e19b8ff6cd773cd7590"
-        },
-        {
-          "doc": "scripts/infrathon/release/public/tasks/latest/attn-qat-nvfp4-training-attention-h100-v1-seed/README.md",
-          "sha256": "9ba17c0852557de6c2a37cbe9f35b99f01e66673bd46d608a225bd70499a2f38"
+          "doc": "tasks/latest/attn-qat-nvfp4-training-attention-h100-v1-seed/README.md",
+          "sha256": "8c01bd51323dbca1369976b878c3d56b7b38c2ffb806c15fa1c622a8033e127a"
         },
         {
           "doc": "scripts/infrathon/tasks.json",
-          "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+          "sha256": "c9a05bf640ff1bd397fe2b94ddfe88242b59e0de906bd684d5a90da76ac8cbf8"
         },
         {
           "doc": "tasks/latest/attn-qat-nvfp4-training-attention-h100-v1-seed/images/work/AGENT_TASK.md",
@@ -50,10 +47,30 @@
         {
           "doc": "tasks/latest/attn-qat-nvfp4-training-attention-h100-v1-seed/images/work/benchmark/run_public_tests.sh",
           "sha256": "08a34f45975fb17f0a6a8545f7534eaf6332c56c599d698f97ac624c0f928284"
+        },
+        {
+          "doc": "tasks/latest/attn-qat-nvfp4-training-attention-h100-v1-seed/assets/manifest.json",
+          "sha256": "1b0061c96fd8235190453bf18da9af69e11e78c5fcba1f92d2b88e8956cba993"
+        },
+        {
+          "doc": "launch/attn-qat-train/run.sh",
+          "sha256": "fe43df858852a9ee62b14bd2a1f0e7caf86884339572b61b991b78811cafa0b5"
+        },
+        {
+          "doc": "tasks/latest/attn-qat-nvfp4-training-attention-h100-v1-seed/images/judge/verify_attn_qat.py",
+          "sha256": "e4cad0cd23de4a4303ad38747362ac3665032bcaba2d74ce25efa9e7f1cc8f26"
+        },
+        {
+          "doc": "tasks/latest/attn-qat-nvfp4-training-attention-h100-v1-seed/scripts/run_single_gpu_fixed_budget.sh",
+          "sha256": "5a9249565828ec1a0462c87045e71eb6a6104e16744aa0f28cfe3cfb3d90f2cf"
+        },
+        {
+          "doc": "tasks/latest/attn-qat-nvfp4-training-attention-h100-v1-seed/tasks/attn_qat_nvfp4_training_attention_h100_seed_v1.json",
+          "sha256": "265b5bdddf2c3c07e499630713fae43cc0908c690fe8d847f8bfcb0cb1219499"
         }
       ],
       "result_intro": "This task accelerates the forward and backward attention operator used to fine-tune video diffusion models with NVFP4 quantization-aware training. Given BF16 queries, keys, values and an output gradient, the implementation must produce the prescribed attention output and input gradients while reducing quantization, matrix-multiplication and intermediate-storage costs.",
-      "metric_summary": "The score is effective TFLOPS for a checkpointed training step: fixed work divided by twice the forward time plus backward time. Seven-trial median throughputs are combined geometrically, giving Wan13B, LTX2 and Kandinsky5 equal weight.",
+      "metric_summary": "The score is effective TFLOPS for a checkpointed training step: fixed work divided by twice the forward time plus backward time. Seven-trial median throughputs are combined geometrically, giving Wan2.1-T2V-1.3B, LTX-2 and Kandinsky5 equal weight.",
       "setting": "The starting candidate is a correct Triton port of FastVideo’s SM90 attention implementation. Four workload cells represent two Wan2.1-T2V-1.3B configurations, LTX-2 and Kandinsky5, with head dimensions of 64 or 128 and different sequence lengths. Inputs remain BF16 while queries, keys, values and attention probabilities undergo the specified NVFP4 quantize–dequantize operations. Evaluation covers this attention layer rather than an entire video-model training run.",
       "interface": [
         {
@@ -94,7 +111,33 @@
         "The Judge uses four scored cells with its frozen sequence lengths and seeds, compares outputs and gradients against an FP32 reference, and checks complete writes, unchanged inputs and saved storage.",
         "Formal scoring uses one warm-up and seven trials; the public full run uses three measured trials, so its timing is a development estimate."
       ],
-      "test_commands": "# Replace 1 with your candidate version.\ncd /app/workdir/attn_qat_lab\n./tools/run_public_tests.sh --candidate-version 1"
+      "test_commands": "# Replace 1 with your candidate version.\ncd /app/workdir/attn_qat_lab\n./tools/run_public_tests.sh --candidate-version 1",
+      "launch_setup": "# Select the whole GPU allocated to this run.\nnvidia-smi --query-gpu=index,uuid --format=csv,noheader\nGPU_UUID=GPU-...",
+      "launch_command": "launch/attn-qat-train/run.sh \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --device-uuid \"$GPU_UUID\" --auth /path/to/auth.json",
+      "reader_overview": "Video models need attention calculations in both the forward pass and the gradient calculation during training. The agent speeds up this attention routine while preserving the specified simulation of four-bit rounding, so its outputs and gradients still match the required computation.",
+      "reader_setup": [
+        {
+          "name": "Model and data",
+          "description": "Attention workloads from Wan2.1-T2V-1.3B, LTX-2 and Kandinsky5, using the prescribed four-bit quantization simulation."
+        },
+        {
+          "name": "Test setup",
+          "description": "Four test configurations: two for Wan and one each for LTX-2 and Kandinsky5. Timing combines two forward calls and one backward call."
+        },
+        {
+          "name": "Starting point",
+          "description": "A working attention implementation written in Triton, a language for writing GPU kernels."
+        },
+        {
+          "name": "What the agent changes",
+          "description": "How attention work is divided across the GPU, how intermediate values are stored or recomputed, and how rounding and gradient calculations are combined."
+        }
+      ],
+      "reader_metric": {
+        "meaning": "Measures attention training speed, including the required quantization and gradient computation. Effective TFLOPS counts prescribed work in trillions of operations per second, combined across the three model families.",
+        "rule": "Score = attention training work ÷ (2 × forward time + backward time), expressed in TFLOPS and combined across cases."
+      },
+      "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "wgrad": {
       "task_id": "standalone_k_grouped_fp8_wgrad_h100_scratch_v2",
@@ -106,7 +149,7 @@
         "Implement the grouped weight-gradient entry point in versioned Triton candidates; use FINAL_VERSION to select the submission."
       ],
       "requirements": [
-        "Default allocation: Work 1 GPU + Judge 1 GPU (2 GPUs per run).",
+        "Default allocation: one whole GPU shared serially by Work and Judge; Work pauses during evaluation.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "PyTorch 2.8 / CUDA 12.9 / Triton task environment.",
         "FP8 matrices, block scales, group lengths, and FP32 gradient buffers."
@@ -120,16 +163,12 @@
       "evaluation": "Measures effective TFLOPS across coarse and fine grouping workloads. Numerical references, complete writes, unchanged inputs, and memory-safety checks establish correctness.",
       "sources": [
         {
-          "doc": "docs/tasks/standalone-k-grouped-fp8-wgrad-h100-v2-scratch.md",
-          "sha256": "73110444ab0a1a1e628a9b0ebe63db1036c0d6e5fa95b7f5d06d764a4e168b45"
-        },
-        {
-          "doc": "scripts/infrathon/release/public/tasks/latest/standalone-k-grouped-fp8-wgrad-h100-v2-scratch/README.md",
-          "sha256": "ca942e3fddf23809c63a084f3fe48bfe7fcd04e4f58eb8dae1d88b6320e2d11f"
+          "doc": "tasks/latest/standalone-k-grouped-fp8-wgrad-h100-v2-scratch/README.md",
+          "sha256": "d59de9267ca1dc644a8a8af4bfb7be966e52ab9d2adde88c220c501fc9b248dc"
         },
         {
           "doc": "scripts/infrathon/tasks.json",
-          "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+          "sha256": "c9a05bf640ff1bd397fe2b94ddfe88242b59e0de906bd684d5a90da76ac8cbf8"
         },
         {
           "doc": "tasks/latest/standalone-k-grouped-fp8-wgrad-h100-v2-scratch/images/work/AGENT_TASK.md",
@@ -138,6 +177,26 @@
         {
           "doc": "tasks/latest/standalone-k-grouped-fp8-wgrad-h100-v2-scratch/images/work/benchmark/run_public_tests.sh",
           "sha256": "43d42d675bc869c05ea275259a0491bd3b1e86a6633058e441fccd89114925fd"
+        },
+        {
+          "doc": "tasks/latest/standalone-k-grouped-fp8-wgrad-h100-v2-scratch/assets/manifest.json",
+          "sha256": "ae322d22f11acc5856127d97cdf6f24d1785d933b261a62f2e277ab7163768dd"
+        },
+        {
+          "doc": "launch/standalone-kgrouped-wgrad/run.sh",
+          "sha256": "8c1b591f0e3a037d3f41aae70b1bc888b89b4c5aac22c30ca2a356dc402aed41"
+        },
+        {
+          "doc": "tasks/latest/standalone-k-grouped-fp8-wgrad-h100-v2-scratch/images/judge/verify_wgrad.py",
+          "sha256": "4e702637dd8c8013166590d3b247032a6116e1b52854200c901e0cd924b6d756"
+        },
+        {
+          "doc": "tasks/latest/standalone-k-grouped-fp8-wgrad-h100-v2-scratch/scripts/run_single_gpu_fixed_budget.sh",
+          "sha256": "708e1e7de88a626fdbb187c835696cf7c63f1c0547e85bc31633577cf5773d4e"
+        },
+        {
+          "doc": "tasks/latest/standalone-k-grouped-fp8-wgrad-h100-v2-scratch/tasks/standalone_k_grouped_fp8_wgrad_h100_scratch_v2.json",
+          "sha256": "0725ea38d01df0504aa5e71f0dbb2146979ea72c16bfa68d0cff32c927ff85f8"
         }
       ],
       "result_intro": "Implement the weight-gradient matrix multiplication used by mixture-of-experts training, starting from an empty Triton candidate. FP8 activation and gradient rows are grouped by expert along the reduction dimension; each group’s scaled matrix product is added to an existing FP32 gradient and written to a separate output buffer.",
@@ -182,7 +241,33 @@
         "The Judge adds 160 correctness cases, compares with dequantized FP64 and BF16 references, and checks finite complete writes, byte-identical inputs and guard bands.",
         "Each scored case uses five fresh-input trials; the larger of synchronized host-wall and CUDA-event time is charged."
       ],
-      "test_commands": "cd /app/workdir/k_grouped_wgrad_lab\n./tools/run_public_tests.sh --sanitize --candidate-version 1\n./tools/run_public_tests.sh --edge --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1"
+      "test_commands": "cd /app/workdir/k_grouped_wgrad_lab\n./tools/run_public_tests.sh --sanitize --candidate-version 1\n./tools/run_public_tests.sh --edge --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1",
+      "launch_setup": "# Select the whole GPU allocated to this run.\nnvidia-smi --query-gpu=index,uuid --format=csv,noheader\nGPU_UUID=GPU-...",
+      "launch_command": "launch/standalone-kgrouped-wgrad/run.sh \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --device-uuid \"$GPU_UUID\" --auth /path/to/auth.json",
+      "reader_overview": "Training a model with multiple experts requires calculating gradients that tell each expert how to adjust its weights. The agent builds a fast GPU routine for these grouped calculations, using eight-bit inputs while preserving the required scaling and accumulated gradients.",
+      "reader_setup": [
+        {
+          "name": "Workload",
+          "description": "Grouped matrix multiplications for expert weight gradients, using eight-bit inputs and existing gradients stored at higher precision."
+        },
+        {
+          "name": "Test setup",
+          "description": "Seven performance configurations cover coarse and fine expert groupings. Group sizes change between trials; correctness checks also include empty groups and irregular sizes."
+        },
+        {
+          "name": "Starting point",
+          "description": "An empty implementation with a defined interface, public tests and the required calculation described in the task."
+        },
+        {
+          "name": "What the agent changes",
+          "description": "The complete GPU implementation: dividing matrix work into blocks, distributing groups, combining partial results and handling small or uneven groups."
+        }
+      ],
+      "reader_metric": {
+        "meaning": "Measures how quickly the kernel computes the required expert weight gradients. Throughput uses the actual group sizes; the coarse- and fine-group workloads have equal weight. TFLOPS expresses the task-defined operation count in trillions of operations per second.",
+        "rule": "Score = useful matrix operations ÷ execution time, expressed in TFLOPS and combined across cases."
+      },
+      "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "flux-moe": {
       "task_id": "flux_moe_ag_scatter_grouped_gemm_dual_h100_seed_v1",
@@ -208,16 +293,12 @@
       "evaluation": "Measures useful per-rank throughput using the slower rank’s time. Output accuracy, complete writes, fresh-input execution, input preservation, and rank agreement must pass.",
       "sources": [
         {
-          "doc": "docs/tasks/flux-moe-ag-scatter-grouped-gemm-dual-h100-v1-seed.md",
-          "sha256": "4a61f77989e1c1bed2bf0efc9cdddac7fcc9e38e56815d9893a59ada8affd1db"
-        },
-        {
-          "doc": "scripts/infrathon/release/public/tasks/latest/flux-moe-ag-scatter-grouped-gemm-dual-h100-v1-seed/README.md",
-          "sha256": "3221f7cd850a93984cf22a4774063ec80b7ce1507c3b67a3dff9b4655019c089"
+          "doc": "tasks/latest/flux-moe-ag-scatter-grouped-gemm-dual-h100-v1-seed/README.md",
+          "sha256": "3691eb7a28787a81deb61d668e9b091bb76e0592f48ef631eb9ffef774401ca1"
         },
         {
           "doc": "scripts/infrathon/tasks.json",
-          "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+          "sha256": "c9a05bf640ff1bd397fe2b94ddfe88242b59e0de906bd684d5a90da76ac8cbf8"
         },
         {
           "doc": "tasks/latest/flux-moe-ag-scatter-grouped-gemm-dual-h100-v1-seed/images/work/AGENT_TASK.md",
@@ -230,6 +311,22 @@
         {
           "doc": "tasks/latest/flux-moe-ag-scatter-grouped-gemm-dual-h100-v1-seed/scripts/launch_fixed_budget_after_gpu_pair_idle.sh",
           "sha256": "8cecf0cd5ede408ebb83a27c7f7eefb84be0663aa6cc5644482683daf7b34560"
+        },
+        {
+          "doc": "tasks/latest/flux-moe-ag-scatter-grouped-gemm-dual-h100-v1-seed/assets/manifest.json",
+          "sha256": "f22232283c20f46447d1afeb47a23b5a997004565f4eb5ada9a42c3f294c04de"
+        },
+        {
+          "doc": "launch/flux-moe-ag/run.sh",
+          "sha256": "bc5015493a18ce067aa9779569771813cd723aa53c194d2aeae31d53c422f360"
+        },
+        {
+          "doc": "tasks/latest/flux-moe-ag-scatter-grouped-gemm-dual-h100-v1-seed/images/judge/verify_moe_ag.py",
+          "sha256": "af4504934240fbac1eaa8635df7c1690161a1f5bbddda575fddec6b43885f2b0"
+        },
+        {
+          "doc": "tasks/latest/flux-moe-ag-scatter-grouped-gemm-dual-h100-v1-seed/tasks/flux_moe_ag_scatter_grouped_gemm_dual_h100_seed_v1.json",
+          "sha256": "4e2aebd0d20ff87a469d1637f9b11d7501acdeeee82006f972e027625d5441ef"
         }
       ],
       "result_intro": "Optimize the input-side primitive of a tensor-parallel mixture-of-experts layer on two GPUs. Each rank gathers both token shards, scatters rows into the supplied expert order, and performs grouped matrix multiplication to produce its own output-channel shard.",
@@ -277,7 +374,33 @@
         "The Judge uses different frozen token counts and seeds, checking FP32/BF16-reference accuracy, complete writes, input preservation and agreement between ranks.",
         "Formal timing uses seven trials and includes communication waits; the public full run uses three trials and exposes per-rank and communication diagnostics."
       ],
-      "test_commands": "# Replace 1 with your candidate version.\ncd /app/workdir/moe_ag_lab\n./tools/run_one.sh --version 1\n./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1"
+      "test_commands": "# Replace 1 with your candidate version.\ncd /app/workdir/moe_ag_lab\n./tools/run_one.sh --version 1\n./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1",
+      "launch_setup": "# Select the NVLink pair allocated to this run.\nnvidia-smi --query-gpu=index,uuid --format=csv,noheader",
+      "launch_command": "launch/flux-moe-ag/run.sh \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --gpus 0,1 --no-wait --auth /path/to/auth.json",
+      "reader_overview": "A mixture-of-experts model sends each token to a small selection of expert networks. This task speeds up gathering tokens across two GPUs, grouping them by expert, and multiplying them by the expert weights.",
+      "reader_setup": [
+        {
+          "name": "Model and data",
+          "description": "Five expert-model configurations representing Qwen3-Next, Qwen3-MoE, gpt-oss, Mixtral and DeepSeek."
+        },
+        {
+          "name": "Test setup",
+          "description": "Each configuration supplies token data, expert weights and fixed routing choices. Both GPUs exchange token data and compute their assigned expert outputs."
+        },
+        {
+          "name": "Starting point",
+          "description": "A working Triton implementation adapted from Flux, with token gathering, expert grouping and matrix multiplication already connected."
+        },
+        {
+          "name": "What the agent changes",
+          "description": "The order of transfers and computation, how GPU workers share those jobs, and how data is staged for each expert."
+        }
+      ],
+      "reader_metric": {
+        "meaning": "Measures how quickly the two GPUs complete token collection, expert routing, and matrix multiplication together. Each measurement uses the slower GPU’s time, and the two communication-load families have equal weight. TFLOPS expresses the task-defined operation count in trillions of operations per second.",
+        "rule": "Score = useful matrix operations per GPU ÷ complete execution time, expressed in TFLOPS and combined across cases."
+      },
+      "reader_compute": "Two GPUs connected by NVLink, shared by development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "orpo": {
       "task_id": "qwen3_1p7b_orpo_training_optimizer_dual_h100_v4",
@@ -303,20 +426,36 @@
       "evaluation": "Compares complete-step throughput with an official TRL reference measured in the same evaluation. Losses, gradients, optimizer state, nonzero parameter updates, and memory use must meet the reference checks.",
       "sources": [
         {
-          "doc": "docs/tasks/qwen3-1p7b-orpo-training-optimizer-dual-h100-v4-cross-matrix-seed.md",
-          "sha256": "0591d72b60c11739f6a694dead5470e6d0c67d7fad88e86086ef361bf0953f98"
-        },
-        {
-          "doc": "scripts/infrathon/release/public/tasks/latest/qwen3-1p7b-orpo-training-optimizer-dual-h100-v4-cross-matrix-seed/README.md",
-          "sha256": "0ab54589cecc51ccdee28a61521afa6a0ecef35df36fd75030c1ddc349ee04be"
+          "doc": "tasks/latest/qwen3-1p7b-orpo-training-optimizer-dual-h100-v4-cross-matrix-seed/README.md",
+          "sha256": "6ed147b7e7f6269eb9fdf5f167fe3f83e4a46e747ef8607bc012531950e0c793"
         },
         {
           "doc": "scripts/infrathon/tasks.json",
-          "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+          "sha256": "c9a05bf640ff1bd397fe2b94ddfe88242b59e0de906bd684d5a90da76ac8cbf8"
         },
         {
           "doc": "tasks/latest/qwen3-1p7b-orpo-training-optimizer-dual-h100-v4-cross-matrix-seed/images/work/public_tests/run_public_tests.sh",
           "sha256": "85c947475150f515f3dd15b6f8815996f2eb6e2eb4b88fdd6472cc45938480c9"
+        },
+        {
+          "doc": "tasks/latest/qwen3-1p7b-orpo-training-optimizer-dual-h100-v4-cross-matrix-seed/assets/manifest.json",
+          "sha256": "15e48e30d03776cd165464ec83b326321d55e58fe53a8d699f227a50d4c896d8"
+        },
+        {
+          "doc": "launch/qwen3-orpo/run.sh",
+          "sha256": "24731e7c57335794c4b0f8f6624fb08461b366007f92983de2dd50fcfd2c8280"
+        },
+        {
+          "doc": "tasks/latest/qwen3-1p7b-orpo-training-optimizer-dual-h100-v4-cross-matrix-seed/images/judge/verifier/e2e_formal_controller.py",
+          "sha256": "2e7c3002da9efe0e06aad5e1d23f5ab84e20ae1b7cf44e233064a49a743f301a"
+        },
+        {
+          "doc": "tasks/latest/qwen3-1p7b-orpo-training-optimizer-dual-h100-v4-cross-matrix-seed/scripts/launch_fixed_budget_after_gpu67_idle.sh",
+          "sha256": "c4eea9f72f3c30f17d762d3f6b98957e80bd1ef3aaffbed930a0fe7b9667cc23"
+        },
+        {
+          "doc": "tasks/latest/qwen3-1p7b-orpo-training-optimizer-dual-h100-v4-cross-matrix-seed/tasks/qwen3_1p7b_orpo_training_optimizer_dual_h100_v4.json",
+          "sha256": "2f1d803437e0cc9e0cfe8c97b243a0553da5a947c26b2a84ea029718203850cf"
         }
       ],
       "result_intro": "Accelerate complete Qwen3-1.7B preference-training steps while preserving the official TRL ORPO objective and full-parameter updates. The candidate receives hidden states for chosen/rejected text and the output-head weights, implements vocabulary projection and loss computation, and may supply permitted layer patches to reduce end-to-end training time.",
@@ -365,7 +504,33 @@
         "The Judge evaluates five held-out workloads with four counterbalanced pairs each, five warm-up steps and ten timed steps per role.",
         "Reference-relative checks cover loss trajectories, all auxiliary outputs, gradient coverage, optimizer states, nonzero updates and memory."
       ],
-      "test_commands": "# Select your version with FINAL_VERSION first.\ncd /app/workdir/orpo_lab\nbash /workspace/public_tests/run_public_tests.sh --cpu-only\nbash /workspace/public_tests/run_public_tests.sh --quick\nbash /workspace/public_tests/run_public_tests.sh"
+      "test_commands": "# Select your version with FINAL_VERSION first.\ncd /app/workdir/orpo_lab\nbash /workspace/public_tests/run_public_tests.sh --cpu-only\nbash /workspace/public_tests/run_public_tests.sh --quick\nbash /workspace/public_tests/run_public_tests.sh",
+      "launch_setup": "# Select an allocated NVLink pair and copy its UUIDs.\nnvidia-smi --query-gpu=index,uuid --format=csv,noheader\nexport ORPO_GPU_INDICES=0,1\nexport ORPO_GPU_UUIDS=GPU-...,GPU-...",
+      "launch_command": "launch/qwen3-orpo/run.sh \\\n  --model MODEL_ID --effort max --hours 24 \\\n  --no-wait --auth /path/to/auth.json",
+      "reader_overview": "Qwen3-1.7B is trained on preferred and rejected summaries so that it learns to favor the preferred response. The agent accelerates the training computation while preserving the reference method’s loss, gradients and complete model updates across the fixed set of workloads.",
+      "reader_setup": [
+        {
+          "name": "Model and data",
+          "description": "Qwen3-1.7B and TL;DR summary preference pairs, using the TRL training library as the reference."
+        },
+        {
+          "name": "Test setup",
+          "description": "Five workloads vary sequence length and batch size. Each measurement runs five warm-up training steps followed by ten timed steps."
+        },
+        {
+          "name": "Starting point",
+          "description": "A working baseline that calls the official preference-training objective."
+        },
+        {
+          "name": "What the agent changes",
+          "description": "The calculation of word scores and training loss, plus supported implementations of model layers. The supplied runner controls the data, optimizer and training schedule."
+        }
+      ],
+      "reader_metric": {
+        "meaning": "Compares complete ORPO training-step throughput with the reference implementation in the TRL training library on the same hardware. A score of 100 matches the reference; larger scores mean faster training.",
+        "rule": "Score = 100 × geometric mean of training speedup across five workloads."
+      },
+      "reader_compute": "Two GPUs connected by NVLink, shared by development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "gkd": {
       "task_id": "qwen3_4b_to_1p7b_gkd_distillation_optimizer_dual_h100_v1",
@@ -392,16 +557,28 @@
       "evaluation": "Measures training-throughput speedup against the paired official TRL reference. Objective tests, student updates, frozen-teacher preservation, and memory checks must pass.",
       "sources": [
         {
-          "doc": "docs/tasks/qwen3-4b-to-1p7b-gkd-distillation-optimizer-dual-h100-v1-official-trl-seed.md",
-          "sha256": "6163a34b6781dd79d9c8a3d240263a29c53a264ee48f1f6f8e08f2521ef42f70"
-        },
-        {
-          "doc": "scripts/infrathon/release/public/tasks/latest/qwen3-4b-to-1p7b-gkd-distillation-optimizer-dual-h100-v1-official-trl-seed/README.md",
-          "sha256": "b20e71d73fead0c0c0d56c27d7b3411a62a76b392883f6876b58fc2055b69007"
+          "doc": "tasks/latest/qwen3-4b-to-1p7b-gkd-distillation-optimizer-dual-h100-v1-official-trl-seed/README.md",
+          "sha256": "a968a6542501d6af11003d9aee0244be0fa48505c31e8b4efbbec1a3a9530283"
         },
         {
           "doc": "scripts/infrathon/tasks.json",
-          "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+          "sha256": "c9a05bf640ff1bd397fe2b94ddfe88242b59e0de906bd684d5a90da76ac8cbf8"
+        },
+        {
+          "doc": "tasks/latest/qwen3-4b-to-1p7b-gkd-distillation-optimizer-dual-h100-v1-official-trl-seed/assets/manifest.json",
+          "sha256": "ceded101540c66f31602e933685722bfbd813bce734608a3d9e3984a81145525"
+        },
+        {
+          "doc": "launch/qwen3-gkd/run.sh",
+          "sha256": "cbcb947a6c234fdc184d5d9d6146c13ed35d1030e344851e48c24f7ad1bf1619"
+        },
+        {
+          "doc": "tasks/latest/qwen3-4b-to-1p7b-gkd-distillation-optimizer-dual-h100-v1-official-trl-seed/images/judge/verifier/e2e_formal_controller.py",
+          "sha256": "1c06be8324fb4cbf63e35820bfa99340f7caa57720068b70d1aa55fe97cc1d49"
+        },
+        {
+          "doc": "tasks/latest/qwen3-4b-to-1p7b-gkd-distillation-optimizer-dual-h100-v1-official-trl-seed/tasks/qwen3_4b_to_1p7b_gkd_distillation_optimizer_dual_h100_v1.json",
+          "sha256": "cf9a1f1db21086d4fe9e3b5e9f5cc13423ae7334eaea4fcc1d9c5f1d76836d44"
         }
       ],
       "result_intro": "Accelerate off-policy knowledge-distillation steps from a frozen Qwen3-4B teacher into a trainable Qwen3-1.7B student. Both models consume fixed prompt/completion records; the candidate computes their vocabulary projections and generalized Jensen–Shannon loss, preserving student gradients while reducing the time and memory of complete training steps.",
@@ -450,7 +627,33 @@
         "The Judge varies masks, biases, mixture and temperature, then evaluates five held-out TL;DR rows with four counterbalanced pairs, five warm-up steps and ten timed steps.",
         "Checks compare loss, auxiliaries, gradients, optimizer states and updates, and verify every teacher parameter remains frozen."
       ],
-      "test_commands": "# Select your version with FINAL_VERSION first.\ncd /app/workdir/gkd_lab\nbash /workspace/public_tests/run_public_tests.sh --cpu-only\nbash /workspace/public_tests/run_public_tests.sh --quick\nbash /workspace/public_tests/run_public_tests.sh"
+      "test_commands": "# Select your version with FINAL_VERSION first.\ncd /app/workdir/gkd_lab\nbash /workspace/public_tests/run_public_tests.sh --cpu-only\nbash /workspace/public_tests/run_public_tests.sh --quick\nbash /workspace/public_tests/run_public_tests.sh",
+      "launch_setup": "# Select the NVLink pair allocated to this run.\nnvidia-smi --query-gpu=index,uuid --format=csv,noheader",
+      "launch_command": "launch/qwen3-gkd/run.sh \\\n  --model MODEL_ID --effort max --hours 24 \\\n  --gpus 0,1 --no-wait --auth /path/to/auth.json",
+      "reader_overview": "A smaller Qwen3-1.7B student learns from the predictions of a frozen Qwen3-4B teacher on supplied summaries. The agent accelerates the complete training step, including the teacher’s computation, while keeping the student’s loss and updates equivalent to the reference training implementation.",
+      "reader_setup": [
+        {
+          "name": "Model and data",
+          "description": "A Qwen3-4B teacher, Qwen3-1.7B student and TL;DR prompts with fixed summary completions."
+        },
+        {
+          "name": "Test setup",
+          "description": "Five workloads vary sequence length and batch size. Each measurement runs five warm-up steps and ten timed steps, including teacher prediction and student training."
+        },
+        {
+          "name": "Starting point",
+          "description": "A working baseline using the reference distillation loss from the TRL training library."
+        },
+        {
+          "name": "What the agent changes",
+          "description": "How teacher and student word scores and the training loss are computed, plus supported model-layer implementations. The teacher stays frozen and the student receives full model updates."
+        }
+      ],
+      "reader_metric": {
+        "meaning": "Compares complete teacher–student training-step throughput with the reference implementation in the TRL training library. Timing includes both models, loss computation, student gradients, communication, and optimizer updates. A score of 100 matches the reference.",
+        "rule": "Score = 100 × geometric mean of training speedup across five workloads."
+      },
+      "reader_compute": "Two GPUs connected by NVLink, shared by development and evaluation. H100 NVL (94 GB)."
     },
     "opcd": {
       "task_id": "miles_qwen3_opcd_2xh100_v3",
@@ -467,7 +670,8 @@
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "Qwen3-1.7B student and frozen teacher, MedMCQA data, and the teacher’s medical system prompt.",
         "Provided Miles runtime; 24-CPU quota and 256 GiB host RAM per container.",
-        "Set `MILES_SCRATCH_ROOT` on a data disk with at least 200 GiB free; the system root filesystem also needs 20 GiB free."
+        "Set `MILES_SCRATCH_ROOT` on a data disk with at least 200 GiB free; the system root filesystem also needs 20 GiB free.",
+        "Export `SFORGE_CPUSET=auto` to use the CPU pinning policy of the released qualification."
       ],
       "workflow": [
         "Implement teacher-only context handling and the top-256 reverse-KL loss in the existing Miles/Megatron training path.",
@@ -478,16 +682,12 @@
       "evaluation": "Measures held-out medical accuracy gained per audited training hour. The quality threshold and checks linking samples, training updates, published weights, and evaluated weights must pass.",
       "sources": [
         {
-          "doc": "docs/tasks/miles-opcd.md",
-          "sha256": "f8b217020c5ffa737680bfc6b850794ce34615b29563debd81966de2d3dcc282"
-        },
-        {
-          "doc": "scripts/infrathon/release/public/tasks/latest/miles-qwen3-opcd-2xh100-v3-seed/README.md",
-          "sha256": "64971a74eb05e2ffe89212465b9e10036af345e03ce795fbb84dcf051f66f2d0"
+          "doc": "tasks/latest/miles-qwen3-opcd-2xh100-v3-seed/README.md",
+          "sha256": "f7993d5a5f632b77e31f7767cd4501580dcfac312a8fd241c490a6c8076107ab"
         },
         {
           "doc": "scripts/infrathon/tasks.json",
-          "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+          "sha256": "c9a05bf640ff1bd397fe2b94ddfe88242b59e0de906bd684d5a90da76ac8cbf8"
         },
         {
           "doc": "tasks/latest/miles-qwen3-opcd-2xh100-v3-seed/docs/INTERFACE.md",
@@ -508,6 +708,34 @@
         {
           "doc": "tasks/latest/miles-qwen3-opcd-2xh100-v3-seed/images/release.json",
           "sha256": "4ce142f08137a0073a46dd54749c2203adc2fa9d2e56a5d22eff4fba96a18290"
+        },
+        {
+          "doc": "tasks/latest/miles-qwen3-opcd-2xh100-v3-seed/assets/manifest.json",
+          "sha256": "32128fac4c6e2e97e851b0095d9811f1e70e0f96419683f5d90b6c714f666ce2"
+        },
+        {
+          "doc": "launch/miles-opcd/run.sh",
+          "sha256": "f74c1d3f440a4bbb583bec7da4076ab0df8cb6fe3816ad151912ec989e98205b"
+        },
+        {
+          "doc": "tasks/latest/miles-qwen3-opcd-2xh100-v3-seed/runtime/contract.json",
+          "sha256": "3d60333ccb8b2f41aef8701ba171dab97dd77c29cf2d69a0f5f9483abdadc65e"
+        },
+        {
+          "doc": "tasks/latest/miles-qwen3-opcd-2xh100-v3-seed/runtime/qualification.json",
+          "sha256": "d2669f4d70ef2984efdc6c95f2521d76f1991d82083fb86d57c47bd4f43e1166"
+        },
+        {
+          "doc": "launch/miles-opcd/codex.env.example",
+          "sha256": "6daa867c6632f36763d98ab1f18afa95c886abb213ff04548a64d251dce8a004"
+        },
+        {
+          "doc": "scripts/miles_common/cpu_pinning.py",
+          "sha256": "de32c61bb4c0ad201c3e1b738b30b6cd35088154b91c948416877423638c8a2d"
+        },
+        {
+          "doc": "tasks/latest/miles-qwen3-opcd-2xh100-v3-seed/tasks/miles_qwen3_opcd_2xh100_v3.json",
+          "sha256": "657e7a202fde4424a209893e527c8b4067873222b55eccfcaacdb43d583b3031"
         }
       ],
       "result_intro": "Implement context distillation in Miles so a Qwen3-1.7B student learns medical answering behavior from its own initial weights acting as a frozen teacher with a medical system prompt. The student generates responses without that prompt, learns from teacher probabilities, and publishes updated weights; optimization targets the entire learning pipeline.",
@@ -553,7 +781,34 @@
         "The final student answers 2,436 held-out questions without the teacher prompt in three seeded repeats; the fixed answer-tag grader determines accuracy."
       ],
       "test_commands": "# Use fresh output directories for each attempt.\ncd /app/workdir/miles_lab\npython /opt/miles_opcd_public/run_public.py --suite probe --output /scratch/check/probe\npython /opt/miles_opcd_public/run_public.py --suite small --output /scratch/check/small --probe-output /scratch/check/probe\npython /opt/miles_opcd_public/run_public.py --suite perf --output /scratch/check/perf --probe-output /scratch/check/probe",
-      "scratch_setup": "# Choose a writable directory on your non-system data disk.\nexport MILES_SCRATCH_ROOT=/absolute/path/on-data-disk/infrathon-scratch\nmkdir -p \"$MILES_SCRATCH_ROOT\""
+      "scratch_setup": "# Choose a writable directory on your non-system data disk.\nexport MILES_SCRATCH_ROOT=/absolute/path/on-data-disk/infrathon-scratch\nmkdir -p \"$MILES_SCRATCH_ROOT\"",
+      "launch_setup": "export SFORGE_CPUSET=auto",
+      "launch_command": "launch/miles-opcd/run.sh --config launch/miles-opcd/run.env --dry-run\nlaunch/miles-opcd/run.sh --config launch/miles-opcd/run.env --foreground",
+      "config_setup": "cp launch/miles-opcd/codex.env.example launch/miles-opcd/run.env\n# Use the paper’s 24-hour budget.\nsed -i 's/^TASK_TIMEOUT=.*/TASK_TIMEOUT=86400/' launch/miles-opcd/run.env",
+      "reader_overview": "A Qwen3-1.7B student must learn medical knowledge from a frozen teacher that receives an additional medical instruction. The agent implements this learning process in the Miles training framework, then makes the full cycle of answer generation, teacher feedback and student updates faster while retaining learning progress.",
+      "reader_setup": [
+        {
+          "name": "Model and data",
+          "description": "Teacher and student begin from the same Qwen3-1.7B model. Training uses MedMCQA questions; only the teacher receives the additional medical instruction."
+        },
+        {
+          "name": "Training setup",
+          "description": "32 rounds of 512 questions, with one student answer per question and a limit of 512 generated tokens. Every round updates the student and sends its new weights to the answer generator."
+        },
+        {
+          "name": "Starting point",
+          "description": "A Miles training setup with the context-distillation loss unfinished."
+        },
+        {
+          "name": "What the agent changes",
+          "description": "Teacher feedback, the prescribed learning loss, and the scheduling of generation, training and weight transfer within Miles."
+        }
+      ],
+      "reader_metric": {
+        "meaning": "Rewards medical-answer accuracy gained per hour of training, measured on 2,436 held-out MedMCQA questions. The trained student must improve by at least 6.5 percentage points to receive a positive score.",
+        "rule": "Score = accuracy gain in percentage points ÷ training hours."
+      },
+      "reader_compute": "Two GPUs connected by NVLink, shared by development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "opd": {
       "task_id": "miles_qwen3_opd_scratch_2xh100_v2",
@@ -570,7 +825,8 @@
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "Qwen3-1.7B student, frozen Qwen3-4B teacher, and DAPO-Math data.",
         "Provided Miles runtime; 24 CPUs and 256 GiB host RAM per container.",
-        "Set `MILES_SCRATCH_ROOT` on a data disk with at least 200 GiB free; the system root filesystem also needs 20 GiB free."
+        "Set `MILES_SCRATCH_ROOT` on a data disk with at least 200 GiB free; the system root filesystem also needs 20 GiB free.",
+        "Export `SFORGE_CPUSET=auto` to use the CPU pinning policy of the released qualification."
       ],
       "workflow": [
         "Implement teacher scoring and training-side pre-update student probabilities for the student’s sampled tokens.",
@@ -581,24 +837,16 @@
       "evaluation": "Measures held-out math-accuracy gain per audited training hour. Teacher/student probabilities, loss and gradients, sample usage, weight publication, and the quality threshold are checked.",
       "sources": [
         {
-          "doc": "docs/tasks/miles-opd-from-scratch.md",
-          "sha256": "b72a14922f8893eede05ada67a38d542ecdcfe3bc69c8ef1b908038b5cc5a8ed"
-        },
-        {
-          "doc": "scripts/infrathon/release/public/tasks/latest/miles-qwen3-opd-scratch-2xh100-v2-seed/README.md",
-          "sha256": "34864f3197d18874d27418a75fbcc4caee3368f04807711ab8519dfe3d84f49a"
+          "doc": "tasks/latest/miles-qwen3-opd-scratch-2xh100-v2-seed/README.md",
+          "sha256": "6d1f620a6c7941537be110e60ff6454172b1a88c0292301ca183fa0dd550cf0b"
         },
         {
           "doc": "scripts/infrathon/tasks.json",
-          "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+          "sha256": "c9a05bf640ff1bd397fe2b94ddfe88242b59e0de906bd684d5a90da76ac8cbf8"
         },
         {
           "doc": "tasks/latest/miles-qwen3-opd-scratch-2xh100-v2-seed/docs/INTERFACE.md",
           "sha256": "158b87161f5091cb632bbfde42c3b1dd70790ee893777b9a21eb6ead1840fa72"
-        },
-        {
-          "doc": "scripts/miles_opd/run_public.py",
-          "sha256": "4ff856535e58e8c5e11ac3fb713c4d668836d416a782362f993961310af4d700"
         },
         {
           "doc": "scripts/miles_common/host_config.py",
@@ -611,6 +859,50 @@
         {
           "doc": "tasks/latest/miles-qwen3-opd-scratch-2xh100-v2-seed/images/release.json",
           "sha256": "683e4700ac26c02c561fb87dea30667f8c0b21c3511cb068e6f3e14792ef155d"
+        },
+        {
+          "doc": "tasks/latest/miles-qwen3-opd-scratch-2xh100-v2-seed/assets/manifest.json",
+          "sha256": "464580527413a7de634cc2949682ff19e6a2c8d46c999cac0e6ba87415fc78d2"
+        },
+        {
+          "doc": "launch/miles-opd/run.sh",
+          "sha256": "87d53b3169a2ab2cd506a2612d145a209ca0b38719cd4024835549f4a2fb83e3"
+        },
+        {
+          "doc": "tasks/latest/miles-qwen3-opd-scratch-2xh100-v2-seed/runtime/contract.json",
+          "sha256": "7fc7b17555bc5ebcda2b1697dcf134496d3404f736afb299a45db20ca350b217"
+        },
+        {
+          "doc": "tasks/latest/miles-qwen3-opd-scratch-2xh100-v2-seed/runtime/qualification.json",
+          "sha256": "311f6518446c32453a58714308b9b5f7ac3aa58054897b78a0949e73182626ae"
+        },
+        {
+          "doc": "launch/miles-opd/codex.env.example",
+          "sha256": "200b289720d56d6bc62e4d86eeda3bcec36c2739ad10d623804d2b456e399122"
+        },
+        {
+          "doc": "scripts/miles_opd/v2/run_public.py",
+          "sha256": "6e8d372b89b13202af0b59ad56103e9b87d84247ee981b9b6fbd7e5732cb0065"
+        },
+        {
+          "doc": "scripts/miles_common/cpu_pinning.py",
+          "sha256": "de32c61bb4c0ad201c3e1b738b30b6cd35088154b91c948416877423638c8a2d"
+        },
+        {
+          "doc": "tasks/latest/miles-qwen3-opd-scratch-2xh100-v2-seed/scripts/build_images.sh",
+          "sha256": "49b59d57870704400fbf0195fbe80f8494883d646ab8b5693fecf71d539af57c"
+        },
+        {
+          "doc": "scripts/miles_opd/v2/make_split.py",
+          "sha256": "f76b89d4d568573b742bf7d06d0e4bfcae949a819369249a93d8871514be2cd1"
+        },
+        {
+          "doc": "scripts/miles_opd/v2/run_judge.py",
+          "sha256": "f53689bf7f2793666232b467cbf464e13590864addee4324ea96bad97a13e383"
+        },
+        {
+          "doc": "tasks/latest/miles-qwen3-opd-scratch-2xh100-v2-seed/tasks/miles_qwen3_opd_scratch_2xh100_v2.json",
+          "sha256": "e38b1a964762b453f33267a4844537588c5d0643c58621b3fe53eb88a927ba8f"
         }
       ],
       "result_intro": "Build sampled-token on-policy distillation inside Miles: Qwen3-1.7B generates mathematical solutions, a frozen Qwen3-4B teacher scores the sampled tokens, and the student learns from their probability differences. The implementation must connect rollout, teacher scoring, Megatron updates and weight publication, then accelerate that complete fixed-size training run.",
@@ -656,7 +948,34 @@
         "Formal quality uses 2,000 held-out math problems in three seeded repeats with the fixed math grader; it is separate from public-test accuracy."
       ],
       "test_commands": "# Use fresh output directories for each attempt.\ncd /app/workdir/miles_lab\npython /opt/miles_opd_public/run_public.py --suite probe --output /scratch/public/probe-001\npython /opt/miles_opd_public/run_public.py --suite small --output /scratch/public/small-001 --probe-output /scratch/public/probe-001\npython /opt/miles_opd_public/run_public.py --suite perf --output /scratch/public/perf-001 --probe-output /scratch/public/probe-001",
-      "scratch_setup": "# Choose a writable directory on your non-system data disk.\nexport MILES_SCRATCH_ROOT=/absolute/path/on-data-disk/infrathon-scratch\nmkdir -p \"$MILES_SCRATCH_ROOT\""
+      "scratch_setup": "# Choose a writable directory on your non-system data disk.\nexport MILES_SCRATCH_ROOT=/absolute/path/on-data-disk/infrathon-scratch\nmkdir -p \"$MILES_SCRATCH_ROOT\"",
+      "launch_setup": "export SFORGE_CPUSET=auto",
+      "launch_command": "launch/miles-opd/run.sh --config launch/miles-opd/run.env --dry-run\nlaunch/miles-opd/run.sh --config launch/miles-opd/run.env --foreground",
+      "config_setup": "cp launch/miles-opd/codex.env.example launch/miles-opd/run.env\n# Use the paper’s 24-hour budget.\nsed -i 's/^TASK_TIMEOUT=.*/TASK_TIMEOUT=86400/' launch/miles-opd/run.env",
+      "reader_overview": "A Qwen3-1.7B student generates math solutions and learns from a frozen Qwen3-4B teacher’s assessment of those same responses. The agent builds this online learning loop in the Miles training framework and speeds up generation, feedback and training while preserving the required updates and improvement in math performance.",
+      "reader_setup": [
+        {
+          "name": "Model and data",
+          "description": "A Qwen3-1.7B student, frozen Qwen3-4B teacher and DAPO-Math problems."
+        },
+        {
+          "name": "Training setup",
+          "description": "32 rounds of 128 problems, with one response per problem and a limit of 4,096 generated tokens. Each round trains on its responses and sends the updated student weights to the generator."
+        },
+        {
+          "name": "Starting point",
+          "description": "A starter that launches Miles training and exports model weights, but has no teacher feedback or required training-step records."
+        },
+        {
+          "name": "What the agent changes",
+          "description": "Teacher scoring, the prescribed student learning calculation, and how generation, training and weight transfer run together in Miles."
+        }
+      ],
+      "reader_metric": {
+        "meaning": "Rewards math-answer accuracy gained per hour of training, measured on 2,000 held-out DAPO-Math problems. The trained student must improve by at least 1.6 percentage points to receive a positive score.",
+        "rule": "Score = accuracy gain in percentage points ÷ training hours."
+      },
+      "reader_compute": "Two GPUs connected by NVLink, shared by development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "alfworld": {
       "task_id": "miles_qwen3_alfworld_agentic_rl_2xh100_v1",
@@ -673,7 +992,8 @@
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "Qwen3-4B, ALFWorld 0.4.2, TextWorld 1.7.0, and json_2.1.1 game data.",
         "Provided Miles runtime; 24-CPU quota and 256 GiB host RAM per container.",
-        "Set `MILES_SCRATCH_ROOT` on a data disk with at least 300 GiB free; the system root filesystem also needs 20 GiB free."
+        "Set `MILES_SCRATCH_ROOT` on a data disk with at least 300 GiB free; the system root filesystem also needs 20 GiB free.",
+        "Export `SFORGE_CPUSET=auto` to use the CPU pinning policy of the released qualification."
       ],
       "workflow": [
         "Connect game creation, observation rendering and first-action-tag execution, keeping generated token history intact.",
@@ -684,16 +1004,12 @@
       "evaluation": "Measures held-out game-success gain per audited training hour. Environment replay, learning computation, sample-to-update consistency, final weights, and a success-improvement threshold are checked.",
       "sources": [
         {
-          "doc": "docs/tasks/miles-alfworld-agentic-rl.md",
-          "sha256": "e0dcbfa43124d6cf938b161d82e589f459eb58bc98e0e27d0a6a969f2c2f7ad5"
-        },
-        {
-          "doc": "scripts/infrathon/release/public/tasks/latest/miles-qwen3-alfworld-agentic-rl-2xh100-v1-seed/README.md",
-          "sha256": "b1ea0c0906fcb31da923b945bac444d0a5e507b5539674eed84add8006ba690a"
+          "doc": "tasks/latest/miles-qwen3-alfworld-agentic-rl-2xh100-v1-seed/README.md",
+          "sha256": "102b34e81a20a7267113a808a1713ff24f79c738d45ef0d436308aa6612b4b18"
         },
         {
           "doc": "scripts/infrathon/tasks.json",
-          "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+          "sha256": "c9a05bf640ff1bd397fe2b94ddfe88242b59e0de906bd684d5a90da76ac8cbf8"
         },
         {
           "doc": "tasks/latest/miles-qwen3-alfworld-agentic-rl-2xh100-v1-seed/docs/INTERFACE.md",
@@ -714,6 +1030,34 @@
         {
           "doc": "tasks/latest/miles-qwen3-alfworld-agentic-rl-2xh100-v1-seed/images/release.json",
           "sha256": "8bacf68dc91fc387d330a93e05089c49107a78b29bb9a84db366ba8872a4d2b1"
+        },
+        {
+          "doc": "tasks/latest/miles-qwen3-alfworld-agentic-rl-2xh100-v1-seed/assets/manifest.json",
+          "sha256": "401b4a1be4f03a0fa6bf4fc83551cc6a992ca99e58d70875bb1e425b7b46ff9a"
+        },
+        {
+          "doc": "launch/miles-alfworld/run.sh",
+          "sha256": "13441015a58faeac06dd881271b15b0bc5895b8d2adb18e1ef5df8bd533ce9cc"
+        },
+        {
+          "doc": "tasks/latest/miles-qwen3-alfworld-agentic-rl-2xh100-v1-seed/runtime/contract.json",
+          "sha256": "1a0ef42c6b3e968efa9bc15169983ce6eca6ca9805327834855be0b62915d555"
+        },
+        {
+          "doc": "tasks/latest/miles-qwen3-alfworld-agentic-rl-2xh100-v1-seed/runtime/qualification.json",
+          "sha256": "202c39cf06b2d7ac43590d1baf7011d06a2f2e4b5e2b8532525fe7f6ff82a5d5"
+        },
+        {
+          "doc": "launch/miles-alfworld/codex.env.example",
+          "sha256": "804a6c6b1a934de5ae3b97dbfb273ec75d837be06877bb11e729b551d60c6632"
+        },
+        {
+          "doc": "scripts/miles_common/cpu_pinning.py",
+          "sha256": "de32c61bb4c0ad201c3e1b738b30b6cd35088154b91c948416877423638c8a2d"
+        },
+        {
+          "doc": "tasks/latest/miles-qwen3-alfworld-agentic-rl-2xh100-v1-seed/tasks/miles_qwen3_alfworld_agentic_rl_2xh100_v1.json",
+          "sha256": "d75522b682b63aa14e6e6fae74ba8d03ae324fa9a7d766f896302227492a9b9b"
         }
       ],
       "result_intro": "Integrate ALFWorld’s text household games into Miles and train Qwen3-4B through multi-turn GRPO. The system must translate observations into prompts, execute the model’s actions, turn game success into learning updates and publish the trained policy; optimization focuses on environment concurrency, rollout scheduling, training and publication.",
@@ -759,7 +1103,34 @@
         "Formal quality is greedy success on 1,134 held-out games in three repeats."
       ],
       "test_commands": "# Use fresh output directories for each attempt.\ncd /app/workdir/miles_lab\npython /opt/miles_alfworld_public/run_public.py --suite probe --output /scratch/public/probe-check\npython /opt/miles_alfworld_public/run_public.py --suite small --output /scratch/public/small-check --probe-output /scratch/public/probe-check\npython /opt/miles_alfworld_public/run_public.py --suite perf --output /scratch/public/perf-check --probe-output /scratch/public/probe-check",
-      "scratch_setup": "# Choose a writable directory on your non-system data disk.\nexport MILES_SCRATCH_ROOT=/absolute/path/on-data-disk/infrathon-scratch\nmkdir -p \"$MILES_SCRATCH_ROOT\""
+      "scratch_setup": "# Choose a writable directory on your non-system data disk.\nexport MILES_SCRATCH_ROOT=/absolute/path/on-data-disk/infrathon-scratch\nmkdir -p \"$MILES_SCRATCH_ROOT\"",
+      "launch_setup": "export SFORGE_CPUSET=auto",
+      "launch_command": "launch/miles-alfworld/run.sh --config launch/miles-alfworld/run.env --dry-run\nlaunch/miles-alfworld/run.sh --config launch/miles-alfworld/run.env --foreground",
+      "config_setup": "cp launch/miles-alfworld/codex.env.example launch/miles-alfworld/run.env\n# Use the paper’s 24-hour budget.\nsed -i 's/^TASK_TIMEOUT=.*/TASK_TIMEOUT=86400/' launch/miles-alfworld/run.env",
+      "reader_overview": "Qwen3-4B learns to complete household tasks by interacting with the ALFWorld text environment and receiving a reward when it succeeds. The agent connects these interactions to the Miles training framework, then accelerates game collection, model updates and weight transfer while preserving the required learning behavior.",
+      "reader_setup": [
+        {
+          "name": "Model and data",
+          "description": "Qwen3-4B and ALFWorld games. The model reads observations and available actions, then chooses actions through generated text."
+        },
+        {
+          "name": "Training setup",
+          "description": "12 rounds of 16 games, with eight attempts per game. Each attempt allows up to 30 actions and 256 generated tokens per turn; only winning earns a reward."
+        },
+        {
+          "name": "Starting point",
+          "description": "Miles supplies model generation, training and checkpoint support; the game integration and task entry points must be implemented."
+        },
+        {
+          "name": "What the agent changes",
+          "description": "The connection to the game environment, preparation of game interactions for learning, and scheduling of generation, model updates and weight transfer."
+        }
+      ],
+      "reader_metric": {
+        "meaning": "Rewards improvement in the fraction of household games completed successfully per hour of training. Evaluation uses 1,134 held-out games, and success must improve by at least 15 percentage points.",
+        "rule": "Score = game-success gain in percentage points ÷ training hours."
+      },
+      "reader_compute": "Two GPUs connected by NVLink, shared by development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "sd35": {
       "task_id": "miles_diffusion_sd35m_mopd_2xh100_v2",
@@ -776,7 +1147,8 @@
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "Stable Diffusion 3.5 Medium, OCR and aesthetics teachers, and routed prompt data.",
         "Provided Miles Diffusion runtime with PaddleOCR; 256 GiB host RAM per container.",
-        "Set `MILES_SCRATCH_ROOT` on a data disk with at least 500 GiB free; the system root filesystem also needs 20 GiB free."
+        "Set `MILES_SCRATCH_ROOT` on a data disk with at least 500 GiB free; the system root filesystem also needs 20 GiB free.",
+        "Export `SFORGE_CPUSET=auto` to use the CPU pinning policy of the released qualification."
       ],
       "workflow": [
         "Implement teacher routing from row metadata, and evaluate each frozen teacher on the student’s sampled CPS states.",
@@ -787,16 +1159,12 @@
       "evaluation": "Combines OCR/PickScore teacher-gap closure with replay throughput. Both route-specific quality and KL gates must pass, together with checks of the real training run, optimizer steps, and published LoRA.",
       "sources": [
         {
-          "doc": "docs/tasks/miles-sd35m-multi-teacher-distillation.md",
-          "sha256": "c73423ed657183aec637ccbfce4c4095db84307b593ad4b6faa5090f38461122"
-        },
-        {
-          "doc": "scripts/infrathon/release/public/tasks/latest/miles-diffusion-sd35m-mopd-2xh100-v2-seed/README.md",
-          "sha256": "830b8394782db02adac3f8091c76a27f1f9d3fff07d8ebbca1919ea601e97f62"
+          "doc": "tasks/latest/miles-diffusion-sd35m-mopd-2xh100-v2-seed/README.md",
+          "sha256": "6dc6e3046ea4b6c62f3c4edc26960abadd8aa704af7ba1888ccf7f1971a05355"
         },
         {
           "doc": "scripts/infrathon/tasks.json",
-          "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+          "sha256": "c9a05bf640ff1bd397fe2b94ddfe88242b59e0de906bd684d5a90da76ac8cbf8"
         },
         {
           "doc": "tasks/latest/miles-diffusion-sd35m-mopd-2xh100-v2-seed/docs/INTERFACE.md",
@@ -825,6 +1193,34 @@
         {
           "doc": "scripts/infrathon/pull_images.sh",
           "sha256": "fba75ad54f3bbd5d626bc091c15a81d225afdfd3ca8347b7fad18b228c0ac7ea"
+        },
+        {
+          "doc": "tasks/latest/miles-diffusion-sd35m-mopd-2xh100-v2-seed/assets/manifest.json",
+          "sha256": "800d5d2d1538e0e8127756be325064899435ebfe1e0391a8c8fdf8f551aa2df8"
+        },
+        {
+          "doc": "launch/miles-diffusion-opd/run.sh",
+          "sha256": "f58d0f4f5c663bd70f18fbcc45bdbbab7fa55d5d0e20e52385e9e0fb77322400"
+        },
+        {
+          "doc": "tasks/latest/miles-diffusion-sd35m-mopd-2xh100-v2-seed/runtime/contract.json",
+          "sha256": "5a9592eab072bc78bfb514df23aa05188599a89689a0952227c235c82809dccb"
+        },
+        {
+          "doc": "tasks/latest/miles-diffusion-sd35m-mopd-2xh100-v2-seed/runtime/qualification.json",
+          "sha256": "c5b5773c28041cb3e46f5fc6c4e2f3de9979d55e4b9c95a6bce8b77fa2852018"
+        },
+        {
+          "doc": "launch/miles-diffusion-opd/codex.env.example",
+          "sha256": "3b9b2b5000f59a5157cdcbab480552ef146697017ec3b4ae83fe7459c5620861"
+        },
+        {
+          "doc": "scripts/miles_common/cpu_pinning.py",
+          "sha256": "de32c61bb4c0ad201c3e1b738b30b6cd35088154b91c948416877423638c8a2d"
+        },
+        {
+          "doc": "tasks/latest/miles-diffusion-sd35m-mopd-2xh100-v2-seed/tasks/miles_diffusion_sd35m_mopd_2xh100_v2.json",
+          "sha256": "38f08740fe20aaa87b1001742e49136318cb099b5aa53768600de1d0892384d9"
         }
       ],
       "result_intro": "Implement multi-teacher on-policy distillation for Stable Diffusion 3.5 Medium in miles_diffusion. One student LoRA learns from OCR and aesthetics teachers on its own sampled diffusion states; the candidate must route prompts to the appropriate teacher, compute transition-level distillation loss, update the student and publish its adapter efficiently.",
@@ -875,7 +1271,34 @@
       ],
       "test_commands": "# Use fresh output directories for each attempt.\ncd /app/workdir/miles_lab\npython /opt/opd_public/run_public.py --suite probe --output /scratch/public/probe-001\npython /opt/opd_public/run_public.py --suite small --output /scratch/public/small-001\npython /opt/opd_public/run_public.py --suite perf --quality --output /scratch/public/perf-quality-001",
       "after_pull_command": ".venv/bin/python scripts/infrathon/assets.py own \"$TASK\" \\\n  --image miles_diffusion_opd.judge.miles_diffusion_sd35m_mopd_2xh100_v2:local",
-      "scratch_setup": "# Choose a writable directory on your non-system data disk.\nexport MILES_SCRATCH_ROOT=/absolute/path/on-data-disk/infrathon-scratch\nmkdir -p \"$MILES_SCRATCH_ROOT\""
+      "scratch_setup": "# Choose a writable directory on your non-system data disk.\nexport MILES_SCRATCH_ROOT=/absolute/path/on-data-disk/infrathon-scratch\nmkdir -p \"$MILES_SCRATCH_ROOT\"",
+      "launch_setup": "export SFORGE_CPUSET=auto",
+      "launch_command": "launch/miles-diffusion-opd/run.sh --config launch/miles-diffusion-opd/run.env --dry-run\nlaunch/miles-diffusion-opd/run.sh --config launch/miles-diffusion-opd/run.env --foreground",
+      "config_setup": "cp launch/miles-diffusion-opd/codex.env.example launch/miles-diffusion-opd/run.env\n# Use the paper’s 24-hour budget.\nsed -i 's/^TASK_TIMEOUT=.*/TASK_TIMEOUT=86400/' launch/miles-diffusion-opd/run.env",
+      "reader_overview": "A Stable Diffusion 3.5 Medium image generator learns from two teachers, one specializing in readable text and the other in visual aesthetics. The agent implements their guidance in the Miles Diffusion training framework and accelerates training of a small student adapter while preserving the fixed learning recipe.",
+      "reader_setup": [
+        {
+          "name": "Model and data",
+          "description": "Stable Diffusion 3.5 Medium, two frozen teacher adapters and prompts assigned to the appropriate teacher. One small trainable adapter combines what the student learns."
+        },
+        {
+          "name": "Training setup",
+          "description": "64 rounds of eight prompts, with eight images per prompt. Images are 512 × 512 pixels and use ten sampling steps; each round makes two training updates and sends the updated adapter to the generators."
+        },
+        {
+          "name": "Starting point",
+          "description": "A working Miles Diffusion framework with image generation and training infrastructure, but no teacher-guided training path."
+        },
+        {
+          "name": "What the agent changes",
+          "description": "How the selected teacher guides each generated image, how training work is batched and overlapped, and how the updated adapter reaches the image generators."
+        }
+      ],
+      "reader_metric": {
+        "meaning": "Measures how much of the gap to the two teachers the student closes per hour of replayed training. Text-reading accuracy and aesthetics contribute equally. Both must close at least 25% of their teacher gap and pass the loss checks. A replay reuses recorded generation outputs to time the required training workflow; a separate real training run checks learning quality.",
+        "rule": "Score = average fraction of the teacher quality gap closed ÷ replay hours."
+      },
+      "reader_compute": "Two GPUs connected by NVLink, shared by development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "wan22": {
       "task_id": "miles_diffusion_wan22_dancegrpo_2xh100_v2",
@@ -892,7 +1315,8 @@
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "Wan2.2-TI2V-5B, HPSv3, and task-provided prompts, videos, and diffusion trajectories.",
         "Provided Miles Diffusion runtime; 256 GiB host RAM and 128 GiB shared memory per container.",
-        "Set `MILES_SCRATCH_ROOT` on a data disk with at least 300 GiB free; the system root filesystem also needs 20 GiB free."
+        "Set `MILES_SCRATCH_ROOT` on a data disk with at least 300 GiB free; the system root filesystem also needs 20 GiB free.",
+        "Export `SFORGE_CPUSET=auto` to use the CPU pinning policy of the released qualification."
       ],
       "workflow": [
         "Implement the whitelisted Dance-SDE and grouped-noise engine changes, then verify existing sampling branches remain unchanged.",
@@ -903,16 +1327,12 @@
       "evaluation": "Measures fixed-workload replay throughput after checking frame rewards, sampling, training updates, and publication. A separate evaluation of the real run’s final model must pass the HPSv3 quality gate.",
       "sources": [
         {
-          "doc": "docs/tasks/miles-wan22-dancegrpo.md",
-          "sha256": "d4b90e90d721ecb17f7d3df81bd7911dba13f68a3645370fa005d0c5f3218030"
-        },
-        {
-          "doc": "scripts/infrathon/release/public/tasks/latest/miles-diffusion-wan22-dancegrpo-2xh100-v2-seed/README.md",
-          "sha256": "dcc349d0791804b8c0bfb18ea9fc1807b36dcc83986108e4928460c632a3ef29"
+          "doc": "tasks/latest/miles-diffusion-wan22-dancegrpo-2xh100-v2-seed/README.md",
+          "sha256": "060c8276c543978b148c7d6b2a3f767d6e7f083472c2a4c802e6dd5eea28451a"
         },
         {
           "doc": "scripts/infrathon/tasks.json",
-          "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+          "sha256": "c9a05bf640ff1bd397fe2b94ddfe88242b59e0de906bd684d5a90da76ac8cbf8"
         },
         {
           "doc": "tasks/latest/miles-diffusion-wan22-dancegrpo-2xh100-v2-seed/docs/INTERFACE.md",
@@ -941,6 +1361,34 @@
         {
           "doc": "scripts/infrathon/pull_images.sh",
           "sha256": "fba75ad54f3bbd5d626bc091c15a81d225afdfd3ca8347b7fad18b228c0ac7ea"
+        },
+        {
+          "doc": "tasks/latest/miles-diffusion-wan22-dancegrpo-2xh100-v2-seed/assets/manifest.json",
+          "sha256": "1b8c6505c860ab4570c854aaea5c64de47b8077433cf5be006c680410d1437c9"
+        },
+        {
+          "doc": "launch/miles-diffusion-wan/run.sh",
+          "sha256": "ef6ac73663462b5c5a37982a3716847987b112e3f9af1d1f603db104838bac89"
+        },
+        {
+          "doc": "tasks/latest/miles-diffusion-wan22-dancegrpo-2xh100-v2-seed/runtime/contract.json",
+          "sha256": "bce07d7c463b9fc4b8367a13e80ce12ec80bf594202347cbae82241179761c5b"
+        },
+        {
+          "doc": "tasks/latest/miles-diffusion-wan22-dancegrpo-2xh100-v2-seed/runtime/qualification.json",
+          "sha256": "f013eb3bfb88424dac01805ae78b011f5b568152e0d1a7195e7aeb860d3343fc"
+        },
+        {
+          "doc": "launch/miles-diffusion-wan/codex.env.example",
+          "sha256": "c47d8aa2516f5bf33d2db287e961e5592abc94106ba30ebc0898a64bdd1e257e"
+        },
+        {
+          "doc": "scripts/miles_common/cpu_pinning.py",
+          "sha256": "de32c61bb4c0ad201c3e1b738b30b6cd35088154b91c948416877423638c8a2d"
+        },
+        {
+          "doc": "tasks/latest/miles-diffusion-wan22-dancegrpo-2xh100-v2-seed/tasks/miles_diffusion_wan22_dancegrpo_2xh100_v2.json",
+          "sha256": "1f3a4418af27e9c9f42e11d13c9ea9faf6956e64e4ae44adbd188bcfed98bbc8"
         }
       ],
       "result_intro": "Implement DanceGRPO video training for Wan2.2-TI2V-5B in miles_diffusion, including stochastic sampling transitions, grouped noise and official HPSv3 frame rewards. The candidate must run real training and a replay service, then accelerate reward evaluation, policy-probability recomputation, optimizer updates, durable logging and full-weight publication.",
@@ -987,7 +1435,34 @@
       ],
       "test_commands": "# Use fresh output directories for each attempt.\ncd /app/workdir/miles_lab\npython /opt/wan_public/run_public.py --suite cpu --out /scratch/public/cpu-001\npython /opt/wan_public/run_public.py --suite score --out /scratch/public/score-001\npython /opt/wan_public/run_public.py --suite probe --out /scratch/public/probe-001\npython /opt/wan_public/run_public.py --suite small --out /scratch/public/small-001\npython /opt/wan_public/run_public.py --suite perf --out /scratch/public/perf-001",
       "after_pull_command": ".venv/bin/python scripts/infrathon/assets.py own \"$TASK\" \\\n  --image miles_diffusion_wan.judge.miles_diffusion_wan22_dancegrpo_2xh100_v2:local",
-      "scratch_setup": "# Choose a writable directory on your non-system data disk.\nexport MILES_SCRATCH_ROOT=/absolute/path/on-data-disk/infrathon-scratch\nmkdir -p \"$MILES_SCRATCH_ROOT\""
+      "scratch_setup": "# Choose a writable directory on your non-system data disk.\nexport MILES_SCRATCH_ROOT=/absolute/path/on-data-disk/infrathon-scratch\nmkdir -p \"$MILES_SCRATCH_ROOT\"",
+      "launch_setup": "export SFORGE_CPUSET=auto",
+      "launch_command": "launch/miles-diffusion-wan/run.sh --config launch/miles-diffusion-wan/run.env --dry-run\nlaunch/miles-diffusion-wan/run.sh --config launch/miles-diffusion-wan/run.env --foreground",
+      "config_setup": "cp launch/miles-diffusion-wan/codex.env.example launch/miles-diffusion-wan/run.env\n# Use the paper’s 24-hour budget.\nsed -i 's/^TASK_TIMEOUT=.*/TASK_TIMEOUT=86400/' launch/miles-diffusion-wan/run.env",
+      "reader_overview": "Wan2.2 learns to produce videos using a fixed preference scorer that rewards the generated results. The agent adds the required video-training method to the Miles Diffusion training framework, then speeds up reward calculation, model training and transfer of updated weights while preserving the recipe and video quality.",
+      "reader_setup": [
+        {
+          "name": "Model and data",
+          "description": "Wan2.2-TI2V-5B in text-to-video mode, supplied prompts and the HPSv3 preference scorer. The video transformer is trained; the text encoder and video decoder stay frozen."
+        },
+        {
+          "name": "Training setup",
+          "description": "Three rounds of eight prompts, with eight videos per prompt. Each video has nine frames at 704 × 1280 pixels and uses ten sampling steps; each round makes two training updates."
+        },
+        {
+          "name": "Starting point",
+          "description": "A Miles Diffusion framework with unfinished task commands and no DanceGRPO video-training support."
+        },
+        {
+          "name": "What the agent changes",
+          "description": "The required video sampling behavior, preference scoring and learning updates, plus batching, memory placement and transfer of the complete updated model."
+        }
+      ],
+      "reader_metric": {
+        "meaning": "Measures how many fixed training replays can be completed per hour. The real trained model must retain a mean HPSv3 reward of at least the baseline minus 0.28; the replay duration determines the score. A replay reuses recorded generation outputs to time the required training workflow; a separate real training run checks learning quality.",
+        "rule": "Score = 1 ÷ median replay duration in hours."
+      },
+      "reader_compute": "Two GPUs connected by NVLink, shared by development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "grouped-fp8": {
       "task_id": "standalone_dynamic_grouped_fp8_h100_scratch_v3",
@@ -999,7 +1474,7 @@
         "Implement both matrix-multiplication entry points in versioned Triton candidates and select the submission through FINAL_VERSION."
       ],
       "requirements": [
-        "Default allocation: Work 1 GPU + Judge 1 GPU (2 GPUs per run).",
+        "Default allocation: one GPU shared by Work and Judge; Work pauses during evaluation.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "PyTorch 2.8 / CUDA 12.9 / Triton task environment.",
         "FP8 inputs, block scales, group boundaries, and BF16 output buffers."
@@ -1013,20 +1488,52 @@
       "evaluation": "Measures effective TFLOPS across both layouts. Numerical correctness, complete writes, unchanged inputs, and memory safety are checked across scored and boundary cases.",
       "sources": [
         {
-          "doc": "docs/tasks/standalone-dynamic-grouped-fp8-h100-v3-scratch.md",
-          "sha256": "58f5175fce7ac18bfce3e5014bb35db1024384b3ade8f206f15a26358b95e764"
-        },
-        {
-          "doc": "scripts/infrathon/release/public/tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/README.md",
-          "sha256": "3ce10b971370e472ef6e290b99160e9eed0515663655649d4b96b390c664ca61"
+          "doc": "tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/README.md",
+          "sha256": "de19714197495d359f6393416eaf743ff11d3d12d336f446e7e4e9f92315174e"
         },
         {
           "doc": "scripts/infrathon/tasks.json",
-          "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+          "sha256": "c9a05bf640ff1bd397fe2b94ddfe88242b59e0de906bd684d5a90da76ac8cbf8"
         },
         {
           "doc": "tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/images/work/workdir/grouped_fp8_lab/README_AGENT.md",
           "sha256": "1821a34f75b25f35c6ce2f1e6e01b28b3131c23011a99751a9d128d9afb275f8"
+        },
+        {
+          "doc": "tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/images/work/AGENT_TASK.md",
+          "sha256": "8795cf0953a230a8fe83cfd4495abb7619ee6f91017699dda4a94eabe9649989"
+        },
+        {
+          "doc": "launch/standalone-fp8/run.sh",
+          "sha256": "565b059d615f37b6337af4d598dfc88226225eb654dfb635ff02962600e2cc8f"
+        },
+        {
+          "doc": "tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/images/judge/verify_grouped.py",
+          "sha256": "384d19117cd7ec6ca89e7638a798f6739bd2cfa4d903cf6b70ea752812f4db2a"
+        },
+        {
+          "doc": "tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/assets/manifest.json",
+          "sha256": "3185cca2edd1a05abccfff4fa89c576d25b4d4390bcf956d37cd315513ce24f3"
+        },
+        {
+          "doc": "tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/runtime/grouped_fp8_runtime.py",
+          "sha256": "49eda08d00f422b7bfa0c928560547ddbf95e002218ad30732037cb9056cb740"
+        },
+        {
+          "doc": "tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/images/work/benchmark/run_public_tests.sh",
+          "sha256": "caaead307c8b1f634a73c7a262efe88ddcd1e65b0bdd6078a2772b6ab3ffd384"
+        },
+        {
+          "doc": "tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/images/work/workdir/grouped_fp8_lab/tools/run_public_tests.sh",
+          "sha256": "f72c44762ff78c3215b5953e05e6ebaee3b425292245a4d4ce2133cde289aed2"
+        },
+        {
+          "doc": "tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/scripts/run_single_gpu_fixed_budget.sh",
+          "sha256": "0aaf10640ce3542e587cb2812876f94dab57aa0eb2dc62554310a768de42dd15"
+        },
+        {
+          "doc": "tasks/latest/standalone-dynamic-grouped-fp8-h100-v3-scratch/tasks/standalone_dynamic_grouped_fp8_h100_scratch_v3.json",
+          "sha256": "54a75bbcb9f03cde0bb1aee064050ea15f228af7be476f2a32feaa943df56320"
         }
       ],
       "result_intro": "Implement the matrix multiplication used to process variable token batches in mixture-of-experts inference, starting from empty Triton code. The operator reads block-scaled FP8 activations and expert weights in two storage layouts, writes BF16 results, and must accelerate useful work across changing expert row counts.",
@@ -1071,7 +1578,33 @@
         "The Judge evaluates 32 scored cases and 158 correctness-only cases. It checks dequantized arithmetic against FP64 and BF16 references, complete finite writes, input preservation, and memory boundaries.",
         "Formal submissions return the aggregate and both layout scores after the required checks pass."
       ],
-      "test_commands": "./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --edge --candidate-version 1\n./tools/run_public_tests.sh --sanitize --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1"
+      "test_commands": "./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --edge --candidate-version 1\n./tools/run_public_tests.sh --sanitize --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1",
+      "launch_setup": "nvidia-smi -L\nDEVICE_UUID=GPU-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      "launch_command": "launch/standalone-fp8/run.sh \\\n  --device-uuid \"$DEVICE_UUID\" \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --auth /path/to/auth.json",
+      "reader_overview": "Mixture-of-experts inference sends different numbers of tokens to different expert networks, creating many matrix multiplications of uneven size. The agent builds a GPU implementation that processes these changing groups efficiently, supports both storage arrangements, and preserves the required numerical results.",
+      "reader_setup": [
+        {
+          "name": "Workload",
+          "description": "Generated matrix data follows the DeepGEMM grouped FP8 workload. Expert batches vary in size and use either padded storage or a packed arrangement; no model weights are loaded."
+        },
+        {
+          "name": "Test setup",
+          "description": "Evaluation times 32 configurations across the two storage arrangements, expert counts, token counts, and matrix sizes. Another 158 cases check correctness, including empty experts and small or irregular batches."
+        },
+        {
+          "name": "Starting point",
+          "description": "An empty implementation stub with public test tools and a written arithmetic contract."
+        },
+        {
+          "name": "What the agent changes",
+          "description": "The Triton kernels that multiply each expert’s matrices, apply the supplied scales, and schedule work across groups."
+        }
+      ],
+      "reader_metric": {
+        "meaning": "Measures matrix-multiplication throughput using only actual expert rows. Padded rows add no useful work. Masked and packed layouts have equal weight in the final score. TFLOPS expresses the task-defined operation count in trillions of operations per second.",
+        "rule": "Score = useful matrix operations ÷ execution time, expressed in TFLOPS and combined across cases."
+      },
+      "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "sparse-mla": {
       "task_id": "standalone_sparse_mla_prefill_h100_scratch_v2",
@@ -1083,7 +1616,7 @@
         "Implement gather, QK, softmax, and PV in versioned Triton candidates; select the submission through FINAL_VERSION."
       ],
       "requirements": [
-        "Default allocation: Work 1 GPU + Judge 1 GPU (2 GPUs per run).",
+        "Default allocation: one GPU shared by Work and Judge; Work pauses during evaluation.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "PyTorch 2.8 / CUDA 12.9 / Triton task environment.",
         "BF16 Q/KV tensors, sparse indices, and sink/length inputs for the three MLA geometries."
@@ -1097,16 +1630,12 @@
       "evaluation": "Measures effective throughput across three MLA geometry families. Reference output/statistics checks, input preservation, and memory-safety gates cover the supported domain.",
       "sources": [
         {
-          "doc": "docs/tasks/standalone-sparse-mla-prefill-h100-v2-scratch.md",
-          "sha256": "6b6314616ef62b166d7a0aab1998139c860c4668990081203c4991e2348752d6"
-        },
-        {
-          "doc": "scripts/infrathon/release/public/tasks/latest/standalone-sparse-mla-prefill-h100-v2-scratch/README.md",
-          "sha256": "a35f27a3a1a240bfbe79db4fa6212a8c290edb21a11cdb408a46d36c82e93e47"
+          "doc": "tasks/latest/standalone-sparse-mla-prefill-h100-v2-scratch/README.md",
+          "sha256": "94e67908631da94a7ae7a6c966c4a3ac0124efe516891bf2b6472a72586ff922"
         },
         {
           "doc": "scripts/infrathon/tasks.json",
-          "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+          "sha256": "c9a05bf640ff1bd397fe2b94ddfe88242b59e0de906bd684d5a90da76ac8cbf8"
         },
         {
           "doc": "tasks/latest/standalone-sparse-mla-prefill-h100-v2-scratch/images/work/workdir/sparse_mla_prefill_lab/README_AGENT.md",
@@ -1114,11 +1643,39 @@
         },
         {
           "doc": "launch/standalone-sparse-mla-v2/run.sh",
-          "sha256": "97213131526f26763b3d9aa2dcae363403d77db0becb5d87352fb92acef1c767"
+          "sha256": "0f3370a6e888ab42ace98386bec91701532d684efd874de671e51e68be63b020"
         },
         {
-          "doc": "scripts/infrathon/release/public.json",
-          "sha256": "c525ab1ad5f036bfb4225465502769a56810b36156f368bfced5b65fa720d8c4"
+          "doc": "tasks/latest/standalone-sparse-mla-prefill-h100-v2-scratch/images/work/AGENT_TASK.md",
+          "sha256": "05e0c477db7f4966f4ce5f7be535491a4819fdc6253df4c00b68829fdfd04496"
+        },
+        {
+          "doc": "tasks/latest/standalone-sparse-mla-prefill-h100-v2-scratch/images/judge/verify_sparse_mla.py",
+          "sha256": "fa4da42089b2df59ccfb6da0944f7004f4aa85ecf8f947d7c305784e69657877"
+        },
+        {
+          "doc": "tasks/latest/standalone-sparse-mla-prefill-h100-v2-scratch/assets/manifest.json",
+          "sha256": "d53b6b4fbbda4ff87e9016e8434f67002546502fc821784ac56b33aa9c321c36"
+        },
+        {
+          "doc": "tasks/latest/standalone-sparse-mla-prefill-h100-v2-scratch/runtime/sparse_mla_prefill_runtime.py",
+          "sha256": "239200a520c0da3a64394625e4fd28efaca9f4425ff88bcf182a284c50b15c53"
+        },
+        {
+          "doc": "tasks/latest/standalone-sparse-mla-prefill-h100-v2-scratch/images/work/benchmark/run_public_tests.sh",
+          "sha256": "67f79e7158429b1381f9ad1d6c3a692657fc5bd35d3b0fa1dda85393ee7a4ab3"
+        },
+        {
+          "doc": "tasks/latest/standalone-sparse-mla-prefill-h100-v2-scratch/images/work/workdir/sparse_mla_prefill_lab/tools/run_public_tests.sh",
+          "sha256": "f72c44762ff78c3215b5953e05e6ebaee3b425292245a4d4ce2133cde289aed2"
+        },
+        {
+          "doc": "tasks/latest/standalone-sparse-mla-prefill-h100-v2-scratch/scripts/run_single_gpu_fixed_budget.sh",
+          "sha256": "f31fbc619bd0924f821e2742521444abd2d7a1dacb565a7f129db8a8d3a47d1a"
+        },
+        {
+          "doc": "tasks/latest/standalone-sparse-mla-prefill-h100-v2-scratch/tasks/standalone_sparse_mla_prefill_h100_scratch_v2.json",
+          "sha256": "eb64b79a44fb0b4c2eba72c7383b884ea196c7cdf9ea6a6e867b9ace7b2e7d99"
         }
       ],
       "result_intro": "Implement sparse multi-head latent attention for prefill from an empty Triton candidate. Each query gathers an indexed set of keys and returns a BF16 attention vector plus FP32 normalization statistics; the optimization target is the complete gather, attention, and output computation across three DeepSeek geometries.",
@@ -1163,7 +1720,33 @@
         "The Judge checks 13 scored configurations and 401 correctness-only cases against an independent FP32 reference, including the required infinity patterns in normalization statistics.",
         "Guard bands, input comparisons, and the configured memory-safety pass check accesses in addition to numerical agreement."
       ],
-      "test_commands": "./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --sanitize --candidate-version 1\n./tools/run_public_tests.sh --edge --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1"
+      "test_commands": "./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --sanitize --candidate-version 1\n./tools/run_public_tests.sh --edge --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1",
+      "launch_setup": "nvidia-smi -L\nDEVICE_UUID=GPU-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      "launch_command": "launch/standalone-sparse-mla-v2/run.sh \\\n  --device-uuid \"$DEVICE_UUID\" \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --auth /path/to/auth.json",
+      "reader_overview": "Sparse attention computes each query’s output from a selected list of context positions, reducing the number of attention interactions. The agent builds a GPU implementation that gathers those positions and computes the output faster while handling repeated, missing, and empty selections correctly.",
+      "reader_setup": [
+        {
+          "name": "Workload",
+          "description": "Generated attention inputs use the head arrangements of DeepSeek V3.2, V4 Flash, and V4 Pro. Context lengths reach 128K tokens, and the number of selected positions differs across model families."
+        },
+        {
+          "name": "Test setup",
+          "description": "Evaluation times 13 configurations across three model families. Another 401 correctness cases cover repeated or invalid selections, empty selections, optional attention sinks, and irregular sizes."
+        },
+        {
+          "name": "Starting point",
+          "description": "An empty attention implementation stub with public tests and the required selection rules."
+        },
+        {
+          "name": "What the agent changes",
+          "description": "The Triton implementation for reading selected keys, computing attention, and producing the required normalization statistics."
+        }
+      ],
+      "reader_metric": {
+        "meaning": "Measures the speed of attention over the selected keys. Timing includes gathering keys, computing attention, and writing results. The three DeepSeek workload families have equal weight. TFLOPS expresses the task-defined operation count in trillions of operations per second.",
+        "rule": "Score = operations for selected query–key pairs ÷ execution time, expressed in TFLOPS and combined across cases."
+      },
+      "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "paged-gqa": {
       "task_id": "standalone_paged_gqa_decode_bf16_h100_scratch_v2",
@@ -1175,7 +1758,7 @@
         "Implement cache gathering, masks, softmax, and accumulation in a versioned Triton candidate; select it through FINAL_VERSION."
       ],
       "requirements": [
-        "Default allocation: Work 1 GPU + Judge 1 GPU (2 GPUs per run).",
+        "Default allocation: one GPU shared by Work and Judge; Work pauses during evaluation.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "PyTorch 2.8 / CUDA 12.9 / Triton task environment.",
         "BF16 queries, physical KV pages, page tables, and per-request lengths."
@@ -1189,16 +1772,12 @@
       "evaluation": "Measures effective attention throughput for single-query and short multi-query workloads. Numerical references, complete output writes, input preservation, and memory safety must pass.",
       "sources": [
         {
-          "doc": "docs/tasks/standalone-paged-gqa-decode-bf16-h100-v2-scratch.md",
-          "sha256": "ff20dd3771383d1b7872ca82645f5c0a41f139e20c4833b6b6f1d1e638ea1ace"
-        },
-        {
-          "doc": "scripts/infrathon/release/public/tasks/latest/standalone-paged-gqa-decode-bf16-h100-v2-scratch/README.md",
-          "sha256": "2355fd9e606728166f9c5c1d6905d5f355aef993515244d22f16de983c032d2f"
+          "doc": "tasks/latest/standalone-paged-gqa-decode-bf16-h100-v2-scratch/README.md",
+          "sha256": "ed7b697de0b36c2c69c5cd04ef58dcaf66a175c4001cb2e1e2084b1ab7d59f68"
         },
         {
           "doc": "scripts/infrathon/tasks.json",
-          "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+          "sha256": "c9a05bf640ff1bd397fe2b94ddfe88242b59e0de906bd684d5a90da76ac8cbf8"
         },
         {
           "doc": "tasks/latest/standalone-paged-gqa-decode-bf16-h100-v2-scratch/images/work/workdir/paged_gqa_decode_lab/README_AGENT.md",
@@ -1206,11 +1785,39 @@
         },
         {
           "doc": "launch/standalone-paged-gqa-v2/run.sh",
-          "sha256": "880f359f489dc98a208990014c6faa8f48892daad225fbc05dd9cf861e6dd628"
+          "sha256": "ce1bde62712e933fec18267651897bc7866e3c38ea0a17655bb4a7bc24ce6c3a"
         },
         {
-          "doc": "scripts/infrathon/release/public.json",
-          "sha256": "c525ab1ad5f036bfb4225465502769a56810b36156f368bfced5b65fa720d8c4"
+          "doc": "tasks/latest/standalone-paged-gqa-decode-bf16-h100-v2-scratch/images/work/AGENT_TASK.md",
+          "sha256": "3539026f199c695c2a962eedc68b448a307b7acb021d1062d825b838030d7ae6"
+        },
+        {
+          "doc": "tasks/latest/standalone-paged-gqa-decode-bf16-h100-v2-scratch/images/judge/verify_paged_gqa.py",
+          "sha256": "ce59cf36c28728337a38fd80736b714f4bdaf0d75caee1cbcde47b091c37dbeb"
+        },
+        {
+          "doc": "tasks/latest/standalone-paged-gqa-decode-bf16-h100-v2-scratch/assets/manifest.json",
+          "sha256": "af6d1926531f47ce34b403a2df562d09b75293ef5bf004a88970928137c51661"
+        },
+        {
+          "doc": "tasks/latest/standalone-paged-gqa-decode-bf16-h100-v2-scratch/runtime/paged_gqa_decode_runtime.py",
+          "sha256": "1ca99863dc2a467df83d5a0d29b6c34c7a29229c53efec664b1563ecbe8ba064"
+        },
+        {
+          "doc": "tasks/latest/standalone-paged-gqa-decode-bf16-h100-v2-scratch/images/work/benchmark/run_public_tests.sh",
+          "sha256": "40202ba44cf1ff03c5149c72e196b155c797efa570be1a408ae642a20f07bf6c"
+        },
+        {
+          "doc": "tasks/latest/standalone-paged-gqa-decode-bf16-h100-v2-scratch/images/work/workdir/paged_gqa_decode_lab/tools/run_public_tests.sh",
+          "sha256": "f72c44762ff78c3215b5953e05e6ebaee3b425292245a4d4ce2133cde289aed2"
+        },
+        {
+          "doc": "tasks/latest/standalone-paged-gqa-decode-bf16-h100-v2-scratch/scripts/run_single_gpu_fixed_budget.sh",
+          "sha256": "7f6910930fc4ce18572121b4eefcb0ba4e7c1e84c68cb710aa3ea7183b159335"
+        },
+        {
+          "doc": "tasks/latest/standalone-paged-gqa-decode-bf16-h100-v2-scratch/tasks/standalone_paged_gqa_decode_bf16_h100_scratch_v2.json",
+          "sha256": "6407907d318fdce60e9a5a4480e92b5f313deaf50a9477ca7197ea1c8a8aa062"
         }
       ],
       "result_intro": "Implement grouped-query attention over a paged KV cache for single-token decode and short-query prefill. The Triton kernel maps logical tokens to physical pages, applies shared KV heads and per-request causal limits, and writes BF16 attention outputs while reducing the complete call latency.",
@@ -1255,7 +1862,33 @@
         "The Judge evaluates ten scored configurations and 160 correctness-only cases, comparing against de-paged FP32 and BF16 references with complete-write and input-preservation checks.",
         "Boundary tests include shared pages, unusual head groups, nonfinite masked values, and large address ranges."
       ],
-      "test_commands": "./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --sanitize --candidate-version 1\n./tools/run_public_tests.sh --edge --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1"
+      "test_commands": "./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --sanitize --candidate-version 1\n./tools/run_public_tests.sh --edge --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1",
+      "launch_setup": "nvidia-smi -L\nDEVICE_UUID=GPU-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      "launch_command": "launch/standalone-paged-gqa-v2/run.sh \\\n  --device-uuid \"$DEVICE_UUID\" \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --auth /path/to/auth.json",
+      "reader_overview": "Language model serving stores earlier attention keys and values in memory pages that may be scattered across the GPU. The agent builds a faster attention operation that follows those page mappings, shares cached data across query heads, and respects which earlier tokens each query may read.",
+      "reader_setup": [
+        {
+          "name": "Workload",
+          "description": "Generated queries and paged caches represent five deployed-model head arrangements: Llama-3.1-8B, Qwen-2.5-7B, Llama-3.1-70B, Mistral Large, and Llama-3.1-405B. The workload evaluates the attention operation without loading model weights or generating text."
+        },
+        {
+          "name": "Test setup",
+          "description": "Ten timed configurations combine the five head arrangements with one-token and 16-token queries. Another 160 correctness cases vary page mappings, cache lengths, shared pages, and boundary conditions."
+        },
+        {
+          "name": "Starting point",
+          "description": "An empty paged-attention implementation stub with public tests and page-addressing rules."
+        },
+        {
+          "name": "What the agent changes",
+          "description": "The Triton kernels that locate cached keys and values, compute attention, and schedule work across requests and query heads."
+        }
+      ],
+      "reader_metric": {
+        "meaning": "Measures attention throughput for the query–key pairs allowed by the causal mask. Timing includes page lookup and the full attention call. Single-query and 16-query workloads have equal weight. TFLOPS expresses the task-defined operation count in trillions of operations per second.",
+        "rule": "Score = useful attention operations ÷ execution time, expressed in TFLOPS and combined across cases."
+      },
+      "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "sageattention": {
       "task_id": "sageattention_quantized_attention_bf16_h100_seed_v2",
@@ -1267,7 +1900,7 @@
         "Edit versioned submission.py files, then select the submitted version with FINAL_VERSION."
       ],
       "requirements": [
-        "Default allocation: Work 1 GPU + Judge 1 GPU (2 GPUs per run).",
+        "Default allocation: one GPU shared by Work and Judge; Work pauses during evaluation.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "PyTorch 2.8 / CUDA 12.9 / Triton task environment.",
         "Synthetic workloads and real-layer fixtures from CogVideoX-2B and Llama-3.1-8B."
@@ -1281,20 +1914,52 @@
       "evaluation": "Measures dense-equivalent attention throughput after output-accuracy and input-integrity checks. Quantization and preprocessing remain part of the timed call.",
       "sources": [
         {
-          "doc": "docs/tasks/sageattention-quantized-attention-bf16-h100-v2-seed.md",
-          "sha256": "8418a3a4d737ede438831046b2fbfd6ac72e7a3727427d7d01b0b0c587392ff7"
-        },
-        {
-          "doc": "scripts/infrathon/release/public/tasks/latest/sageattention-quantized-attention-bf16-h100-v2-seed/README.md",
-          "sha256": "95032d7095738b1e6cc5523f34e667319f0144d47d16c3f13ab24afd19422a43"
+          "doc": "tasks/latest/sageattention-quantized-attention-bf16-h100-v2-seed/README.md",
+          "sha256": "255b2fa610d0546f1c3958a05bed052ab256088f98e4fe5907ca1e93010fa3f4"
         },
         {
           "doc": "scripts/infrathon/tasks.json",
-          "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+          "sha256": "c9a05bf640ff1bd397fe2b94ddfe88242b59e0de906bd684d5a90da76ac8cbf8"
         },
         {
           "doc": "tasks/latest/sageattention-quantized-attention-bf16-h100-v2-seed/images/work/workdir/quant_attention_lab/README_AGENT.md",
           "sha256": "f653e44e24c3e54d28765df80a22ee0954910c68d81034777865fd2bed0cca2d"
+        },
+        {
+          "doc": "tasks/latest/sageattention-quantized-attention-bf16-h100-v2-seed/images/work/AGENT_TASK.md",
+          "sha256": "ad1fe69bc87be4d57c06c5a510ba0ccd067e09a5339b0e5e1e0c3265db6d9732"
+        },
+        {
+          "doc": "launch/sageattention-qattn/run.sh",
+          "sha256": "c3f7a74f7d05c5e20fd85526bb0bbb7f2007a9ea34d8f2644be74e2cf9e8c2aa"
+        },
+        {
+          "doc": "tasks/latest/sageattention-quantized-attention-bf16-h100-v2-seed/images/judge/verify_quant_attention.py",
+          "sha256": "77afa45d8184a87405e5b904158fc2bb5eeda64b16cdf458563a7f693ea012e0"
+        },
+        {
+          "doc": "tasks/latest/sageattention-quantized-attention-bf16-h100-v2-seed/assets/manifest.json",
+          "sha256": "4acf9d16a9be24c1af3837e21ee40d4b9c92cd68ff45b578fbff8114ac150e5f"
+        },
+        {
+          "doc": "tasks/latest/sageattention-quantized-attention-bf16-h100-v2-seed/runtime/quant_attention_runtime.py",
+          "sha256": "7fcb896b08f159d107e39e942a5cbea11725517c2f4429aeafc9d4286dd4ed5f"
+        },
+        {
+          "doc": "tasks/latest/sageattention-quantized-attention-bf16-h100-v2-seed/images/work/benchmark/run_public_tests.sh",
+          "sha256": "bfdb0bbd4e9a11c42485806f4f7928ab012e3fafa0798847f2f2d5a59da21347"
+        },
+        {
+          "doc": "tasks/latest/sageattention-quantized-attention-bf16-h100-v2-seed/images/work/workdir/quant_attention_lab/tools/run_public_tests.sh",
+          "sha256": "f72c44762ff78c3215b5953e05e6ebaee3b425292245a4d4ce2133cde289aed2"
+        },
+        {
+          "doc": "tasks/latest/sageattention-quantized-attention-bf16-h100-v2-seed/scripts/run_single_gpu_fixed_budget.sh",
+          "sha256": "e0d79bae60b027dc0644667fc020d07ff490ca6c04d178eab62ea7bc71f3f38a"
+        },
+        {
+          "doc": "tasks/latest/sageattention-quantized-attention-bf16-h100-v2-seed/tasks/sageattention_quantized_attention_bf16_h100_seed_v2.json",
+          "sha256": "5205097a91a750e78c3e0067ee64699f4ff2838321351ff1cf61d8141939754b"
         }
       ],
       "result_intro": "Accelerate an attention forward pass from BF16 Q, K, and V to a BF16 output, starting from a working SageAttention-style Triton implementation. The candidate controls smoothing, intermediate quantization, softmax, and value aggregation within the timed call, while retaining accuracy across video and language-model workloads.",
@@ -1342,7 +2007,33 @@
         "The Judge checks the same interface on all 62 captured layers, the eight edges, and five scored cells. Errors are measured against FP32 attention and calibrated SageAttention numerics.",
         "Only candidates passing every required accuracy and integrity check receive the aggregate throughput score."
       ],
-      "test_commands": "./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1"
+      "test_commands": "./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1",
+      "launch_setup": "nvidia-smi -L\nDEVICE_UUID=GPU-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      "launch_command": "launch/sageattention-qattn/run.sh \\\n  --device-uuid \"$DEVICE_UUID\" \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --auth /path/to/auth.json",
+      "reader_overview": "Attention can run faster when intermediate values use fewer bits, but this introduces numerical error. The agent improves a working quantized-attention implementation, speeding up the complete operation from input preprocessing through output generation while keeping every tested result within the required accuracy limits.",
+      "reader_setup": [
+        {
+          "name": "Workload",
+          "description": "Generated inputs cover video attention and causal language-model attention. Additional accuracy checks use activations captured from CogVideoX-2B and Llama-3.1-8B."
+        },
+        {
+          "name": "Test setup",
+          "description": "Five timed configurations comprise three video-attention and two causal-attention cases. Correctness checks also cover eight edge cases and all 30 CogVideoX-2B and 32 Llama-3.1-8B attention layers."
+        },
+        {
+          "name": "Starting point",
+          "description": "A working SageAttention-style implementation that smooths and quantizes inputs before computing attention."
+        },
+        {
+          "name": "What the agent changes",
+          "description": "Quantization precision and granularity, fused processing steps, and GPU scheduling within the Triton attention implementation."
+        }
+      ],
+      "reader_metric": {
+        "meaning": "Measures the full attention pipeline, including smoothing and quantization, using dense attention work as the common operation count. Video and language-model workloads have equal weight. TFLOPS expresses the task-defined operation count in trillions of operations per second.",
+        "rule": "Score = dense-equivalent attention operations ÷ execution time, expressed in TFLOPS and combined across cases."
+      },
+      "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "minference": {
       "task_id": "minference_sparse_prefill_h100_seed_v3",
@@ -1368,20 +2059,84 @@
       "evaluation": "Measures dense-equivalent throughput across the prescribed text/length/layer workloads. Every timed call and boundary case must satisfy the vector-error and integrity checks.",
       "sources": [
         {
-          "doc": "docs/tasks/minference-sparse-prefill-h100-v3-seed.md",
-          "sha256": "b413038888c8449b0a279e32494dfaffa149758f75d9d700ee9a39e12f2b5245"
-        },
-        {
-          "doc": "scripts/infrathon/release/public/tasks/latest/minference-sparse-prefill-h100-v3-seed/README.md",
-          "sha256": "95790fc621a6817e6640ee6720ce8e8f5f62168084c617e0f352fc302d88c268"
+          "doc": "tasks/latest/minference-sparse-prefill-h100-v3-seed/README.md",
+          "sha256": "fe7a1bd80ff1e5246ad01ee5bee9a626081a18553512cb71c49e20b407889212"
         },
         {
           "doc": "scripts/infrathon/tasks.json",
-          "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+          "sha256": "c9a05bf640ff1bd397fe2b94ddfe88242b59e0de906bd684d5a90da76ac8cbf8"
         },
         {
           "doc": "tasks/latest/minference-sparse-prefill-h100-v3-seed/images/work/workdir/minference_prefill_lab/README_AGENT.md",
           "sha256": "1a820351169ed4a28137c3b16debd1a4c5b0637b6a88a6c8aafc3c8044dbd54f"
+        },
+        {
+          "doc": "tasks/latest/minference-sparse-prefill-h100-v3-seed/images/work/AGENT_TASK.md",
+          "sha256": "1a820351169ed4a28137c3b16debd1a4c5b0637b6a88a6c8aafc3c8044dbd54f"
+        },
+        {
+          "doc": "launch/minference-v3/run.sh",
+          "sha256": "312bcb03a589e834de841ce8b429e95b31e793a7e56b09062cc73439ff9e1d20"
+        },
+        {
+          "doc": "tasks/latest/minference-sparse-prefill-h100-v3-seed/images/judge/verify_minference_prefill.py",
+          "sha256": "a479560f6a09d110e5d11e776280870b586f020543ef38a7ec744ed5809f9edc"
+        },
+        {
+          "doc": "tasks/latest/minference-sparse-prefill-h100-v3-seed/assets/manifest.json",
+          "sha256": "7ec4fa7f2876bf02512dec1d3e8c93cbd87996ead03a0b7c52052255c4383df3"
+        },
+        {
+          "doc": "tasks/latest/minference-sparse-prefill-h100-v3-seed/runtime/activation_archive_v3.py",
+          "sha256": "50c47021e86891130d1a4189ace9793166669e8e0daaf5e24d2728541aa685ae"
+        },
+        {
+          "doc": "tasks/latest/minference-sparse-prefill-h100-v3-seed/runtime/kernel_fidelity_v3.py",
+          "sha256": "ea70b5c6a0c2c2fbdd2c1ccf9f8aec5f445b6d21d804288fea0895aa18b122cf"
+        },
+        {
+          "doc": "tasks/latest/minference-sparse-prefill-h100-v3-seed/runtime/measure_single_prompt_v3.py",
+          "sha256": "c5c76bd2e1f2d9c9ca44a8f658b15635d5908e2eb026cae0cc19ea7c35b62eae"
+        },
+        {
+          "doc": "tasks/latest/minference-sparse-prefill-h100-v3-seed/runtime/minference_prefill_runtime.py",
+          "sha256": "238d1fdf7d0135ae102759ba56e41a30c3842fc5670369bb1bb726a77afee9e5"
+        },
+        {
+          "doc": "tasks/latest/minference-sparse-prefill-h100-v3-seed/runtime/on_demand_suite_v3.py",
+          "sha256": "f18d76d1b819693c54fc5305439135f57c3d78b4b440c17de5e0945dc9cbef7d"
+        },
+        {
+          "doc": "tasks/latest/minference-sparse-prefill-h100-v3-seed/runtime/prepare_single_prompt_v3.py",
+          "sha256": "31a9fddf068af7fa6c71c98dcce10029060e80d6246437977cc4ff508610557d"
+        },
+        {
+          "doc": "tasks/latest/minference-sparse-prefill-h100-v3-seed/runtime/run_single_prompt_worker_v3.py",
+          "sha256": "16463804fbbaa81ddbced9be92322e8138e39a5659c89f0fa386469ab0d95f07"
+        },
+        {
+          "doc": "tasks/latest/minference-sparse-prefill-h100-v3-seed/runtime/single_prompt_archive_v3.py",
+          "sha256": "c30fde486cf01f08b6d4bc4a2e1cc02fd105d4777881a1a80e455ba837201ca5"
+        },
+        {
+          "doc": "tasks/latest/minference-sparse-prefill-h100-v3-seed/runtime/stream_parent_v3.py",
+          "sha256": "72d33534f05a34b49695c3968c41688fb45c2a4b3e746a25fc536642035c3ada"
+        },
+        {
+          "doc": "tasks/latest/minference-sparse-prefill-h100-v3-seed/images/work/benchmark/run_public_tests.sh",
+          "sha256": "97d7acb665887ab1753a45bbd456e0648f1b91d772a78003f1ef360a4e343ae2"
+        },
+        {
+          "doc": "tasks/latest/minference-sparse-prefill-h100-v3-seed/images/work/workdir/minference_prefill_lab/tools/run_public_tests.sh",
+          "sha256": "f72c44762ff78c3215b5953e05e6ebaee3b425292245a4d4ce2133cde289aed2"
+        },
+        {
+          "doc": "tasks/latest/minference-sparse-prefill-h100-v3-seed/images/work/workdir/minference_prefill_lab/tools/check_source.sh",
+          "sha256": "1ecc4a4016346d5dddbe970bc715d807b5197481d8265f550e49e6fddb619cd3"
+        },
+        {
+          "doc": "tasks/latest/minference-sparse-prefill-h100-v3-seed/tasks/minference_sparse_prefill_h100_seed_v3.json",
+          "sha256": "deed9f92afe0605b4713577ef3532271b75664e72821414cf2a54ef7a1264f28"
         }
       ],
       "result_intro": "Optimize one long-context causal attention call on real Llama-3.1-8B activations, using a MInference-style sparse seed. The candidate receives BF16 Q/K/V and must produce an attention output within a fixed vector-error budget, trading pattern-selection overhead and sparse computation against any required dense-head repair.",
@@ -1430,7 +2185,33 @@
         "The full public suite covers 48 cells and 144 real-input calls. The Judge uses the same matrix with its private prompt partition and sampled check rows.",
         "Every timed call and boundary case must pass fidelity, complete-output, and input-preservation checks before the aggregate is accepted."
       ],
-      "test_commands": "tools/check_source.sh --candidate-version 1\ntools/run_public_tests.sh --candidate-version 1 --boundaries-only\ntools/run_public_tests.sh --candidate-version 1"
+      "test_commands": "tools/check_source.sh --candidate-version 1\ntools/run_public_tests.sh --candidate-version 1 --boundaries-only\ntools/run_public_tests.sh --candidate-version 1",
+      "launch_setup": "",
+      "launch_command": "launch/minference-v3/run.sh \\\n  --work-gpu 0 --judge-gpu 1 \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --auth /path/to/auth.json",
+      "reader_overview": "Long prompts make attention expensive because each token can attend to many earlier tokens. The agent improves a sparse attention implementation that processes fewer interactions, reducing computation while keeping its outputs close to full attention on real model activations.",
+      "reader_setup": [
+        {
+          "name": "Workload",
+          "description": "Llama-3.1-8B-Instruct produces the attention inputs from RULER benchmark prompts for single-needle retrieval, multi-key retrieval, variable tracking, and frequent-word extraction. Model execution prepares these inputs before the timed attention call."
+        },
+        {
+          "name": "Test setup",
+          "description": "Four prompt types, three context budgets of 32K, 64K, and 128K, and four model layers form 48 evaluation cells. Three prompts per cell produce 144 timed calls; 11 additional cases check short and irregular lengths."
+        },
+        {
+          "name": "Starting point",
+          "description": "A working sparse-attention seed that estimates attention patterns and uses dense computation to repair heads when needed."
+        },
+        {
+          "name": "What the agent changes",
+          "description": "Pattern selection, the amount of sparse computation, indexing, GPU kernels, and the repair strategy within the fixed output-error limits."
+        }
+      ],
+      "reader_metric": {
+        "meaning": "Measures how much full-attention work the faster implementation replaces per second. Timing includes selecting the sparse pattern and any accuracy-repair computation. Results are combined across 48 task, length, and layer settings. TFLOPS expresses the task-defined operation count in trillions of operations per second.",
+        "rule": "Score = dense-equivalent attention operations ÷ full call time, expressed in TFLOPS and combined across cases."
+      },
+      "reader_compute": "One GPU for development and a separate GPU for evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "lmcache": {
       "task_id": "lmcache_paged_kv_block_transfer_h100_seed_v1",
@@ -1443,7 +2224,7 @@
         "Select the submission with FINAL_VERSION; record experiments in notes.md."
       ],
       "requirements": [
-        "Default allocation: Work 1 GPU + Judge 1 GPU (2 GPUs per run).",
+        "Default allocation: one GPU shared by Work and Judge; Work pauses during evaluation.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "At least 16 GiB of pinnable host memory for mapped-host transfers.",
         "PyTorch 2.8 / CUDA 12.9 build environment and KV-transfer descriptors."
@@ -1457,20 +2238,56 @@
       "evaluation": "Measures payload bandwidth across device, host, and trace workloads. Moved elements must match bit for bit, while source and uncovered destination regions remain unchanged.",
       "sources": [
         {
-          "doc": "docs/tasks/lmcache-paged-kv-block-transfer-h100-v1-seed.md",
-          "sha256": "78696c616c757b46614edb424091a643c7632733fb11af8c9b3d241204f5f47f"
-        },
-        {
-          "doc": "scripts/infrathon/release/public/tasks/latest/lmcache-paged-kv-block-transfer-h100-v1-seed/README.md",
-          "sha256": "fff05351c9b81a29664cb46fb8323a110caeb9b2d520bba56d29280b10ab2e59"
+          "doc": "tasks/latest/lmcache-paged-kv-block-transfer-h100-v1-seed/README.md",
+          "sha256": "7a2d8010fc5b0907ab314045d6b969604f079afc81836531a0b5620f699f4382"
         },
         {
           "doc": "scripts/infrathon/tasks.json",
-          "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+          "sha256": "c9a05bf640ff1bd397fe2b94ddfe88242b59e0de906bd684d5a90da76ac8cbf8"
         },
         {
           "doc": "tasks/latest/lmcache-paged-kv-block-transfer-h100-v1-seed/images/work/workdir/kv_transfer_lab/README_AGENT.md",
           "sha256": "2d05639a0729cc5f0a5675f6aa69930b4dd7ae56078a6151e91704b7aa4d4ef0"
+        },
+        {
+          "doc": "tasks/latest/lmcache-paged-kv-block-transfer-h100-v1-seed/images/work/AGENT_TASK.md",
+          "sha256": "61fb3d0f97f8878ca72fa2806ad1b9f6b8f0a3c4e875a0d72e7ca472c9e54cae"
+        },
+        {
+          "doc": "launch/lmcache-kv-transfer/run.sh",
+          "sha256": "ef05962a95908d38d1e444cf7baee5567c7eb1a310fe89e297191b843e25f8c6"
+        },
+        {
+          "doc": "tasks/latest/lmcache-paged-kv-block-transfer-h100-v1-seed/images/judge/verify_kv_transfer.py",
+          "sha256": "273f2e1982df5ebf693aa1d307528c8c4994cc5a4be9999b6397ba6c53a6eece"
+        },
+        {
+          "doc": "tasks/latest/lmcache-paged-kv-block-transfer-h100-v1-seed/assets/manifest.json",
+          "sha256": "d50d77027bec81e2f255392158802f73cb6ce81966fc8b3d0ee86138b5e2b805"
+        },
+        {
+          "doc": "tasks/latest/lmcache-paged-kv-block-transfer-h100-v1-seed/runtime/kv_transfer_runtime.py",
+          "sha256": "aed973a841666a2870afe1d8d7000adb87d52b657edf544e1fe742e1c9f6136c"
+        },
+        {
+          "doc": "tasks/latest/lmcache-paged-kv-block-transfer-h100-v1-seed/images/work/benchmark/run_public_tests.sh",
+          "sha256": "4fa1880def7a5d63bef72cc872d52df4d6e2ae6689b4dedd8725ec1d6f9d15c1"
+        },
+        {
+          "doc": "tasks/latest/lmcache-paged-kv-block-transfer-h100-v1-seed/images/work/workdir/kv_transfer_lab/tools/run_public_tests.sh",
+          "sha256": "f72c44762ff78c3215b5953e05e6ebaee3b425292245a4d4ce2133cde289aed2"
+        },
+        {
+          "doc": "tasks/latest/lmcache-paged-kv-block-transfer-h100-v1-seed/scripts/run_single_gpu_fixed_budget.sh",
+          "sha256": "da928357a731a294b0ae2a7c57f18c9d1a3f3f1dc9baf93e13461c563dbb3f89"
+        },
+        {
+          "doc": "tasks/latest/lmcache-paged-kv-block-transfer-h100-v1-seed/images/work/workdir/kv_transfer_lab/transfer_abi.h",
+          "sha256": "f75a4c2ed2a14c74435ac0e5369a2345e69b5e0c7f3def6a8bcc94ca701de3b2"
+        },
+        {
+          "doc": "tasks/latest/lmcache-paged-kv-block-transfer-h100-v1-seed/tasks/lmcache_paged_kv_block_transfer_h100_seed_v1.json",
+          "sha256": "8af731a1574862d5a3bf4b0b0364910a304386d1eb01b302de22bd49306cbcd9"
         }
       ],
       "result_intro": "Accelerate KV-cache movement between an inference engine’s paged buffers and LMCache’s contiguous chunks using the supplied CUDA seed. Inputs describe source and destination buffers, block mappings, and transfer direction; the candidate must preserve every transferred bit while improving complete-call bandwidth for GPU and mapped-host memory.",
@@ -1518,7 +2335,33 @@
         "The Judge runs 20 scored cases plus the 14 edge gates, verifying every wave, reverse transfers, and the complete expected engine-pool state.",
         "A same-run bandwidth-envelope check validates reported performance against measured device and host transfer capacity."
       ],
-      "test_commands": "./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1"
+      "test_commands": "./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1",
+      "launch_setup": "nvidia-smi -L\nDEVICE_UUID=GPU-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      "launch_command": "launch/lmcache-kv-transfer/run.sh \\\n  --device-uuid \"$DEVICE_UUID\" \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --auth /path/to/auth.json",
+      "reader_overview": "Language model serving reuses cached attention data, which must move between paged engine buffers and contiguous cache storage. The agent improves a GPU transfer kernel to move this data faster across device and host-memory paths while preserving every transferred bit.",
+      "reader_setup": [
+        {
+          "name": "Workload",
+          "description": "Generated cache buffers exercise transfers in both store and retrieve directions. Cases use different block layouts and mappings, with cache storage on the GPU or in host memory accessible to the GPU."
+        },
+        {
+          "name": "Test setup",
+          "description": "Twenty timed cases include 16 direct transfers and four sequences of transfers that update shared cache state. Fourteen additional cases check boundaries, skipped regions, and untouched data."
+        },
+        {
+          "name": "Starting point",
+          "description": "A working CUDA transfer kernel based on the supplied LMCache implementation."
+        },
+        {
+          "name": "What the agent changes",
+          "description": "How the CUDA kernel divides, groups, and orders data transfers, including access patterns for host memory; the transfer interface remains fixed."
+        }
+      ],
+      "reader_metric": {
+        "meaning": "Measures logical KV-cache data moved per second. The final score combines device, host, and mixed-transfer workloads with weights of 55%, 15%, and 30%. Every transferred value must remain bit-exact.",
+        "rule": "Per-case bandwidth = transferred gigabytes ÷ transfer seconds; score = weighted geometric mean of group bandwidths."
+      },
+      "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "flash-kmeans": {
       "task_id": "flash_kmeans_paper_h100_kernel_lab_v7_scratch",
@@ -1531,7 +2374,7 @@
         "Create FINAL_VERSION to choose the submitted implementation; use notes.md for experiments."
       ],
       "requirements": [
-        "Default allocation: Work 1 GPU + Judge 1 GPU (2 GPUs per run).",
+        "Default allocation: one GPU shared by Work and Judge; Work pauses during evaluation.",
         "Release hardware: H100 NVL 94 GB.",
         "PyTorch 2.7.1 / CUDA 12.8 task environment.",
         "GPU-resident points, centroids, and precomputed point norms."
@@ -1545,20 +2388,48 @@
       "evaluation": "The Judge measures weighted workload latency after assignment, count, centroid, input-integrity, and memory checks. The website presents its documented equivalent-throughput conversion.",
       "sources": [
         {
-          "doc": "docs/tasks/flash-kmeans-paper-h100-v7-scratch.md",
-          "sha256": "35883e0fba1566c4f299551343a617b2b0c21dba4fba20cff758ffaa91d9261d"
-        },
-        {
-          "doc": "scripts/infrathon/release/public/tasks/latest/flash-kmeans-paper-h100-v7-scratch/README.md",
-          "sha256": "7dcf379ee150e684ae9a44d8d7de7fe7ac38de985754e72921329404f73c9690"
+          "doc": "tasks/latest/flash-kmeans-paper-h100-v7-scratch/README.md",
+          "sha256": "2cf7e05397881ee8336ecc2ccd212d03edf6fb7301b8f74dc5bf1327a10fb8d4"
         },
         {
           "doc": "scripts/infrathon/tasks.json",
-          "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+          "sha256": "c9a05bf640ff1bd397fe2b94ddfe88242b59e0de906bd684d5a90da76ac8cbf8"
         },
         {
           "doc": "tasks/latest/flash-kmeans-paper-h100-v7-scratch/images/work/workdir/flash_kmeans_lab/README_AGENT.md",
           "sha256": "92a119aa9af9a69b348da03ff956b2c4c9b94ddf914e36afb15ef95aed4a1e8d"
+        },
+        {
+          "doc": "tasks/latest/flash-kmeans-paper-h100-v7-scratch/images/work/AGENT_TASK.md",
+          "sha256": "8b95bd40f4b8df327a665d33b5c79d26c3a39054cae5441c294e974fafc620d9"
+        },
+        {
+          "doc": "launch/flash-kmeans/run.sh",
+          "sha256": "e5136bbb08109a81f1d081f4463b9bf7d579c7a2b3805f53ca96e95effe9678a"
+        },
+        {
+          "doc": "tasks/latest/flash-kmeans-paper-h100-v7-scratch/images/judge/verify_flash_kmeans.py",
+          "sha256": "786a9975d85c010b64120b6dd26d22f19a78d0f9f2ac46602b1e0bd37db6d029"
+        },
+        {
+          "doc": "tasks/latest/flash-kmeans-paper-h100-v7-scratch/assets/manifest.json",
+          "sha256": "780d2c5b1e1ce6d505437b9cc6db89f78159b6c44d07b715c6cdd5990b172717"
+        },
+        {
+          "doc": "tasks/latest/flash-kmeans-paper-h100-v7-scratch/images/work/public_tests/run_public_tests.sh",
+          "sha256": "c940467486469f03710c9d45b769032daa58e6515bd6824f1be77cac02729f51"
+        },
+        {
+          "doc": "tasks/latest/flash-kmeans-paper-h100-v7-scratch/scripts/run_single_gpu_fixed_budget.sh",
+          "sha256": "89bdfaabe692fed3aed8b1dbc87a73bbeb531722f710761a581ca72c1314e74a"
+        },
+        {
+          "doc": "tasks/latest/flash-kmeans-paper-h100-v7-scratch/images/judge/benchmark/benchmark_cases.py",
+          "sha256": "2a7673517dd89c658542635a8c09d8bc407f9bd434bc56e5bf24faef5da9f936"
+        },
+        {
+          "doc": "tasks/latest/flash-kmeans-paper-h100-v7-scratch/tasks/flash_kmeans_paper_h100_kernel_lab_v7_scratch.json",
+          "sha256": "267d7b4afe57ef134c60de404c7e617739ca23a301e460df13dc45bc738ec7bb"
         }
       ],
       "result_intro": "Implement one exact Euclidean K-Means iteration from an empty GPU workspace: assign each point to its nearest centroid, then update counts and centroid means. Inputs are resident FP16 points and centroids plus FP32 point norms; optimization targets the latency of assignment, update, and combined workloads under bounded temporary memory.",
@@ -1603,7 +2474,33 @@
         "The Judge evaluates 14 scored and eight correctness-only cases, checking labels, counts, centroid accuracy, input integrity, and temporary memory.",
         "Fresh-process cases start with an empty compilation cache; first-call cost is diagnostic, while warmed execution contributes to the latency score."
       ],
-      "test_commands": "bash /workspace/public_tests/run_public_tests.sh --quick\nbash /workspace/public_tests/run_public_tests.sh"
+      "test_commands": "bash /workspace/public_tests/run_public_tests.sh --quick\nbash /workspace/public_tests/run_public_tests.sh",
+      "launch_setup": "nvidia-smi -L\nDEVICE_UUID=GPU-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      "launch_command": "launch/flash-kmeans/run.sh \\\n  --device-uuid \"$DEVICE_UUID\" \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --auth /path/to/auth.json",
+      "reader_overview": "One K-Means iteration assigns every point to its nearest cluster center and then updates each center from its assigned points. The agent implements these two operations efficiently on the GPU while preserving assignments, exact point counts, empty-cluster behavior, and the temporary-memory limits.",
+      "reader_setup": [
+        {
+          "name": "Workload",
+          "description": "Generated batches of points and cluster centers are already on the GPU. The workload measures one clustering iteration with varying numbers of points, centers, and features, without model weights or an external dataset."
+        },
+        {
+          "name": "Test setup",
+          "description": "Fourteen timed workloads cover assignment, center updates, complete iterations, fresh-process runs, and large workloads. Eight additional correctness cases check ties, empty clusters, and numerical boundaries."
+        },
+        {
+          "name": "Starting point",
+          "description": "An empty implementation workspace with public tests for both clustering operations."
+        },
+        {
+          "name": "What the agent changes",
+          "description": "The PyTorch or Triton implementations of nearest-center assignment and center updates, including how distances and reductions are divided across the GPU."
+        }
+      ],
+      "reader_metric": {
+        "meaning": "The Judge measures execution latency across 14 workloads. The website converts that latency to equivalent TFLOPS using a fixed amount of work, so halving latency doubles the displayed score. TFLOPS expresses the task-defined operation count in trillions of operations per second.",
+        "rule": "Displayed score = fixed workload operation count ÷ weighted geometric-mean latency, expressed in TFLOPS."
+      },
+      "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB)."
     },
     "mamba2": {
       "task_id": "tilelang_mamba2_ssd_forward_h100_seed_v2",
@@ -1616,7 +2513,7 @@
         "Tune TileLang computation and buffer layouts; select the submission through FINAL_VERSION."
       ],
       "requirements": [
-        "Default allocation: Work 1 GPU + Judge 1 GPU (2 GPUs per run).",
+        "Default allocation: one GPU shared by Work and Judge; Work pauses during evaluation.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "PyTorch 2.8 / CUDA 12.9 with TileLang 0.1.13.",
         "State-space tensors with Mamba-2, Codestral, and Falcon-H1 geometries."
@@ -1630,16 +2527,12 @@
       "evaluation": "Measures recurrence-equivalent throughput across three model families. FP32-reference tolerances, complete finite outputs, unchanged inputs, and temporary-memory limits must pass.",
       "sources": [
         {
-          "doc": "docs/tasks/tilelang-mamba2-ssd-forward-h100-v2-seed.md",
-          "sha256": "ddf79bb771531540cff456b94c00547aa83b88561d5b0be9f80f27ca0e18b3ad"
-        },
-        {
-          "doc": "scripts/infrathon/release/public/tasks/latest/tilelang-mamba2-ssd-forward-h100-v2-seed/README.md",
-          "sha256": "368de92f2f246185ed40528c9bf0efef2099000723439e1f2d79893ae73a92ca"
+          "doc": "tasks/latest/tilelang-mamba2-ssd-forward-h100-v2-seed/README.md",
+          "sha256": "a5e834c15fa279758f0d8575823cfbea2c6b021072e3f0b5ed9258d5fcc73bb7"
         },
         {
           "doc": "scripts/infrathon/tasks.json",
-          "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+          "sha256": "c9a05bf640ff1bd397fe2b94ddfe88242b59e0de906bd684d5a90da76ac8cbf8"
         },
         {
           "doc": "tasks/latest/tilelang-mamba2-ssd-forward-h100-v2-seed/images/work/workdir/mamba2_ssd_lab/README_AGENT.md",
@@ -1647,11 +2540,39 @@
         },
         {
           "doc": "launch/tilelang-mamba2-ssd-v2/run.sh",
-          "sha256": "8f252756eba153570c57c4711b8bad220e2496d702c32ccd96fd73622de0d0b8"
+          "sha256": "e58aa44adf0dd798ca670f95f9432f978a0957e8c91c887e3fa0ab850b319dcb"
         },
         {
-          "doc": "scripts/infrathon/release/public.json",
-          "sha256": "c525ab1ad5f036bfb4225465502769a56810b36156f368bfced5b65fa720d8c4"
+          "doc": "tasks/latest/tilelang-mamba2-ssd-forward-h100-v2-seed/images/work/AGENT_TASK.md",
+          "sha256": "0a4835c3321c50a8e2f4f8db92ffb6344a647d1c26cd60f41368d8deae93a8b2"
+        },
+        {
+          "doc": "tasks/latest/tilelang-mamba2-ssd-forward-h100-v2-seed/images/judge/verify_ssd.py",
+          "sha256": "fe4e2461ec80a190bb7cf6fcd87ccfddbbf33c4e2f3ea59665f5942d782dc238"
+        },
+        {
+          "doc": "tasks/latest/tilelang-mamba2-ssd-forward-h100-v2-seed/assets/manifest.json",
+          "sha256": "03a4639b9ae4e892b0be795e9b990ffe371c41e283c50f4c9d02689957101c73"
+        },
+        {
+          "doc": "tasks/latest/tilelang-mamba2-ssd-forward-h100-v2-seed/runtime/mamba2_ssd_runtime.py",
+          "sha256": "b3fc301c63fec02f98ca9c773b2f863461bb1603b28062b1a484a4f536c50e82"
+        },
+        {
+          "doc": "tasks/latest/tilelang-mamba2-ssd-forward-h100-v2-seed/images/work/benchmark/run_public_tests.sh",
+          "sha256": "ddb01788174ea9fc4c56345c1074e612795f3cac3e0d901e2c522c4c9dfcaf89"
+        },
+        {
+          "doc": "tasks/latest/tilelang-mamba2-ssd-forward-h100-v2-seed/images/work/workdir/mamba2_ssd_lab/tools/run_public_tests.sh",
+          "sha256": "f72c44762ff78c3215b5953e05e6ebaee3b425292245a4d4ce2133cde289aed2"
+        },
+        {
+          "doc": "tasks/latest/tilelang-mamba2-ssd-forward-h100-v2-seed/scripts/run_single_gpu_fixed_budget.sh",
+          "sha256": "363ecf7ce5d12a46dd0898a896a4943a90747813165c055c43d784eea47e49b8"
+        },
+        {
+          "doc": "tasks/latest/tilelang-mamba2-ssd-forward-h100-v2-seed/tasks/tilelang_mamba2_ssd_forward_h100_seed_v2.json",
+          "sha256": "55225ec2f5c7397b59fa7667a7c4cd610d982cd4220265ed80c4e4dffe909db7"
         }
       ],
       "result_intro": "Accelerate the Mamba-2 state-space forward operator from a correct four-stage TileLang seed. Given token features, time steps, decay parameters, state write/read tensors, and a skip coefficient, the implementation produces BF16 sequence outputs while preserving the recurrence and reducing scan, intermediate-storage, and synchronization costs.",
@@ -1704,7 +2625,33 @@
         "The Judge uses the same scored geometry with private inputs and checks every trial against a blocked FP32 reference, including whole-tensor relative L2 <= 0.006.",
         "Operator records verify the TileLang computation boundary; finite writes, unchanged inputs, warm-up time, and temporary memory are also checked."
       ],
-      "test_commands": "./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1"
+      "test_commands": "./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1",
+      "launch_setup": "nvidia-smi -L\nDEVICE_UUID=GPU-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      "launch_command": "launch/tilelang-mamba2-ssd-v2/run.sh \\\n  --device-uuid \"$DEVICE_UUID\" \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --auth /path/to/auth.json",
+      "reader_overview": "State-space models carry a compact state through a sequence to compute each token’s output. The agent speeds up this forward operation by improving how work is divided and intermediate states are stored, while preserving the specified state updates and output accuracy.",
+      "reader_setup": [
+        {
+          "name": "Workload",
+          "description": "Generated sequence inputs use the state and head arrangements of Mamba-2-2.7B, Mamba-Codestral-7B, and Falcon-H1-34B."
+        },
+        {
+          "name": "Test setup",
+          "description": "Each of the three model families has six timed sequence lengths from 1K to 32K tokens, giving 18 cases. Another 18 correctness cases cover short sequences, partial chunks, and extreme state decays."
+        },
+        {
+          "name": "Starting point",
+          "description": "A correct TileLang implementation that divides the forward computation into four stages."
+        },
+        {
+          "name": "What the agent changes",
+          "description": "Sequence chunking, intermediate storage, GPU layouts, stage fusion, and scheduling inside the TileLang computation."
+        }
+      ],
+      "reader_metric": {
+        "meaning": "Measures sequence-processing speed using the prescribed state-update and output-projection work. All work in the forward call is timed, and the three model families have equal weight. TFLOPS expresses the task-defined operation count in trillions of operations per second.",
+        "rule": "Score = recurrence-equivalent operations ÷ execution time, expressed in TFLOPS and combined across cases."
+      },
+      "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "kvpress": {
       "task_id": "kvpress_kv_eviction_policy_qwen3_8b_h100_scratch_v2",
@@ -1717,10 +2664,9 @@
         "Optional policy assets are supported within the documented size limit."
       ],
       "requirements": [
-        "Default allocation: Work 1 GPU + Judge 7 GPUs (8 GPUs per run).",
+        "Select 1 Work GPU and 1–8 separate Judge GPUs of the same model.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
-        "Frozen Qwen3-8B and the supplied retrieval, aggregation, QA, and generation inputs.",
-        "The Judge supports 1–8 GPUs of the same model."
+        "Frozen Qwen3-8B and the supplied retrieval, aggregation, QA, and generation inputs."
       ],
       "workflow": [
         "Read the positional baseline in `candidates/policy_v001/submission.py`, then implement a versioned `EvictionPolicy` using the supplied activation tensors.",
@@ -1731,20 +2677,40 @@
       "evaluation": "Measures next-token distribution fidelity at three eviction fractions. Selection validity, cache budgets, input preservation, determinism, selection time, and temporary memory are checked.",
       "sources": [
         {
-          "doc": "docs/tasks/kvpress-kv-eviction-policy-qwen3-8b-h100-v2-scratch.md",
-          "sha256": "65b57eb808a3cdb4fe9c49533552f18a795f682c79f0292fc2b62bea175bdcc2"
-        },
-        {
-          "doc": "scripts/infrathon/release/public/tasks/latest/kvpress-kv-eviction-policy-qwen3-8b-h100-v2-scratch/README.md",
-          "sha256": "2395a81eee0bb8fb9d9521ce86133bf2071a6a31b4c9e41fd3a87b316c0e2390"
+          "doc": "tasks/latest/kvpress-kv-eviction-policy-qwen3-8b-h100-v2-scratch/README.md",
+          "sha256": "72b4a39babd77a197003c4a16600ede3a6b1bd591bd17e48b2fa7881aff87e79"
         },
         {
           "doc": "scripts/infrathon/tasks.json",
-          "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+          "sha256": "c9a05bf640ff1bd397fe2b94ddfe88242b59e0de906bd684d5a90da76ac8cbf8"
         },
         {
           "doc": "tasks/latest/kvpress-kv-eviction-policy-qwen3-8b-h100-v2-scratch/images/work/AGENT_TASK.md",
           "sha256": "6ac1e70e5fece4a7bf8cf9ede50612d67016122f294caff98a124c746257349e"
+        },
+        {
+          "doc": "tasks/latest/kvpress-kv-eviction-policy-qwen3-8b-h100-v2-scratch/runtime/kv_eviction_runtime.py",
+          "sha256": "cee0175ecec3bb2eb087a7fae8a9982a3225b99ddd85dd7b3bda558b3b77d3dd"
+        },
+        {
+          "doc": "tasks/latest/kvpress-kv-eviction-policy-qwen3-8b-h100-v2-scratch/images/judge/verify_kv_eviction.py",
+          "sha256": "cbf57b261008f523f7ae9c99692941c23e456e777e697fe6a5392e6e37887c8e"
+        },
+        {
+          "doc": "tasks/latest/kvpress-kv-eviction-policy-qwen3-8b-h100-v2-scratch/images/work/workdir/kv_eviction_lab/tools/run_public_tests.sh",
+          "sha256": "d833d6e3b4d74ccf467e8133252242885458c439900e67ab5e7520c7c9fdd232"
+        },
+        {
+          "doc": "tasks/latest/kvpress-kv-eviction-policy-qwen3-8b-h100-v2-scratch/images/work/workdir/kv_eviction_lab/tools/run_one.sh",
+          "sha256": "dcbff4f2c9dea2a0d8eb90df05151d12b74e953eb4df1de96bce7e302175aaa4"
+        },
+        {
+          "doc": "launch/kvpress-kv-eviction-scratch/run.sh",
+          "sha256": "3259c2ae0cb7ccddfbfc0a87962a59c5635cd70fb310caf24b6462999804634d"
+        },
+        {
+          "doc": "tasks/latest/kvpress-kv-eviction-policy-qwen3-8b-h100-v2-scratch/tasks/kvpress_kv_eviction_policy_qwen3_8b_h100_scratch_v2.json",
+          "sha256": "d5a6a23e20c00f50f5f5d58135e31f6b0fd08817d7ef157b94c57bb9a14b4651"
         }
       ],
       "result_intro": "Design a policy that chooses which Qwen3-8B KV-cache positions to retain after prefill. The policy receives context activations and attention tensors, returns retained indices for each KV head, and aims to preserve the model’s next-token distribution at three cache-eviction settings.",
@@ -1792,7 +2758,33 @@
         "Formal evaluation separates untrusted position selection from trusted masked replay on 5,000 held-out contexts, measuring fidelity on the same reference continuation.",
         "Index validity, layer budgets, input preservation, deterministic replay, timing, and memory must pass alongside finite fidelity measurements."
       ],
-      "test_commands": "cd /app/workdir/kv_eviction_lab\n./tools/run_one.sh --version 1\n./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1"
+      "test_commands": "cd /app/workdir/kv_eviction_lab\n./tools/run_one.sh --version 1\n./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1",
+      "launch_command": "launch/kvpress-kv-eviction-scratch/run.sh \\\n  --model MODEL_ID \\\n  --effort max \\\n  --hours 24 \\\n  --work-gpu 0 \\\n  --judge-gpus 1 \\\n  --judge-port 18621 \\\n  --auth /path/to/auth.json",
+      "launch_setup": "",
+      "reader_overview": "Language models retain information from the input text in a memory called the KV cache, which can become expensive for long passages. The agent designs a rule for removing cache entries while preserving the model’s predictions about the next token.",
+      "reader_setup": [
+        {
+          "name": "Model and data",
+          "description": "Qwen3-8B with long-context tasks from RULER, LongBench, LooGLE, and Zero-SCROLLS, covering retrieval, aggregation, question answering, and generation."
+        },
+        {
+          "name": "Test setup",
+          "description": "The rule removes 50%, 75%, or 87.5% of cached positions before the question is supplied. Public tests contain 85 examples; formal evaluation uses 5,000 passages of 6K–28K tokens."
+        },
+        {
+          "name": "Starting point",
+          "description": "A simple baseline keeps the first four positions and the most recent positions in the cache."
+        },
+        {
+          "name": "What the agent changes",
+          "description": "The rule for choosing retained positions and distributing the available cache space across model layers. The model and the evaluator’s generation process remain fixed."
+        }
+      ],
+      "reader_metric": {
+        "meaning": "Measures how closely the compressed cache preserves the model’s next-token probabilities. A score of 100 means identical distributions. The score combines four task families at three eviction settings.",
+        "rule": "Score = 100 × average across three eviction settings of the geometric mean of four family fidelities."
+      },
+      "reader_compute": "One GPU for development and 1–8 separate GPUs of the same model for evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "kvzip": {
       "task_id": "kvzip_query_agnostic_kv_scoring_qwen3_8b_h100_scratch_v2",
@@ -1805,10 +2797,9 @@
         "Optional scorer assets are supported within the documented size limit."
       ],
       "requirements": [
-        "Default allocation: Work 1 GPU + Judge 7 GPUs (8 GPUs per run).",
+        "Select 1 Work GPU and 1–8 separate Judge GPUs of the same model.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
-        "Frozen Qwen3-8B and the supplied retrieval, contextual-QA, and redundancy workloads.",
-        "The Judge supports 1–8 GPUs of the same model."
+        "Frozen Qwen3-8B and the supplied retrieval, contextual-QA, and redundancy workloads."
       ],
       "workflow": [
         "Implement `KVScorer` in a complete `candidates/scorer_vNNN/submission.py`, producing globally comparable context-entry scores.",
@@ -1819,20 +2810,40 @@
       "evaluation": "Measures answer-quality retention relative to the full cache. Score shape/finite values, query isolation, deterministic behavior, unchanged inputs, and scoring-time/memory limits must pass.",
       "sources": [
         {
-          "doc": "docs/tasks/kvzip-query-agnostic-kv-scoring-qwen3-8b-h100-v2-scratch.md",
-          "sha256": "07fa79b425174cf8e6eaa520c60b5861901ce477581e923ccba83cacc9ebca2e"
-        },
-        {
-          "doc": "scripts/infrathon/release/public/tasks/latest/kvzip-query-agnostic-kv-scoring-qwen3-8b-h100-v2-scratch/README.md",
-          "sha256": "c13b03934c3cd869c03f5d5d62a083b7ea8a04bf8ddcd982113853ecc8f3f160"
+          "doc": "tasks/latest/kvzip-query-agnostic-kv-scoring-qwen3-8b-h100-v2-scratch/README.md",
+          "sha256": "e30783bc44fd45fdc5373b156b37c61570aa201075323d1235f9f55d699f53ad"
         },
         {
           "doc": "scripts/infrathon/tasks.json",
-          "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+          "sha256": "c9a05bf640ff1bd397fe2b94ddfe88242b59e0de906bd684d5a90da76ac8cbf8"
         },
         {
           "doc": "tasks/latest/kvzip-query-agnostic-kv-scoring-qwen3-8b-h100-v2-scratch/images/work/AGENT_TASK.md",
           "sha256": "c4f44d8870e6b5ec98f2f2c6dddc1db435e295c38dfd17333441a418fa136a0b"
+        },
+        {
+          "doc": "tasks/latest/kvzip-query-agnostic-kv-scoring-qwen3-8b-h100-v2-scratch/runtime/kv_scoring_runtime.py",
+          "sha256": "6a88429c16367f4618c738d6a2cfc077b9a76390a6f534d1e31396f8d10f2658"
+        },
+        {
+          "doc": "tasks/latest/kvzip-query-agnostic-kv-scoring-qwen3-8b-h100-v2-scratch/runtime/kv_scoring_metric.py",
+          "sha256": "c2c4d34b9a9bb9e72dc358cb734b0949b83865978e3a4bd95fb19e67a89f17ae"
+        },
+        {
+          "doc": "tasks/latest/kvzip-query-agnostic-kv-scoring-qwen3-8b-h100-v2-scratch/images/work/workdir/kv_scoring_lab/tools/run_public_tests.sh",
+          "sha256": "d833d6e3b4d74ccf467e8133252242885458c439900e67ab5e7520c7c9fdd232"
+        },
+        {
+          "doc": "tasks/latest/kvzip-query-agnostic-kv-scoring-qwen3-8b-h100-v2-scratch/images/work/workdir/kv_scoring_lab/tools/run_one.sh",
+          "sha256": "fe16fc7136ebc237befbb72720245238ab4f5e3f87187648d1a630266d5ec971"
+        },
+        {
+          "doc": "launch/kvzip-kv-scoring/run.sh",
+          "sha256": "84b91a8d9f88ef05e367eb6fe09673ea86f6d2bc77bf1a1caebcc207debfe39c"
+        },
+        {
+          "doc": "tasks/latest/kvzip-query-agnostic-kv-scoring-qwen3-8b-h100-v2-scratch/tasks/kvzip_query_agnostic_kv_scoring_qwen3_8b_h100_scratch_v2.json",
+          "sha256": "9edff9c8e726b1977cb45cb7eec67babf9e109e1a78271969903ec55980e01c7"
         }
       ],
       "result_intro": "Assign query-agnostic importance scores to Qwen3-8B context KV entries before the downstream question is supplied. A trusted runtime retains the highest-scoring entries across layers and heads at three memory budgets; the objective is to preserve answer quality using the compressed cache.",
@@ -1880,7 +2891,33 @@
         "Formal evaluation covers 1,812 context rows and about 7,000 questions. Trusted decoding applies global top-score retention independently of candidate code.",
         "Random-shape warm-up, timed scoring, and fresh-copy replay check finite outputs, deterministic behavior, input preservation, and resource limits."
       ],
-      "test_commands": "cd /app/workdir/kv_scoring_lab\n./tools/run_one.sh --version 1\n./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1\n./tools/check_submission_size.sh"
+      "test_commands": "cd /app/workdir/kv_scoring_lab\n./tools/run_one.sh --version 1\n./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1\n./tools/check_submission_size.sh",
+      "launch_command": "launch/kvzip-kv-scoring/run.sh \\\n  --model MODEL_ID \\\n  --effort max \\\n  --hours 24 \\\n  --work-gpu 0 \\\n  --judge-gpus 1 \\\n  --judge-port 18622 \\\n  --auth /path/to/auth.json",
+      "launch_setup": "",
+      "reader_overview": "A model may need to answer several questions about a document while keeping only a small part of its cached context. The agent assigns importance scores before any question is known, so the retained information supports accurate answers across different questions.",
+      "reader_setup": [
+        {
+          "name": "Model and data",
+          "description": "Qwen3-8B with SQuAD, GSM8K, SCBench, and RULER-based workloads covering retrieval, contextual question answering, and redundant context."
+        },
+        {
+          "name": "Test setup",
+          "description": "The same importance scores select the top 10%, 20%, and 30% of context cache entries. Public tests contain 63 passages; formal evaluation has 1,812 passages and about 7,000 questions across 12 tasks."
+        },
+        {
+          "name": "Starting point",
+          "description": "An empty importance-scoring implementation, with the model, test inputs, and evaluation tools supplied."
+        },
+        {
+          "name": "What the agent changes",
+          "description": "How each cached entry is scored using information available from the document. The evaluator selects entries from those scores and runs the unchanged model on the questions."
+        }
+      ],
+      "reader_metric": {
+        "meaning": "Measures how much answer quality remains after cache compression, relative to the same model with its full cache. A score of 100 matches full-cache answer quality, averaged across dataset groups and the three memory budgets.",
+        "rule": "Score = 100 × average ratio of compressed-cache answer quality to full-cache answer quality."
+      },
+      "reader_compute": "One GPU for development and 1–8 separate GPUs of the same model for evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "qvg": {
       "task_id": "quant_videogen_cross_model_kv_codec_h100_scratch_v4",
@@ -1893,7 +2930,7 @@
         "Use notes.md to record compression, reconstruction, and video-quality experiments."
       ],
       "requirements": [
-        "Default allocation: Work 1 GPU + Judge 6 GPUs (7 GPUs per run).",
+        "Select 1 Work GPU and 1–8 separate Judge GPUs of the same model.",
         "Release hardware: H100 NVL 94 GB.",
         "LongCat-Video, HY-WorldPlay-8B, and the supplied video-generation inputs.",
         "PyTorch 2.8 / CUDA 12.8 runtime with video-quality evaluators; Judge supports 1–8 same-model GPUs.",
@@ -1909,24 +2946,36 @@
       "evaluation": "Measures persistent-cache compression across both models. Reconstructed-cache correctness, video fidelity/quality, complete compression coverage, runtime, and memory checks must pass.",
       "sources": [
         {
-          "doc": "docs/tasks/quant-videogen-cross-model-kv-codec-h100-v4-scratch.md",
-          "sha256": "46b8ffe9206520844b8e90a009feea4746c30fec8bca78c2638dbedd0b372671"
-        },
-        {
-          "doc": "scripts/infrathon/release/public/tasks/latest/quant-videogen-cross-model-kv-codec-h100-v4-scratch/README.md",
-          "sha256": "b330d7691fa6d4e9c2934c77028f6b2884a6ab8aed2cb9ace78837518918af9b"
+          "doc": "tasks/latest/quant-videogen-cross-model-kv-codec-h100-v4-scratch/README.md",
+          "sha256": "164bb8775860f5d971de3500dfa368fe0d29c88c4ba27e92142447f1243037bf"
         },
         {
           "doc": "scripts/infrathon/tasks.json",
-          "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+          "sha256": "c9a05bf640ff1bd397fe2b94ddfe88242b59e0de906bd684d5a90da76ac8cbf8"
         },
         {
           "doc": "tasks/latest/quant-videogen-cross-model-kv-codec-h100-v4-scratch/images/work/AGENT_TASK.md",
           "sha256": "3eafe0c2c9d6d3ff273427d2ad8a21e729e93b3447b5d263805a5ce4e746462e"
         },
         {
-          "doc": "scripts/infrathon/release/public/docs/HOST_PREREQUISITES.md",
+          "doc": "docs/HOST_PREREQUISITES.md",
           "sha256": "5a910d69ffebd435214cfb8668e00930d7c9b088bd0083237d393af6edd8d20c"
+        },
+        {
+          "doc": "tasks/latest/quant-videogen-cross-model-kv-codec-h100-v4-scratch/judge/evaluate_hidden.py",
+          "sha256": "98907755f567af2ac0d5edd0e02b47d8820971f3ff9bd41893f53882b0cca7fb"
+        },
+        {
+          "doc": "tasks/latest/quant-videogen-cross-model-kv-codec-h100-v4-scratch/judge/run_judge.py",
+          "sha256": "2803902abd65aa0c824802b4f87c4dc0e770a1603a53dac88a6888fa583ea4a7"
+        },
+        {
+          "doc": "launch/quant-videogen/run.sh",
+          "sha256": "bdd00c33f832b928fc57fbbc8f8eed7e0fcb5870bb3df65d8e00edd29072a4a5"
+        },
+        {
+          "doc": "tasks/latest/quant-videogen-cross-model-kv-codec-h100-v4-scratch/tasks/quant_videogen_cross_model_kv_codec_h100_scratch_v4.json",
+          "sha256": "b5feceba528bd66d244e8873d8940800cc794b21002b0c7c6a46627b8d03cc5d"
         }
       ],
       "result_intro": "Implement a persistent KV-cache codec that compresses CUDA BF16 key and value tensors and reconstructs them for video generation. The same codec must transfer across LongCat-Video and HY-WorldPlay, reducing stored bytes while preserving reconstructed-cache correctness, generated-video quality, and acceptable runtime.",
@@ -1978,7 +3027,33 @@
         "Public Self-Forcing generation compares outputs with frozen BF16 references and reports video-quality measurements on a separate model.",
         "Formal LongCat-Video and HY-WorldPlay cases enforce PSNR, SSIM, LPIPS, and VBench quality gates, plus runtime, compression-call coverage, and device-memory limits."
       ],
-      "test_commands": "cd /workspace/submission\npython /workspace/public_tests/codec_source_policy.py --submission /workspace/submission --json\npython /workspace/public_tests/run_public_tests.py\npython /workspace/public_tests/run_self_forcing_paper.py --mode candidate --prefixes 350 --vbench"
+      "test_commands": "cd /workspace/submission\npython /workspace/public_tests/codec_source_policy.py --submission /workspace/submission --json\npython /workspace/public_tests/run_public_tests.py\npython /workspace/public_tests/run_self_forcing_paper.py --mode candidate --prefixes 350 --vbench",
+      "launch_command": "launch/quant-videogen/run.sh \\\n  --model MODEL_ID \\\n  --effort max \\\n  --hours 24 \\\n  --work-gpu 0 \\\n  --judge-gpus 1 \\\n  --judge-port 18623 \\\n  --auth /path/to/auth.json",
+      "launch_setup": "",
+      "reader_overview": "Video generators store attention information between generation steps, consuming substantial memory as videos grow. The agent builds one compression and reconstruction method that reduces this stored information across two video models while maintaining video quality and acceptable generation time.",
+      "reader_setup": [
+        {
+          "name": "Model and data",
+          "description": "Formal evaluation uses LongCat-Video continuations and HY-WorldPlay image-conditioned videos with camera movement. Public end-to-end tests use Self-Forcing with Wan2.1-1.3B."
+        },
+        {
+          "name": "Test setup",
+          "description": "The same method runs on six LongCat-Video cases and eleven HY-WorldPlay cases. Generated videos are checked against uncompressed references, and stored size includes everything needed for reconstruction."
+        },
+        {
+          "name": "Starting point",
+          "description": "An empty submission, plus tests for compression correctness and public video generation."
+        },
+        {
+          "name": "What the agent changes",
+          "description": "How attention information is packed into a smaller representation and reconstructed for later use. The video models and generation workloads remain fixed."
+        }
+      ],
+      "reader_metric": {
+        "meaning": "Measures persistent KV-cache storage reduction across both video models. All reconstruction metadata counts toward stored size. A score of 1 means no compression; 4 means the combined compression factor is fourfold.",
+        "rule": "Per-model compression = original BF16 bytes ÷ stored bytes; score = geometric mean of the two model factors."
+      },
+      "reader_compute": "One GPU for development and 1–8 separate GPUs of the same model for evaluation. H100 NVL (94 GB)."
     },
     "eagle3": {
       "task_id": "eagle3_spec_decode_engine_qwen3_8b_h100_v1",
@@ -1991,7 +3066,7 @@
         "The engine can change tree strategy, batching, kernels, cache layout, compilation, and buffer reuse."
       ],
       "requirements": [
-        "Default allocation: Work 1 GPU + Judge 1 GPU (2 GPUs per run).",
+        "Default allocation: 1 GPU shared serially by Work and Judge; --legacy-dual-gpu enables separate cards.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "Fixed Qwen3-8B target, EAGLE-3 draft head, and the supplied generation prompts.",
         "PyTorch 2.8 / CUDA 12.9, Transformers 4.53.1, Triton, and nvcc."
@@ -2005,20 +3080,40 @@
       "evaluation": "Measures generated-token throughput across six workload cells. A fresh target checks calibrated greedy consistency; stopping rules, request isolation, determinism, execution, and resource checks must pass.",
       "sources": [
         {
-          "doc": "docs/tasks/eagle3-spec-decode-engine-qwen3-8b-h100-v1-seed.md",
-          "sha256": "b680a28c88a07da2cbc5a41113617da4e1b34df25926c26dd7d5fac78faf454e"
-        },
-        {
-          "doc": "scripts/infrathon/release/public/tasks/latest/eagle3-spec-decode-engine-qwen3-8b-h100-v1-seed/README.md",
-          "sha256": "f819c7674d2722277f3329f6284297643112570c166d10df39c031ed1c70eb78"
+          "doc": "tasks/latest/eagle3-spec-decode-engine-qwen3-8b-h100-v1-seed/README.md",
+          "sha256": "0be7ca203ce5eea9b16fa900539d3bdaf2b159e5b8ab2c7b4623391e40c190d2"
         },
         {
           "doc": "scripts/infrathon/tasks.json",
-          "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+          "sha256": "c9a05bf640ff1bd397fe2b94ddfe88242b59e0de906bd684d5a90da76ac8cbf8"
         },
         {
           "doc": "tasks/latest/eagle3-spec-decode-engine-qwen3-8b-h100-v1-seed/images/work/AGENT_TASK.md",
           "sha256": "b7f69cbade428d7af933b25cfa7a1ac6fc88c4598e5e5a0fa58a7e173be94a05"
+        },
+        {
+          "doc": "tasks/latest/eagle3-spec-decode-engine-qwen3-8b-h100-v1-seed/images/work/workdir/spec_lab/runtime/api.py",
+          "sha256": "477fd276807239a04180003cd318d8c9289321fe96ae4043a6206274869b38ed"
+        },
+        {
+          "doc": "tasks/latest/eagle3-spec-decode-engine-qwen3-8b-h100-v1-seed/images/work/workdir/spec_lab/runtime/evaluate.py",
+          "sha256": "d71a4c1121d7997f0ccffe445946cbeb4263c54907c4b59d950cf85bf5bc32ca"
+        },
+        {
+          "doc": "tasks/latest/eagle3-spec-decode-engine-qwen3-8b-h100-v1-seed/images/work/public_tests/run_public_tests.sh",
+          "sha256": "6d62c0d610314f2d58747e44eee8633b1b1986b52f152f6bcd9c87aa75ca8ea6"
+        },
+        {
+          "doc": "tasks/latest/eagle3-spec-decode-engine-qwen3-8b-h100-v1-seed/images/work/public_tests/public_eval.py",
+          "sha256": "32885c01e0205f90b230777d60e73d385edc6b51c9cf73f712587da6a96ef7af"
+        },
+        {
+          "doc": "launch/eagle3-spec-decode/run.sh",
+          "sha256": "be7fa1f8b0d0a2dfa11113a9559fd97c26d53d4aa38153a074b254958232a913"
+        },
+        {
+          "doc": "tasks/latest/eagle3-spec-decode-engine-qwen3-8b-h100-v1-seed/tasks/eagle3_spec_decode_engine_qwen3_8b_h100_v1.json",
+          "sha256": "085fc60eb81a7bf19e15bcdb0a01306ace1d2400baee06d36cc489c04d0bf5df"
         }
       ],
       "result_intro": "Accelerate the complete EAGLE-3 speculative-decoding engine for a frozen Qwen3-8B target and draft head. Given tokenized prompts and a generation specification, the engine builds draft trees, verifies them with the target, accepts tokens, and updates its KV cache while preserving calibrated greedy-decoding behavior.",
@@ -2066,7 +3161,33 @@
         "A fresh eager target checks the candidate’s own emitted trajectories using calibrated logit-margin and disagreement limits.",
         "Formal evaluation also checks stopping, determinism, request isolation, source/model integrity, memory, and completed execution."
       ],
-      "test_commands": "cd /app/workdir/spec_lab\n/workspace/public_tests/run_public_tests.sh --cpu-only\n/workspace/public_tests/run_public_tests.sh --quick --candidate-version 1\n/workspace/public_tests/run_public_tests.sh --full --candidate-version 1"
+      "test_commands": "cd /app/workdir/spec_lab\n/workspace/public_tests/run_public_tests.sh --cpu-only\n/workspace/public_tests/run_public_tests.sh --quick --candidate-version 1\n/workspace/public_tests/run_public_tests.sh --full --candidate-version 1",
+      "launch_command": "launch/eagle3-spec-decode/run.sh \\\n  --model MODEL_ID \\\n  --effort max \\\n  --hours 24 \\\n  --device-uuid \"$DEVICE_UUID\" \\\n  --judge-port 18386 \\\n  --auth /path/to/auth.json",
+      "launch_setup": "nvidia-smi -L\nDEVICE_UUID=GPU-REPLACE-WITH-YOUR-UUID",
+      "reader_overview": "Speculative decoding uses a small drafting component to propose several tokens for a larger model to check together. The agent accelerates this complete proposal-and-check process, including accepted-token handling and memory reuse, while preserving the target model’s required greedy-decoding behavior.",
+      "reader_setup": [
+        {
+          "name": "Model and data",
+          "description": "A fixed Qwen3-8B target and EAGLE-3 drafting component, with prompts from MT-Bench, GSM8K, HumanEval, and UltraChat."
+        },
+        {
+          "name": "Test setup",
+          "description": "Six workloads cover chat, math, code, long context, extended math reasoning, and mixed batches. Calls contain one to eight requests, with output limits of 256, 512, or 1,024 tokens."
+        },
+        {
+          "name": "Starting point",
+          "description": "A working EAGLE-3 engine that proposes candidate tokens, verifies them, accepts predictions, and updates stored attention information."
+        },
+        {
+          "name": "What the agent changes",
+          "description": "The proposal strategy, request batching, computation, memory layout, and reuse of working buffers. Generated tokens must pass consistency checks against the fixed target model."
+        }
+      ],
+      "reader_metric": {
+        "meaning": "Measures generated tokens per second over complete generation calls, including prompt processing. The final score gives equal weight to the six workloads; generated tokens must pass the target-model consistency checks.",
+        "rule": "Per-workload throughput = generated tokens ÷ generation seconds; score = geometric mean of six throughputs."
+      },
+      "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "llada": {
       "task_id": "llada_h100_decoder_optimization_v2",
@@ -2079,7 +3200,7 @@
         "Choose the submission through FINAL_VERSION and document experiments in notes.md."
       ],
       "requirements": [
-        "Default allocation: Work 1 GPU + Judge 1 GPU (2 GPUs per run).",
+        "Default allocation: 1 GPU shared serially by Work and Judge; --legacy-dual-gpu enables separate cards.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "LLaDA-8B-Instruct, its tokenizer, and GSM8K, MATH, HumanEval, and MBPP workloads.",
         "PyTorch 2.7.1 / CUDA 12.8 / Transformers 4.49 task environment."
@@ -2093,16 +3214,12 @@
       "evaluation": "Measures useful-token throughput across twelve workload rows. Reference-relative answer quality, useful-token retention, determinism, request isolation, model integrity, time, and memory checks must pass.",
       "sources": [
         {
-          "doc": "docs/tasks/llada-h100-decoder-optimization-v2-vanilla-seed.md",
-          "sha256": "5955c87700273d554f338d6dff2680d63e5f9aa5433d0783315396d48d614a75"
-        },
-        {
-          "doc": "scripts/infrathon/release/public/tasks/latest/llada-h100-decoder-optimization-v2-vanilla-seed/README.md",
-          "sha256": "cd93f95832b76a194b3506e4390a9b185b53720e44b6ae3e295b294767ad8299"
+          "doc": "tasks/latest/llada-h100-decoder-optimization-v2-vanilla-seed/README.md",
+          "sha256": "a61eb5e18943d15d6930cf1921c864f2ce04cd30851a6b654d5a3b0dfeb23e34"
         },
         {
           "doc": "scripts/infrathon/tasks.json",
-          "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+          "sha256": "c9a05bf640ff1bd397fe2b94ddfe88242b59e0de906bd684d5a90da76ac8cbf8"
         },
         {
           "doc": "tasks/latest/llada-h100-decoder-optimization-v2-vanilla-seed/images/work/AGENT_TASK.md",
@@ -2115,6 +3232,34 @@
         {
           "doc": "scripts/infrathon/assets.py",
           "sha256": "d427226c34ffb242eeb198c7103e135d931c89363441df7d4b2410a3a8f892cc"
+        },
+        {
+          "doc": "tasks/latest/llada-h100-decoder-optimization-v2-vanilla-seed/images/work/workdir/decoder_lab/runtime/api.py",
+          "sha256": "d059b29724c2691712052a120362eb0ac9fc804e32c329ac14e7a7dd831bb3f4"
+        },
+        {
+          "doc": "tasks/latest/llada-h100-decoder-optimization-v2-vanilla-seed/images/judge/verifier/verify_decoder.py",
+          "sha256": "3ea865104521e89b81ff4cf01af79ff2a1c8a12fc12a5919b196ef6b68430957"
+        },
+        {
+          "doc": "tasks/latest/llada-h100-decoder-optimization-v2-vanilla-seed/images/judge/verifier/quality_threshold.py",
+          "sha256": "bb9256d89abb1b58f7af84cdbebbd443a21afad7330428188cbc2711dc1ef3e4"
+        },
+        {
+          "doc": "tasks/latest/llada-h100-decoder-optimization-v2-vanilla-seed/images/work/public_tests/run_public_tests.sh",
+          "sha256": "0c99832b7d4db9ffa51316ff954a4ba37321f7af9cc1afb7ebd282f871507e75"
+        },
+        {
+          "doc": "tasks/latest/llada-h100-decoder-optimization-v2-vanilla-seed/images/work/public_tests/public_eval.py",
+          "sha256": "03339056e438ae87b4834da33a66868be4c1d6ee6b93e489258d425f645fca09"
+        },
+        {
+          "doc": "launch/llada-h100/run.sh",
+          "sha256": "399e16b100d0f3c59c874dbf6a8eb1c0e2bfc0a5c3b773c7756aa6ceb497ae01"
+        },
+        {
+          "doc": "tasks/latest/llada-h100-decoder-optimization-v2-vanilla-seed/tasks/llada_h100_decoder_optimization_v2.json",
+          "sha256": "d065f222659ed4dd7c346487f68451283d8f894d1103e7cc901e2f427307333c"
         }
       ],
       "result_intro": "Accelerate the iterative masked-token decoder for frozen LLaDA-8B-Instruct. The engine receives a tokenized prompt and generation settings, fills a complete output buffer through model predictions, and returns the prompt plus generated tokens while retaining useful completions and benchmark answer quality.",
@@ -2158,7 +3303,33 @@
         "Formal evaluation checks 520 generations against a frozen decoder reference, enforcing answer quality, parseability, and useful-token retention per row, per benchmark, and in aggregate.",
         "Determinism, cache isolation, model integrity, complete output buffers, timeouts, and memory limits also gate acceptance."
       ],
-      "test_commands": "cd /app/workdir/decoder_lab\nbash /workspace/public_tests/run_public_tests.sh --cpu-only\nbash /workspace/public_tests/run_public_tests.sh --quick\nbash /workspace/public_tests/run_public_tests.sh"
+      "test_commands": "cd /app/workdir/decoder_lab\nbash /workspace/public_tests/run_public_tests.sh --cpu-only\nbash /workspace/public_tests/run_public_tests.sh --quick\nbash /workspace/public_tests/run_public_tests.sh",
+      "launch_command": "launch/llada-h100/run.sh \\\n  --model MODEL_ID \\\n  --effort max \\\n  --hours 24 \\\n  --device-uuid \"$DEVICE_UUID\" \\\n  --judge-port 18384 \\\n  --auth /path/to/auth.json",
+      "launch_setup": "export LLADA_MODEL_REPO=\"$(.venv/bin/python scripts/infrathon/assets.py hub-cache)/models--GSAI-ML--LLaDA-8B-Instruct\"\nnvidia-smi -L\nDEVICE_UUID=GPU-REPLACE-WITH-YOUR-UUID\npython3 tasks/latest/llada-h100-decoder-optimization-v2-vanilla-seed/scripts/make_reference_archives.py --task-root tasks/latest/llada-h100-decoder-optimization-v2-vanilla-seed --stress-extra-mib 61440",
+      "reader_overview": "LLaDA generates text by repeatedly filling missing positions in an output sequence using a diffusion language model. The agent speeds up this iterative process through better scheduling and reuse of computation while preserving useful completions and answer quality on math and coding tasks.",
+      "reader_setup": [
+        {
+          "name": "Model and data",
+          "description": "Frozen LLaDA-8B-Instruct evaluated on GSM8K, MATH, HumanEval, and MBPP."
+        },
+        {
+          "name": "Test setup",
+          "description": "Formal evaluation contains 520 generations across twelve settings, with 130 targets per benchmark and output limits of 256, 512, or 1,024 tokens. Requests run individually, and quality is compared with a fixed reference decoder."
+        },
+        {
+          "name": "Starting point",
+          "description": "A basic decoder that repeatedly runs the model and fills masked output positions, plus public interface and generation tests."
+        },
+        {
+          "name": "What the agent changes",
+          "description": "The decoding schedule, selection of positions to fill, and computation reused within each request. Model weights and the model’s forward computation remain fixed."
+        }
+      ],
+      "reader_metric": {
+        "meaning": "Measures useful completion tokens per second, with counting rules for each benchmark’s stopping behavior. Quality and output-length retention are checked against the frozen reference decoder.",
+        "rule": "Per-workload throughput = useful completion tokens ÷ decoding seconds; score = geometric mean of twelve throughputs."
+      },
+      "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "sdv2": {
       "task_id": "streamdiffusionv2_dual_h100_pipeline_runtime_seed_v2",
@@ -2186,24 +3357,48 @@
       "evaluation": "Measures latency-weighted streaming FPS. Every latent and decoded frame must match the seed bit for bit; ordering, causal execution, latency, construction, memory, and cleanup checks must pass.",
       "sources": [
         {
-          "doc": "docs/tasks/streamdiffusionv2-dual-h100-pipeline-runtime-v2-seed.md",
-          "sha256": "e6c53d7957589e820f5a761ba930c4ed5eaf6cb85b6837095b413cc62e37c533"
-        },
-        {
-          "doc": "scripts/infrathon/release/public/tasks/latest/streamdiffusionv2-dual-h100-pipeline-runtime-v2-seed/README.md",
-          "sha256": "27f3f7a05dabb93863562b86622f36ba72f748b1b035459df73fab31570c1d9f"
+          "doc": "tasks/latest/streamdiffusionv2-dual-h100-pipeline-runtime-v2-seed/README.md",
+          "sha256": "6a4a132d828c74ba4d1d159aacc628ba9eb6052f3aad4476e96e152ed6ca5474"
         },
         {
           "doc": "scripts/infrathon/tasks.json",
-          "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+          "sha256": "c9a05bf640ff1bd397fe2b94ddfe88242b59e0de906bd684d5a90da76ac8cbf8"
         },
         {
           "doc": "tasks/latest/streamdiffusionv2-dual-h100-pipeline-runtime-v2-seed/images/work/AGENT_TASK.md",
           "sha256": "9c342ee7261eea61eba1eaf339137f055c558ea69c1c7d1504e790f31b937ada"
         },
         {
-          "doc": "scripts/infrathon/release/public/docs/HOST_PREREQUISITES.md",
+          "doc": "docs/HOST_PREREQUISITES.md",
           "sha256": "5a910d69ffebd435214cfb8668e00930d7c9b088bd0083237d393af6edd8d20c"
+        },
+        {
+          "doc": "tasks/latest/streamdiffusionv2-dual-h100-pipeline-runtime-v2-seed/runtime/scoring.py",
+          "sha256": "69f30703a3d96e6bcb545a33447261b0714ac983ac41226930eb1bf09e58a31b"
+        },
+        {
+          "doc": "tasks/latest/streamdiffusionv2-dual-h100-pipeline-runtime-v2-seed/runtime/evaluation.py",
+          "sha256": "10417e90e090ab948164ea145c4cfeffa322c868fffd8fd3eb9ca4bd409e820b"
+        },
+        {
+          "doc": "tasks/latest/streamdiffusionv2-dual-h100-pipeline-runtime-v2-seed/runtime/evaluation_protocol.json",
+          "sha256": "28b654f49c4d503f4fc13c0d92cbe25ed7e0aa4608e8cc8c68cf8fdc08f24527"
+        },
+        {
+          "doc": "tasks/latest/streamdiffusionv2-dual-h100-pipeline-runtime-v2-seed/images/work/workdir/sdv2_pipeline_lab/tools/run_public_tests.sh",
+          "sha256": "f72c44762ff78c3215b5953e05e6ebaee3b425292245a4d4ce2133cde289aed2"
+        },
+        {
+          "doc": "tasks/latest/streamdiffusionv2-dual-h100-pipeline-runtime-v2-seed/images/work/workdir/sdv2_pipeline_lab/tools/run_one.sh",
+          "sha256": "263c1f9643d7b02e411d7700f2869a16e03a9e01455b811cd5155199dffb917a"
+        },
+        {
+          "doc": "launch/sdv2-pipeline/run.sh",
+          "sha256": "019b5a8abb9be704e4c3bdb849e619c96a87c07f81733aa0c4c0b5a0b6995f9e"
+        },
+        {
+          "doc": "tasks/latest/streamdiffusionv2-dual-h100-pipeline-runtime-v2-seed/tasks/streamdiffusionv2_dual_h100_pipeline_runtime_seed_v2.json",
+          "sha256": "84dc0cd0c895dc65f1eab3f916d741650d35cc579a7284f45fcb6a48a0dc223c"
         }
       ],
       "result_intro": "Optimize a live video-to-video runtime around frozen StreamDiffusionV2 computation on two GPUs. The runtime receives prompt embeddings and successive frame chunks, schedules VAE and DiT work, and emits latents and decoded frames while preserving causal execution and bit-exact reference outputs.",
@@ -2251,7 +3446,33 @@
         "Formal evaluation remeasures the seed and evaluates twelve streams with varied resolutions, lengths, prompts, and one to four denoising steps.",
         "Every latent and decoded frame must match bit for bit. First-frame/tail latency, construction time, memory, ordering, and cleanup also gate the score."
       ],
-      "test_commands": "cd /app/workdir/sdv2_pipeline_lab\ntools/run_one.sh --version 1 --case public_bbb_480p_129_s2\ntools/run_public_tests.sh --candidate-version 1 --quick\ntools/run_public_tests.sh --candidate-version 1"
+      "test_commands": "cd /app/workdir/sdv2_pipeline_lab\ntools/run_one.sh --version 1 --case public_bbb_480p_129_s2\ntools/run_public_tests.sh --candidate-version 1 --quick\ntools/run_public_tests.sh --candidate-version 1",
+      "launch_command": "JUDGE_PORT=18612 launch/sdv2-pipeline/run.sh \\\n  --model MODEL_ID \\\n  --effort max \\\n  --hours 24 \\\n  --gpus 0,1 \\\n  --auth /path/to/auth.json",
+      "launch_setup": "",
+      "reader_overview": "Live video transformation must process incoming frames quickly without allowing delays to build up. The agent improves how StreamDiffusionV2 schedules model stages, moves data, and reuses memory, increasing sustained output speed while producing exactly the same frames as the reference pipeline.",
+      "reader_setup": [
+        {
+          "name": "Model and data",
+          "description": "StreamDiffusionV2 with the fixed Wan2.1-T2V-1.3B model, prompt embeddings, and incoming video streams."
+        },
+        {
+          "name": "Test setup",
+          "description": "Processing starts with five preparation frames and continues in four-frame chunks. Six public and twelve formal cases vary resolution, stream length, prompts, and the number of refinement steps used to generate each output."
+        },
+        {
+          "name": "Starting point",
+          "description": "A working pipeline with fixed placement of model stages and ordered processing of video chunks."
+        },
+        {
+          "name": "What the agent changes",
+          "description": "Where stages run, how computation and transfers overlap, and how working memory and persistent stream state are managed. Model computation and output frames must remain unchanged."
+        }
+      ],
+      "reader_metric": {
+        "meaning": "Balances video frame rate with tail latency. The latency term uses the delay below which 99% of chunks finish. Higher frame rate and shorter tail delay both increase the score, which is combined across twelve streams.",
+        "rule": "Per-stream score = FPS × fourth root of (reference tail latency ÷ candidate tail latency); score = geometric mean across streams."
+      },
+      "reader_compute": "Two GPUs connected by NVLink, shared by development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "serving": {
       "task_id": "concurrent_agent_serving_optimizer_qwen36_swe192_v24",
@@ -2282,24 +3503,20 @@
       "evaluation": "Measures valid executable tool steps per minute across all workflows. Protocol transparency, one-to-one forwarding, request success, valid-step proportion, waiting, backend work per step, and accounting checks must pass.",
       "sources": [
         {
-          "doc": "docs/tasks/concurrent-agent-serving-optimizer-qwen36-swe192-v24.md",
-          "sha256": "32731bbc2bff7e7314f03c4b4b813cb704cb781cce5167605da3e41f1ebcef4f"
-        },
-        {
-          "doc": "scripts/infrathon/release/public/tasks/latest/concurrent-agent-serving-optimizer-qwen36-swe192-v24/README.md",
-          "sha256": "bd4e94bef2dab9a0550e01fc658455444d5757c2f1c68191f44ea9907f88f79a"
+          "doc": "tasks/latest/concurrent-agent-serving-optimizer-qwen36-swe192-v24/README.md",
+          "sha256": "0940f43358dbf426b09ce12b8bf0109eaec0b0dbf5231aa6864dca34acccb1cf"
         },
         {
           "doc": "scripts/infrathon/tasks.json",
-          "sha256": "f37e6220c5df0afb86388046c65bc356405c0ab56f84241893b1bfb1017418d1"
+          "sha256": "c9a05bf640ff1bd397fe2b94ddfe88242b59e0de906bd684d5a90da76ac8cbf8"
         },
         {
           "doc": "launch/concurrent-serving/run.sh",
-          "sha256": "0e2dae9d2470b31827553933da97e338137ab9fa47dae88a78aedd948a486fd7"
+          "sha256": "f6f03c0b071b8f106523d0895374f7a66abe9a89b5fa88d054df1b7074fd3f0d"
         },
         {
           "doc": "launch/common.sh",
-          "sha256": "595fc8f639a86103c256c078d881e7561cd287fa9cb94229b834cb949ee559c2"
+          "sha256": "e0bd20e4918d2e44b965ad0aaecacca51293fd84dbddc3a8a32d3dbe34b6414a"
         },
         {
           "doc": "tasks/latest/concurrent-agent-serving-optimizer-qwen36-swe192-v24/scripts/host_vllm_backend.sh",
@@ -2308,6 +3525,26 @@
         {
           "doc": "tasks/latest/concurrent-agent-serving-optimizer-qwen36-swe192-v24/images/work/AGENT_TASK.md",
           "sha256": "506e3126bcc32f0a94c2fd8613bae49109c8d07e0c7178826a0c904177944da2"
+        },
+        {
+          "doc": "tasks/latest/concurrent-agent-serving-optimizer-qwen36-swe192-v24/runtime/frozen/harbor_tasks/concurrent-agent-serving-optimizer-qwen36-27b-swe192-v2.1-gpu45/environment/bench-controller/runner/workload.py",
+          "sha256": "6dfb348abb56b032204cb80693496d7ff9a02cc99d9ed505ab79c359ca847018"
+        },
+        {
+          "doc": "tasks/latest/concurrent-agent-serving-optimizer-qwen36-swe192-v24/runtime/frozen/harbor_tasks/concurrent-agent-serving-optimizer-qwen36-27b-swe192-v2.1-gpu45/environment/bench-controller/runner/metrics.py",
+          "sha256": "adf1833c713fa9def5994efbabe1b2da597db0fbdd05ee6d4a5cd767e97e197f"
+        },
+        {
+          "doc": "tasks/latest/concurrent-agent-serving-optimizer-qwen36-swe192-v24/images/work/submission/launch.sh",
+          "sha256": "55a18ba551db3a651d97a5b3a1348765ab38aa147bd7dc9e158ec99d887e8e60"
+        },
+        {
+          "doc": "tasks/latest/concurrent-agent-serving-optimizer-qwen36-swe192-v24/images/work/submission/gateway.py",
+          "sha256": "d27e8cff1fff5d22de87ea34af905d3bca74c7bd9527bd3c478a113a89d601b8"
+        },
+        {
+          "doc": "tasks/latest/concurrent-agent-serving-optimizer-qwen36-swe192-v24/tasks/concurrent_agent_serving_optimizer_qwen36_swe192_v24.json",
+          "sha256": "fd92c85d230e77284566fa550e4310141425c6ea8a547ac08d442d046a2d47c4"
         }
       ],
       "result_intro": "Optimize an OpenAI-compatible scheduling gateway between concurrent coding agents and a fixed Qwen3.6-27B backend. The gateway observes multi-turn request traffic, controls admission and queueing, and returns backend responses unchanged, with the objective of increasing completed executable agent steps across the workload.",
@@ -2359,7 +3596,33 @@
         "Public evaluation runs 192 workflows with a 300-second warm-up and 600-second scored window. `kvbench compare` reports candidate results against the selected public Direct evidence.",
         "Formal evaluation uses a 1,800-second window and checks protocol identity, one-to-one requests, request success, valid-step proportion, gateway waiting, backend work per step, and rate accounting."
       ],
-      "test_commands": "cd /app\npython3 -m py_compile /app/submission/*.py\nbash -n /app/submission/launch.sh\nbash /workspace/protocol_tests/run_protocol_smoke.sh\nkvbench doctor\nkvbench run --mode baseline --profile public-swe192-distinct\nkvbench run --mode candidate --profile public-swe192-distinct\nkvbench compare"
+      "test_commands": "cd /app\npython3 -m py_compile /app/submission/*.py\nbash -n /app/submission/launch.sh\nbash /workspace/protocol_tests/run_protocol_smoke.sh\nkvbench doctor\nkvbench run --mode baseline --profile public-swe192-distinct\nkvbench run --mode candidate --profile public-swe192-distinct\nkvbench compare",
+      "launch_command": "launch/concurrent-serving/run.sh \\\n  --config launch/concurrent-serving/run.env \\\n  --model MODEL_ID \\\n  --effort max \\\n  --hours 24 \\\n  --auth /path/to/auth.json",
+      "launch_setup": "",
+      "reader_overview": "Many coding agents share one model server while alternating between generating actions and running tools. The agent builds a scheduling gateway that decides which requests proceed and which wait, increasing completed tool steps while preserving every model request and response.",
+      "reader_setup": [
+        {
+          "name": "Model and data",
+          "description": "Qwen3.6-27B served by a fixed vLLM 0.24.0 backend, with 192 distinct SWE-bench Lite coding workflows."
+        },
+        {
+          "name": "Test setup",
+          "description": "All 192 workflows run concurrently, each capped at 100 steps. After five minutes of warm-up, formal evaluation counts completed valid steps over 30 minutes; public evaluation uses a ten-minute scored window."
+        },
+        {
+          "name": "Starting point",
+          "description": "A working gateway that tracks ongoing agent programs and controls when their requests reach the model server."
+        },
+        {
+          "name": "What the agent changes",
+          "description": "Request admission, queue ordering, and scheduling based on observed traffic and the supplied server limits. The model server, coding agents, and tool environments remain fixed."
+        }
+      ],
+      "reader_metric": {
+        "meaning": "Measures completed tool steps per minute across all 192 coding agents. A step counts when the tool returns within the 30-minute scoring window, including returns with a nonzero exit code.",
+        "rule": "Score = total completed tool steps ÷ 30 minutes."
+      },
+      "reader_compute": "The scheduling gateway runs on CPUs. A separate model server uses two GPUs. H100 NVL (94 GB) or H100 SXM (80 GB)."
     }
   }
 }

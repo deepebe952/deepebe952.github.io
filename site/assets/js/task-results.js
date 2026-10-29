@@ -24,7 +24,7 @@
     $("#t-documentation").href = X.taskHref(t.key);
     $("#t-metric-name").textContent = `Metric · ${metricLabel(t)}`;
     $("#t-metric-summary").textContent = guide.metric_summary;
-    $("#t-metric-link").href = `${X.taskHref(t.key)}/evaluation`;
+    $("#t-metric-link").href = `${X.taskHref(t.key)}/metric`;
     $("#t-metric").textContent = metricLabel(t);
 
     const bars = $("#t-bars");

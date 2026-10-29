@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Infrathon Task</title>
-<meta name="description" content="Infrathon task documentation: workloads, implementation, running instructions, and evaluation metrics.">
+<meta name="description" content="Infrathon task documentation: task goals, models and workloads, scoring, and running instructions.">
 <meta property="og:title" content="Infrathon">
 <meta property="og:description" content="Can frontier models solve long-horizon AI infrastructure tasks? 25 tasks, 6 configurations, 150 runs on H100s.">
 <meta name="theme-color" content="#ffffff">
@@ -28,10 +28,16 @@
       <a class="task-results-link" id="t-results-link" href="task-results.html">View results →</a>
     </header>
     <details class="docs-mobile-contents"><summary>On this page</summary><nav id="docs-mobile-toc"></nav></details>
-    <section class="doc-section" id="task-setting"><h2>Task setting</h2><p id="t-setting"></p><dl class="task-interface" id="t-interface"></dl></section>
-    <section class="doc-section" id="task-implementation"><h2>Implementation</h2><div id="t-components"></div><h3>Workflow</h3><ol id="t-workflow"></ol><h3>Task requirements</h3><ul id="t-constraints"></ul></section>
-    <section class="doc-section" id="task-running"><h2>Running</h2><ul id="t-resources"></ul><details class="task-run-commands" id="task-run-commands"><summary>Setup and launch commands</summary><p>Complete the <a href="docs.html#installation">installation</a> and <a href="docs.html#run">run configuration</a>, then prepare this task’s assets and images:</p><div id="t-setup"></div></details><div id="t-public-tests"></div></section>
-    <section class="doc-section" id="task-evaluation"><h2>Evaluation</h2><p id="t-evaluation"></p><ul id="t-validation"></ul><details class="metric-details" id="metric-calculation"><summary>Score calculation</summary><div class="metric-explanation" id="t-metric-details"></div></details></section>
+    <section class="doc-section" id="task-setting"><h2>Task setup</h2><dl class="task-reader-facts" id="t-reader-setup"></dl></section>
+    <section class="doc-section" id="task-metric">
+      <h2>Metric</h2><h3 class="task-metric-title" id="t-metric-title"></h3><p id="t-metric-meaning"></p>
+      <div class="task-score-rule" id="t-score-rule"></div><p id="t-score-example" hidden></p>
+      <details class="metric-details" id="metric-calculation"><summary>Detailed calculation and validity checks</summary><div class="metric-explanation" id="t-metric-details"></div></details>
+    </section>
+    <section class="doc-section" id="task-running"><h2>Run the task</h2>
+      <details class="task-run-commands" id="task-run-commands"><summary>Environment setup and launch commands</summary><p>Start from the <code>infrathon</code> repository. Complete the <a href="docs.html#installation">installation</a> and <a href="docs.html#run">run configuration</a>, then prepare this task’s assets and images:</p><ul id="t-resources"></ul><div id="t-setup"></div></details>
+      <details class="task-technical" id="task-technical"><summary>Code interface and public tests</summary><h3>Code interface</h3><dl class="task-interface" id="t-interface"></dl><div id="t-components"></div><h3>Development steps</h3><ol id="t-workflow"></ol><h3>Task requirements</h3><ul id="t-constraints"></ul><div id="t-public-tests"></div><h3>Test coverage</h3><ul id="t-validation"></ul></details>
+    </section>
     <nav class="pager" id="t-pager" aria-label="Other tasks"></nav>
   </main>
   <aside class="docs-toc" aria-label="On this page"><h2>On this page</h2><nav id="docs-toc-links"></nav></aside>

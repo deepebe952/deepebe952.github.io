@@ -21,11 +21,13 @@
     document.title = `${t.name} · Infrathon`;
     $("#t-group").textContent = `${cap(t.stage)} · ${cap(t.level)}`;
     $("#t-name").textContent = t.name;
-    $("#t-summary").textContent = guide.objective;
+    $("#t-summary").textContent = guide.reader_overview;
     $("#t-results-link").href = X.taskResultsHref(t.key);
     $("#task-run-commands").open = false;
-    $("#t-meta").replaceChildren(h("span", { text: `${t.budget_h}-hour budget` }), h("span", { text: t.start === "seed" ? "Seed implementation" : "From scratch" }));
-    $("#t-setting").replaceChildren(...inline(guide.setting));
+    $("#t-meta").replaceChildren(h("span", { text: `Experiment budget: ${t.budget_h} hours` }));
+    $("#task-technical").open = false;
+    const readerFacts = [...guide.reader_setup, { name: "Hardware", description: guide.reader_compute }];
+    $("#t-reader-setup").replaceChildren(...readerFacts.map(row => h("div", {}, h("dt", { text: row.name }), h("dd", { text: row.description }))));
     $("#t-interface").replaceChildren(...guide.interface.map(row => h("div", {}, h("dt", { text: row.name }), h("dd", {}, ...inline(row.description)))));
     $("#t-components").replaceChildren(h("table", { class: "doc-table task-components" },
       h("caption", { class: "sr-only", text: `Workspace components for ${t.name}` }),
@@ -34,7 +36,11 @@
     $("#t-resources").replaceChildren(...items(guide.requirements));
     $("#t-workflow").replaceChildren(...items(guide.workflow));
     $("#t-constraints").replaceChildren(...items(guide.constraints));
-    $("#t-evaluation").textContent = guide.metric_summary;
+    $("#t-metric-title").textContent = t.metric_info.label;
+    $("#t-metric-meaning").textContent = guide.reader_metric.meaning;
+    $("#t-score-rule").textContent = guide.reader_metric.rule;
+    $("#t-score-example").hidden = !t.metric_info.example;
+    $("#t-score-example").textContent = t.metric_info.example || "";
     $("#t-validation").replaceChildren(...items(guide.validation));
     const publicTests = $("#t-public-tests");
     publicTests.replaceChildren();
@@ -48,9 +54,8 @@
     if (miles[t.key]) {
       const entry = miles[t.key];
       setup.append(h("p", { text: "Choose a scratch directory on your data disk:" }), Docs.code(guide.scratch_setup));
-      setup.append(h("p", {}, "Create the run configuration:") , Docs.code(`cp launch/${entry}/codex.env.example launch/${entry}/run.env`),
-        h("p", {}, "Set the model, credentials, GPU indices, ", h("code", { text: "SFORGE_AGENT_RUNTIME_DIR" }), ", and ", h("a", { class: "link", href: "docs.html#history", text: "candidate-history store" }), " in ", h("code", { text: `launch/${entry}/run.env` }), ". Use KEY=VALUE entries with absolute paths. Export asset and Hugging Face cache paths in your shell."),
-        Docs.code(`launch/${entry}/run.sh --config launch/${entry}/run.env --dry-run\nlaunch/${entry}/run.sh --config launch/${entry}/run.env --foreground`));
+      setup.append(h("p", {}, "Create the run configuration:") , Docs.code(guide.config_setup),
+        h("p", {}, "Set the model, credentials, GPU indices, Judge port, ", h("code", { text: "SFORGE_AGENT_RUNTIME_DIR" }), ", and ", h("a", { class: "link", href: "docs.html#history", text: "candidate-history store" }), " in ", h("code", { text: `launch/${entry}/run.env` }), ". Use KEY=VALUE entries with absolute paths. Export asset and Hugging Face cache paths in your shell."));
     } else if (t.key === "serving") {
       setup.replaceChildren(Docs.code(`TASK=${directoryName}\nTASK_DIR="${guide.directory}"\n"$TASK_DIR/assets/fetch.sh"\n.venv/bin/python scripts/infrathon/assets.py check "$TASK"\nINFRATHON_PULL=1 DOCKER_BUILD_NETWORK=host bash "$TASK_DIR/scripts/build_images.sh"`));
       setup.append(
@@ -66,23 +71,19 @@
         h("h3", { text: "Configure and run" }),
         h("p", {}, "Save these settings in ", h("code", { text: "launch/concurrent-serving/run.env" }), ", using the backend URL and absolute paths from the preparation steps:"),
         Docs.code('KVBENCH_VLLM_BASE_URL=http://BACKEND_HOST:18000\nKVBENCH_HIDDEN_BASELINE_PATH=/absolute/path/hidden-direct.json\nKVBENCH_PUBLIC_BASELINE_PATH=/absolute/path/public-direct.json\nSFORGE_KVBENCH_NONCE_SOURCE=/absolute/path/v24.nonces\nSFORGE_VERSION_STORE_ROOT=/absolute/path/infrathon-version-store'),
-        h("p", {}, "With the backend, baselines, proxy, and store ready, start the agent:"),
-        Docs.code(`${guide.launcher} \\\n  --config launch/concurrent-serving/run.env \\\n  --model MODEL_ID --effort max --hours ${t.budget_h} \\\n  --auth /path/to/auth.json`));
-    } else if (guide.launcher) {
-      if (t.key === "llada") setup.append(
-        h("p", { text: "Set the model cache path and generate the quality-control archives on the host:" }),
-        Docs.code('export LLADA_MODEL_REPO="$(.venv/bin/python scripts/infrathon/assets.py hub-cache)/models--GSAI-ML--LLaDA-8B-Instruct"\npython3 "$TASK_DIR/scripts/make_reference_archives.py" \\\n  --task-root "$TASK_DIR" --stress-extra-mib 61440'));
-      setup.append(h("p", {}, "Start the run with your model and credentials. Use ", h("code", { text: `${guide.launcher} --help` }), " to set GPU allocation and other options."),
-        Docs.code(`${guide.launcher} \\\n  --model MODEL_ID --effort max --hours ${t.budget_h} \\\n  --auth /path/to/auth.json`));
+        h("p", {}, "Use the backend and baseline settings above in the run configuration."));
     }
+    setup.append(h("h3", { text: "Launch" }), h("p", { text: "Set the GPU and provider values for your host. These commands use the experiment budget shown above." }));
+    if (guide.launch_setup) setup.append(Docs.code(guide.launch_setup));
+    setup.append(Docs.code(guide.launch_command));
 
     const info = t.metric_info, metricDetails = $("#t-metric-details");
     metricDetails.replaceChildren();
     $("#metric-calculation").open = false;
     if (info) {
       metricDetails.append(h("div", { class: "metric-formula", text: info.formula }), ...info.details.map(text => h("p", { text })));
-      if (info.example) metricDetails.append(h("p", { class: "metric-example", text: info.example }));
-      if (info.conditions.length) metricDetails.append(h("h4", { text: "Validation" }), h("ul", {}, info.conditions.map(text => h("li", { text }))));
+
+      if (info.conditions.length) metricDetails.append(h("h4", { text: "When a score is valid" }), h("ul", {}, info.conditions.map(text => h("li", { text }))));
     }
     const i = D.tasks.indexOf(t), prev = D.tasks[(i + D.tasks.length - 1) % D.tasks.length], next = D.tasks[(i + 1) % D.tasks.length];
     $("#t-pager").replaceChildren(
@@ -102,10 +103,14 @@
       return;
     }
     const showCommands = section === "run";
-    section = { workspace: "implementation", instructions: "implementation", resources: "running", setup: "running", run: "running", metric: "evaluation" }[section] || section;
+    const showTechnical = ["workspace", "instructions", "implementation"].includes(section);
+    const showMetric = section === "evaluation";
+    section = { workspace: "running", instructions: "running", implementation: "running", resources: "running", setup: "running", run: "running", evaluation: "metric" }[section] || section;
     const changed = currentKey !== t.key;
     if (changed) { currentKey = t.key; render(t); }
     if (showCommands) $("#task-run-commands").open = true;
+    if (showTechnical) $("#task-technical").open = true;
+    if (showMetric) $("#metric-calculation").open = true;
     if (section) requestAnimationFrame(() => document.getElementById(`task-${section}`)?.scrollIntoView());
     else window.scrollTo(0, 0);
   }

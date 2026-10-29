@@ -53,7 +53,7 @@ window.InfrathonDocs = (() => {
       else link.removeAttribute("aria-current");
     });
     if (isCatalog) $("[data-task-index]").setAttribute("aria-current", "page");
-    const entries = isTask ? [["overview", "Overview"], ["setting", "Task setting"], ["implementation", "Implementation"], ["running", "Running"], ["evaluation", "Evaluation"]]
+    const entries = isTask ? [["overview", "The task"], ["setting", "Task setup"], ["metric", "Metric"], ["running", "Run the task"]]
       : isCatalog ? [["training", "Training"], ["inference", "Inference"]] : getStarted;
     const toc = $("#docs-toc-links");
     toc?.replaceChildren(...entries.map(([id, title]) => h("a", { href: isTask ? `#${key}/${id}` : `#${id}`, "data-section": isTask ? `task-${id}` : id, text: title })));

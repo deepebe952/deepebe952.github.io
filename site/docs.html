@@ -25,7 +25,7 @@
       <div class="doc-resource-links"><a href="https://example.com/infrathon/code" data-mock-resource>Code ↗</a><a href="https://example.com/infrathon/containers" data-mock-resource>Docker Hub ↗</a><a href="https://example.com/infrathon/data" data-mock-resource>Hugging Face ↗</a></div><p class="doc-resource-status">Release links coming soon.</p>
     </header>
     <section class="doc-section" id="requirements"><h2>Requirements</h2>
-      <ul><li>Linux x86-64, Docker 24+, and the NVIDIA Container Toolkit.</li><li>An H100 NVL or H100 SXM host. The example below uses one GPU for Work and one for Judge.</li><li><code>uv</code>, <code>git</code>, <code>jq</code>, <code>flock</code>, <code>rsync</code>, <code>patch</code>, <code>curl</code>, and <code>sha256sum</code>.</li><li>Credentials for your agent’s model provider.</li></ul>
+      <ul><li>Linux x86-64, Docker 24+, and the NVIDIA Container Toolkit.</li><li>An H100 NVL or H100 SXM host. The example below uses one GPU shared by Work and Judge.</li><li><code>uv</code>, <code>git</code>, <code>jq</code>, <code>flock</code>, <code>rsync</code>, <code>patch</code>, <code>curl</code>, and <code>sha256sum</code>.</li><li>Credentials for your agent’s model provider.</li></ul>
       <p>GPU allocation and model downloads are listed on each task page.</p>
       <p>Set Docker’s default runtime to <code>nvidia</code> and check GPU access:</p>
       <div class="doc-code"><pre><code>sudo nvidia-ctk runtime configure --runtime=docker --set-as-default
@@ -35,7 +35,7 @@ docker run --rm -e NVIDIA_VISIBLE_DEVICES=all \
   nvidia/cuda:12.8.1-base-ubuntu24.04 nvidia-smi -L</code></pre></div>
     </section>
     <section class="doc-section" id="installation"><h2>Installation</h2>
-      <p>From the release checkout, install the Python environment and the agent runtime:</p>
+      <p>From the root of the <code>infrathon</code> checkout, install the Python environment and the agent runtime:</p>
       <div class="doc-code"><pre><code>uv sync --frozen --dev --python 3.12
 uv pip install --python .venv/bin/python numpy==2.5.2
 uv pip install --python .venv/bin/python \
@@ -107,12 +107,14 @@ print(&quot;Registered&quot;, task_id, &quot;in&quot;, root)
 PY
 .venv/bin/sforge versions --version-store-root &quot;$SFORGE_VERSION_STORE_ROOT&quot; --verify</code></pre></div></details><p>For Miles, copy the printed absolute path into <code>SFORGE_VERSION_STORE_ROOT</code> in the task’s <code>run.env</code>. For Concurrent serving, keep this variable exported in the launch shell. Register each task once in the same store.</p></section>
     <section class="doc-section" id="run"><h2>Run a task</h2>
-      <p>Start a 12-hour run. Replace <code>MODEL_ID</code> and the authentication path with your provider settings.</p>
-      <div class="doc-code"><pre><code>launch/standalone-fp8/run.sh \
+      <p>Select your allocated GPU by UUID. This example uses the paper’s 12-hour budget; replace the UUID, model ID, and authentication path:</p>
+      <div class="doc-code"><pre><code>nvidia-smi -L
+DEVICE_UUID=GPU-REPLACE-WITH-YOUR-UUID
+launch/standalone-fp8/run.sh \
   --model MODEL_ID --effort max --hours 12 \
-  --work-gpu 0 --judge-gpu 1 \
+  --device-uuid "$DEVICE_UUID" \
   --auth /path/to/auth.json</code></pre></div>
-      <p>For a one-GPU run, replace the two GPU options with <code>--shared-gpu --gpu 0</code>. Work pauses while Judge evaluates a submission.</p>
+      <p>Work pauses while Judge evaluates a submission on the same GPU.</p>
       <h3>Submit a candidate</h3>
       <p>Inside the running Work environment, run the task’s public tests, then submit the current implementation:</p>
       <div class="doc-code"><pre><code>sforge-submit --details

@@ -11,7 +11,7 @@ site/
   tasks.html                 task documentation directory, grouped by stage and level
   trajectories.html#<task>/<model>  run log reached from task details
   docs.html                  installation, assets, Docker, launchers, outputs
-  task.html#<key>/<section>   task overview, instructions, setup, evaluation
+  task.html#<key>/<section>   task goal, settings, metric, optional running details
   task-results.html#<key>     best scores, trajectories, submissions, model run logs
   architecture.html         compatibility redirect → framework.html#overview
   method.html                compatibility redirect → framework.html#overview
@@ -61,6 +61,7 @@ scripts/
   extract_experimental_figures.py  Overleaf figure PDFs → SVG assets and manifest
   extract_paper_distributions.py  archived 41-page manuscript Figure 5 extraction
   check_site.py              local links, anchors, bundle structure, leaked local paths
+  check_documentation_sources.py  task and setup sources against the public repository and paper
 ```
 
 ## Updating results
@@ -120,11 +121,13 @@ The default theme is white, with Inter body text, a saved dark-theme preference,
 
 ## Documentation
 
-The setup guide follows the release scripts and `scripts/infrathon/release/public/` overlay. It covers host requirements, the Python environment, agent runtime, asset fetching, image pulls, candidate history, launching a kernel task, and submission outputs. Public Code, Docker, and Dataset URLs currently use author-approved `example.com` placeholders, with one release-status line. Replace these URLs in `site/docs.html` and `data/setup_sources.json` when published.
+The setup guide follows the `infrathon` repository at `https://github.com/deepebe952/infrathon`, revision `eb72a9ce8a4067766b0ffaf99ea23659102b617a`. The local source checkout is `../infrathon`. Its task READMEs, Work contracts, public tests, Judge code, task configurations, and launchers are the current code references; the former `ultrainfrabench-release/docs/tasks` directory is not the release documentation source. The guide covers host requirements, the Python environment, agent runtime, asset fetching, image pulls, candidate history, launching a kernel task, and submission outputs. Public Code, Docker, and Dataset buttons currently use author-approved `example.com` placeholders, with one release-status line. Replace these URLs in `site/docs.html` and `data/setup_sources.json` when published.
 
-Docs contains the general setup guide and section navigation. Tasks has its own searchable directory and 25 documents with Overview, Task setting, Implementation, Running, and Evaluation. Each document describes the workload, input/output interface, workspace components, implementation steps, task requirements, public tests, and scoring. Setup/launch commands and the detailed score calculation are expandable. Each document links to its independent result page, which adds a brief task introduction and metric explanation above best scores, optimization trajectories, submission history, and the per-model results table. Document sidebars and contents collapse on mobile.
+Docs contains the general setup guide and section navigation. Tasks has its own searchable directory and 25 documents ordered for a first-time reader: The task, Task setup, Metric, and Run the task. Each introduces the goal, model and data or synthetic workload, workload settings, starting point, editable scope, and hardware. The metric explains what a score measures, gives a word-based calculation and an example where applicable, then offers the full formula and validity checks in a disclosure. Environment commands, code interfaces, and public tests follow in separate disclosures. Each document links to its independent result page, which adds a brief task introduction and metric explanation above best scores, optimization trajectories, submission history, and the per-model results table. Document sidebars and contents collapse on mobile.
 
-`data/task_guides.json` records each task's release documents, launcher, source hashes, and the result-page summaries. The task specifications and public release overlay supply task interfaces and commands; metric explanations follow the paper and `data/task_metrics.json`. `data/setup_sources.json` records the setup sources and release revision. Current launcher defaults determine the documented GPU allocation. Miles uses its task-specific `run.env` template; Concurrent serving includes its backend and baseline prerequisites. `scripts/build_docs.py` checks registry coverage and required content fields and emits only display fields into `site/data/docs.js`.
+`data/task_guides.json` records each task's source files, launcher, source hashes, reader-oriented descriptions, and result-page summaries. Metric explanations follow the paper and `data/task_metrics.json`. `data/setup_sources.json` records the setup sources and code revision. The audit found unchanged task interfaces and scoring code across the former and current repositories, but changed launcher defaults and flags. Current launchers determine the documented GPU allocation; examples explicitly use the paper's 12- or 24-hour experiment budgets. Miles sets its timeout in the task-specific `run.env`; Concurrent serving includes its backend and baseline prerequisites. `scripts/build_docs.py` checks registry coverage and required content fields and emits only display fields into `site/data/docs.js`.
+
+Run `python3 scripts/check_documentation_sources.py` with the sibling source checkout and paper archive present to verify source paths, hashes, task IDs, launchers, and example budgets. Use `--repo` and `--paper` for other locations. This check also parses the documented shell commands without executing them. A source revision update requires reviewing changed files and refreshing their recorded hashes.
 
 Setup commands were checked against the release code and launcher help. The candidate-history example was exercised in temporary stores. Docker pulls, image builds, and GPU runs have not been executed as part of the website update.
 
