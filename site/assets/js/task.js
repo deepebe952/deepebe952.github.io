@@ -24,6 +24,7 @@
     $("#t-summary").textContent = guide.reader_overview;
     $("#t-results-link").href = X.taskResultsHref(t.key);
     $("#task-run-commands").open = false;
+    $("#task-run-label").textContent = guide.launch_command ? "Environment setup and launch commands" : "Environment setup";
     $("#t-meta").replaceChildren(h("span", { text: `Experiment budget: ${t.budget_h} hours` }));
     const readerFacts = [...guide.reader_setup, { name: "Hardware", description: guide.reader_compute }];
     $("#t-reader-setup").replaceChildren(...readerFacts.map(row => h("div", {}, h("dt", { text: row.name }), h("dd", { text: row.description }))));
@@ -42,7 +43,7 @@
     if (miles[t.key]) {
       const entry = miles[t.key];
       setup.append(h("p", { text: "Choose a scratch directory on your data disk:" }), Docs.code(guide.scratch_setup));
-      setup.append(h("p", {}, "Create the run configuration:") , Docs.code(guide.config_setup),
+      if (guide.config_setup) setup.append(h("p", {}, "Create the run configuration:") , Docs.code(guide.config_setup),
         h("p", {}, "Set the model, credentials, GPU indices, Judge port, ", h("code", { text: "SFORGE_AGENT_RUNTIME_DIR" }), ", and ", h("a", { class: "link", href: "docs.html#history", text: "candidate-history store" }), " in ", h("code", { text: `launch/${entry}/run.env` }), ". Use KEY=VALUE entries with absolute paths. Export asset and Hugging Face cache paths in your shell."));
     } else if (t.key === "serving") {
       setup.replaceChildren(Docs.code(`TASK=${directoryName}\nTASK_DIR="${guide.directory}"\n"$TASK_DIR/assets/fetch.sh"\n.venv/bin/python scripts/infrathon/assets.py check "$TASK"\nINFRATHON_PULL=1 DOCKER_BUILD_NETWORK=host bash "$TASK_DIR/scripts/build_images.sh"`));
@@ -60,9 +61,11 @@
         h("p", {}, "Save these settings in ", h("code", { text: "launch/concurrent-serving/run.env" }), ", using the backend URL and absolute paths from the preparation steps:"),
         Docs.code('KVBENCH_VLLM_BASE_URL=http://BACKEND_HOST:18000\nKVBENCH_HIDDEN_BASELINE_PATH=/absolute/path/hidden-direct.json\nKVBENCH_PUBLIC_BASELINE_PATH=/absolute/path/public-direct.json\nSFORGE_KVBENCH_NONCE_SOURCE=/absolute/path/v24.nonces\nSFORGE_VERSION_STORE_ROOT=/absolute/path/infrathon-version-store'));
     }
-    setup.append(h("h3", { text: "Launch" }));
-    if (guide.launch_setup) setup.append(Docs.code(guide.launch_setup));
-    setup.append(Docs.code(guide.launch_command));
+    if (guide.launch_command) {
+      setup.append(h("h3", { text: "Launch" }));
+      if (guide.launch_setup) setup.append(Docs.code(guide.launch_setup));
+      setup.append(Docs.code(guide.launch_command));
+    }
 
     const info = t.metric_info, metricDetails = $("#t-metric-details");
     metricDetails.replaceChildren();

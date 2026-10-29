@@ -15,7 +15,7 @@
         "Edit candidates/kernel_vNNN/submission.py, keeping the forward and backward interfaces."
       ],
       "requirements": [
-        "Default allocation: one whole GPU shared serially by Work and Judge; Work pauses during evaluation.",
+        "Worker: 1 GPU; Judge: 1 separate GPU.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "PyTorch 2.8 / CUDA 12.9 / Triton task environment.",
         "BF16 attention tensors with Wan2.1-T2V-1.3B, LTX-2, and Kandinsky5 geometries."
@@ -106,8 +106,8 @@
         "Formal scoring uses one warm-up and seven trials; the public full run uses three measured trials, so its timing is a development estimate."
       ],
       "test_commands": "# Replace 1 with your candidate version.\ncd /app/workdir/attn_qat_lab\n./tools/run_public_tests.sh --candidate-version 1",
-      "launch_setup": "# Select the whole GPU allocated to this run.\nnvidia-smi --query-gpu=index,uuid --format=csv,noheader\nGPU_UUID=GPU-...",
-      "launch_command": "launch/attn-qat-train/run.sh \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --device-uuid \"$GPU_UUID\" --auth /path/to/auth.json",
+      "launch_setup": "nvidia-smi --query-gpu=index,uuid --format=csv,noheader",
+      "launch_command": "WORK_GPU=0 JUDGE_GPU=1 launch/attn-qat-train/run.sh \\\n  --legacy-dual-gpu \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --auth /path/to/auth.json",
       "reader_overview": "Video models need attention calculations in both the forward pass and the gradient calculation during training. The agent speeds up this attention routine.",
       "reader_setup": [
         {
@@ -131,7 +131,7 @@
         "meaning": "Measures attention training speed, including the required quantization and gradient computation.",
         "rule": "Score = attention training work ÷ (2 × forward time + backward time), expressed in TFLOPS and combined across cases."
       },
-      "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
+      "reader_compute": "Worker: 1 GPU; Judge: 1 separate GPU. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "wgrad": {
       "task_id": "standalone_k_grouped_fp8_wgrad_h100_scratch_v2",
@@ -143,7 +143,7 @@
         "Implement the grouped weight-gradient entry point in versioned Triton candidates; use FINAL_VERSION to select the submission."
       ],
       "requirements": [
-        "Default allocation: one whole GPU shared serially by Work and Judge; Work pauses during evaluation.",
+        "Worker: 1 GPU; Judge: 1 separate GPU.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "PyTorch 2.8 / CUDA 12.9 / Triton task environment.",
         "FP8 matrices, block scales, group lengths, and FP32 gradient buffers."
@@ -230,8 +230,8 @@
         "Each scored case uses five fresh-input trials; the larger of synchronized host-wall and CUDA-event time is charged."
       ],
       "test_commands": "cd /app/workdir/k_grouped_wgrad_lab\n./tools/run_public_tests.sh --sanitize --candidate-version 1\n./tools/run_public_tests.sh --edge --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1",
-      "launch_setup": "# Select the whole GPU allocated to this run.\nnvidia-smi --query-gpu=index,uuid --format=csv,noheader\nGPU_UUID=GPU-...",
-      "launch_command": "launch/standalone-kgrouped-wgrad/run.sh \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --device-uuid \"$GPU_UUID\" --auth /path/to/auth.json",
+      "launch_setup": "nvidia-smi --query-gpu=index,uuid --format=csv,noheader",
+      "launch_command": "WORK_GPU=0 JUDGE_GPU=1 launch/standalone-kgrouped-wgrad/run.sh \\\n  --legacy-dual-gpu \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --auth /path/to/auth.json",
       "reader_overview": "Training a model with multiple experts requires calculating gradients that tell each expert how to adjust its weights. The agent builds a fast GPU routine for these grouped calculations, using eight-bit inputs.",
       "reader_setup": [
         {
@@ -255,7 +255,7 @@
         "meaning": "Measures how quickly the kernel computes the required expert weight gradients. Throughput uses the actual group sizes; the coarse- and fine-group workloads have equal weight.",
         "rule": "Score = useful matrix operations ÷ execution time, expressed in TFLOPS and combined across cases."
       },
-      "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
+      "reader_compute": "Worker: 1 GPU; Judge: 1 separate GPU. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "flux-moe": {
       "task_id": "flux_moe_ag_scatter_grouped_gemm_dual_h100_seed_v1",
@@ -267,7 +267,7 @@
         "Edit the candidate submission.py to change communication/computation scheduling, tiling, staging, and synchronization."
       ],
       "requirements": [
-        "Default allocation: one 2-GPU NVLink pair shared by Work and Judge.",
+        "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "PyTorch 2.8 / CUDA 12.9 runtime with bidirectional GPU peer access.",
         "Host CUDA PyTorch with NCCL and symmetric-memory support for the GPU-pair preflight."
@@ -382,7 +382,8 @@
         "meaning": "Measures how quickly the two GPUs complete token collection, expert routing, and matrix multiplication together. Each measurement uses the slower GPU’s time, and the two communication-load families have equal weight.",
         "rule": "Score = useful matrix operations per GPU ÷ complete execution time, expressed in TFLOPS and combined across cases."
       },
-      "reader_compute": "Two GPUs connected by NVLink, shared by development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
+      "reader_compute": "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair. H100 NVL (94 GB) or H100 SXM (80 GB).",
+      "publish_launch_example": false
     },
     "orpo": {
       "task_id": "qwen3_1p7b_orpo_training_optimizer_dual_h100_v4",
@@ -395,7 +396,7 @@
         "Select the submitted version through FINAL_VERSION."
       ],
       "requirements": [
-        "Default allocation: one 2-GPU NVLink pair shared by Work and Judge.",
+        "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "Qwen3-1.7B, TL;DR preference data, and the provided TRL 0.12.1 / FSDP runtime."
       ],
@@ -506,7 +507,8 @@
         "meaning": "Compares complete ORPO training-step throughput with the reference implementation in the TRL training library on the same hardware. A score of 100 matches the reference.",
         "rule": "Score = 100 × geometric mean of training speedup across five workloads."
       },
-      "reader_compute": "Two GPUs connected by NVLink, shared by development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
+      "reader_compute": "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair. H100 NVL (94 GB) or H100 SXM (80 GB).",
+      "publish_launch_example": false
     },
     "gkd": {
       "task_id": "qwen3_4b_to_1p7b_gkd_distillation_optimizer_dual_h100_v1",
@@ -519,7 +521,7 @@
         "Submit versioned solutions with FINAL_VERSION and notes.md."
       ],
       "requirements": [
-        "Default allocation: one 2-GPU NVLink pair shared by Work and Judge.",
+        "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair.",
         "Release hardware: H100 NVL 94 GB.",
         "Frozen Qwen3-4B teacher, trainable Qwen3-1.7B student, and TL;DR prompt/completion data.",
         "Provided PyTorch 2.8 / CUDA 12.9 / FSDP runtime with the official TRL objective."
@@ -623,7 +625,8 @@
         "meaning": "Compares complete teacher–student training-step throughput with the reference implementation in the TRL training library. A score of 100 matches the reference.",
         "rule": "Score = 100 × geometric mean of training speedup across five workloads."
       },
-      "reader_compute": "Two GPUs connected by NVLink, shared by development and evaluation. H100 NVL (94 GB)."
+      "reader_compute": "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair. H100 NVL (94 GB).",
+      "publish_launch_example": false
     },
     "opcd": {
       "task_id": "miles_qwen3_opcd_2xh100_v3",
@@ -636,7 +639,7 @@
         "task_entry.py exposes run for real training and probe for updates on supplied trajectories."
       ],
       "requirements": [
-        "Default allocation: one 2-GPU NVLink pair shared by Work and Judge.",
+        "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "Qwen3-1.7B student and frozen teacher, MedMCQA data, and the teacher’s medical system prompt.",
         "Provided Miles runtime; 24-CPU quota and 256 GiB host RAM per container.",
@@ -772,7 +775,8 @@
         "meaning": "Rewards medical-answer accuracy gained per hour of training, measured on 2,436 held-out MedMCQA questions. The trained student must improve by at least 6.5 percentage points to receive a positive score.",
         "rule": "Score = accuracy gain in percentage points ÷ training hours."
       },
-      "reader_compute": "Two GPUs connected by NVLink, shared by development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
+      "reader_compute": "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair. H100 NVL (94 GB) or H100 SXM (80 GB).",
+      "publish_launch_example": false
     },
     "opd": {
       "task_id": "miles_qwen3_opd_scratch_2xh100_v2",
@@ -785,7 +789,7 @@
         "Implement the run and probe entry points in task_entry.py."
       ],
       "requirements": [
-        "Default allocation: one 2-GPU NVLink pair shared by Work and Judge.",
+        "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "Qwen3-1.7B student, frozen Qwen3-4B teacher, and DAPO-Math data.",
         "Provided Miles runtime; 24 CPUs and 256 GiB host RAM per container.",
@@ -933,7 +937,8 @@
         "meaning": "Rewards math-answer accuracy gained per hour of training, measured on 2,000 held-out DAPO-Math problems. The trained student must improve by at least 1.6 percentage points to receive a positive score.",
         "rule": "Score = accuracy gain in percentage points ÷ training hours."
       },
-      "reader_compute": "Two GPUs connected by NVLink, shared by development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
+      "reader_compute": "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair. H100 NVL (94 GB) or H100 SXM (80 GB).",
+      "publish_launch_example": false
     },
     "alfworld": {
       "task_id": "miles_qwen3_alfworld_agentic_rl_2xh100_v1",
@@ -946,7 +951,7 @@
         "Use the same model and learning implementation for real environment runs and recorded-trajectory probes."
       ],
       "requirements": [
-        "Default allocation: one 2-GPU NVLink pair shared by Work and Judge.",
+        "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "Qwen3-4B, ALFWorld 0.4.2, TextWorld 1.7.0, and json_2.1.1 game data.",
         "Provided Miles runtime; 24-CPU quota and 256 GiB host RAM per container.",
@@ -1082,7 +1087,8 @@
         "meaning": "Rewards improvement in the fraction of household games completed successfully per hour of training. Evaluation uses 1,134 held-out games, and success must improve by at least 15 percentage points.",
         "rule": "Score = game-success gain in percentage points ÷ training hours."
       },
-      "reader_compute": "Two GPUs connected by NVLink, shared by development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
+      "reader_compute": "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair. H100 NVL (94 GB) or H100 SXM (80 GB).",
+      "publish_launch_example": false
     },
     "sd35": {
       "task_id": "miles_diffusion_sd35m_mopd_2xh100_v2",
@@ -1095,7 +1101,7 @@
         "task_entry.py run executes the specified routed training workload and publishes the student LoRA."
       ],
       "requirements": [
-        "Default allocation: one 2-GPU NVLink pair shared by Work and Judge.",
+        "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "Stable Diffusion 3.5 Medium, OCR and aesthetics teachers, and routed prompt data.",
         "Provided Miles Diffusion runtime with PaddleOCR; 256 GiB host RAM per container.",
@@ -1244,7 +1250,8 @@
         "meaning": "Measures how much of the gap to the two teachers the student closes per hour of replayed training. Text-reading accuracy and aesthetics contribute equally. Both must close at least 25% of their teacher gap and pass the loss checks.",
         "rule": "Score = average fraction of the teacher quality gap closed ÷ replay hours."
       },
-      "reader_compute": "Two GPUs connected by NVLink, shared by development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
+      "reader_compute": "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair. H100 NVL (94 GB) or H100 SXM (80 GB).",
+      "publish_launch_example": false
     },
     "wan22": {
       "task_id": "miles_diffusion_wan22_dancegrpo_2xh100_v2",
@@ -1257,7 +1264,7 @@
         "Permitted engine changes use the documented overlay files."
       ],
       "requirements": [
-        "Default allocation: one 2-GPU NVLink pair shared by Work and Judge.",
+        "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "Wan2.2-TI2V-5B, HPSv3, and task-provided prompts, videos, and diffusion trajectories.",
         "Provided Miles Diffusion runtime; 256 GiB host RAM and 128 GiB shared memory per container.",
@@ -1402,7 +1409,8 @@
         "meaning": "Measures how many fixed training replays can be completed per hour. The real trained model must retain a mean HPSv3 reward of at least the baseline minus 0.28; the replay duration determines the score.",
         "rule": "Score = 1 ÷ median replay duration in hours."
       },
-      "reader_compute": "Two GPUs connected by NVLink, shared by development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
+      "reader_compute": "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair. H100 NVL (94 GB) or H100 SXM (80 GB).",
+      "publish_launch_example": false
     },
     "grouped-fp8": {
       "task_id": "standalone_dynamic_grouped_fp8_h100_scratch_v3",
@@ -1414,7 +1422,7 @@
         "Implement both matrix-multiplication entry points in versioned Triton candidates and select the submission through FINAL_VERSION."
       ],
       "requirements": [
-        "Default allocation: one GPU shared by Work and Judge; Work pauses during evaluation.",
+        "Worker: 1 GPU; Judge: 1 separate GPU.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "PyTorch 2.8 / CUDA 12.9 / Triton task environment.",
         "FP8 inputs, block scales, group boundaries, and BF16 output buffers."
@@ -1513,8 +1521,8 @@
         "Formal submissions return the aggregate and both layout scores after the required checks pass."
       ],
       "test_commands": "./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --edge --candidate-version 1\n./tools/run_public_tests.sh --sanitize --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1",
-      "launch_setup": "nvidia-smi -L\nDEVICE_UUID=GPU-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-      "launch_command": "launch/standalone-fp8/run.sh \\\n  --device-uuid \"$DEVICE_UUID\" \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --auth /path/to/auth.json",
+      "launch_setup": "nvidia-smi --query-gpu=index,uuid --format=csv,noheader",
+      "launch_command": "WORK_GPU=0 JUDGE_GPU=1 launch/standalone-fp8/run.sh \\\n  --legacy-dual-gpu \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --auth /path/to/auth.json",
       "reader_overview": "Mixture-of-experts inference sends different numbers of tokens to different expert networks, creating many matrix multiplications of uneven size. The agent builds a GPU implementation that processes these changing groups efficiently.",
       "reader_setup": [
         {
@@ -1538,7 +1546,7 @@
         "meaning": "Measures matrix-multiplication throughput using only actual expert rows. Masked and packed layouts have equal weight in the final score.",
         "rule": "Score = useful matrix operations ÷ execution time, expressed in TFLOPS and combined across cases."
       },
-      "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
+      "reader_compute": "Worker: 1 GPU; Judge: 1 separate GPU. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "sparse-mla": {
       "task_id": "standalone_sparse_mla_prefill_h100_scratch_v2",
@@ -1550,7 +1558,7 @@
         "Implement gather, QK, softmax, and PV in versioned Triton candidates; select the submission through FINAL_VERSION."
       ],
       "requirements": [
-        "Default allocation: one GPU shared by Work and Judge; Work pauses during evaluation.",
+        "Worker: 1 GPU; Judge: 1 separate GPU.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "PyTorch 2.8 / CUDA 12.9 / Triton task environment.",
         "BF16 Q/KV tensors, sparse indices, and sink/length inputs for the three MLA geometries."
@@ -1649,8 +1657,8 @@
         "Guard bands, input comparisons, and the configured memory-safety pass check accesses in addition to numerical agreement."
       ],
       "test_commands": "./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --sanitize --candidate-version 1\n./tools/run_public_tests.sh --edge --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1",
-      "launch_setup": "nvidia-smi -L\nDEVICE_UUID=GPU-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-      "launch_command": "launch/standalone-sparse-mla-v2/run.sh \\\n  --device-uuid \"$DEVICE_UUID\" \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --auth /path/to/auth.json",
+      "launch_setup": "nvidia-smi --query-gpu=index,uuid --format=csv,noheader",
+      "launch_command": "WORK_GPU=0 JUDGE_GPU=1 launch/standalone-sparse-mla-v2/run.sh \\\n  --legacy-dual-gpu \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --auth /path/to/auth.json",
       "reader_overview": "Sparse attention computes each query’s output from a selected list of context positions, reducing the number of attention interactions. The agent builds a GPU implementation that gathers those positions and computes the output faster.",
       "reader_setup": [
         {
@@ -1674,7 +1682,7 @@
         "meaning": "Measures the speed of attention over the selected keys. The three DeepSeek workload families have equal weight.",
         "rule": "Score = operations for selected query–key pairs ÷ execution time, expressed in TFLOPS and combined across cases."
       },
-      "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
+      "reader_compute": "Worker: 1 GPU; Judge: 1 separate GPU. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "paged-gqa": {
       "task_id": "standalone_paged_gqa_decode_bf16_h100_scratch_v2",
@@ -1686,7 +1694,7 @@
         "Implement cache gathering, masks, softmax, and accumulation in a versioned Triton candidate; select it through FINAL_VERSION."
       ],
       "requirements": [
-        "Default allocation: one GPU shared by Work and Judge; Work pauses during evaluation.",
+        "Worker: 1 GPU; Judge: 1 separate GPU.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "PyTorch 2.8 / CUDA 12.9 / Triton task environment.",
         "BF16 queries, physical KV pages, page tables, and per-request lengths."
@@ -1785,8 +1793,8 @@
         "Boundary tests include shared pages, unusual head groups, nonfinite masked values, and large address ranges."
       ],
       "test_commands": "./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --sanitize --candidate-version 1\n./tools/run_public_tests.sh --edge --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1",
-      "launch_setup": "nvidia-smi -L\nDEVICE_UUID=GPU-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-      "launch_command": "launch/standalone-paged-gqa-v2/run.sh \\\n  --device-uuid \"$DEVICE_UUID\" \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --auth /path/to/auth.json",
+      "launch_setup": "nvidia-smi --query-gpu=index,uuid --format=csv,noheader",
+      "launch_command": "WORK_GPU=0 JUDGE_GPU=1 launch/standalone-paged-gqa-v2/run.sh \\\n  --legacy-dual-gpu \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --auth /path/to/auth.json",
       "reader_overview": "Language model serving stores earlier attention keys and values in memory pages that may be scattered across the GPU. The agent builds a faster attention operation that follows those page mappings, shares cached data across query heads, and respects which earlier tokens each query may read.",
       "reader_setup": [
         {
@@ -1810,7 +1818,7 @@
         "meaning": "Measures attention throughput for the query–key pairs allowed by the causal mask. Timing includes page lookup and the full attention call. Single-query and 16-query workloads have equal weight.",
         "rule": "Score = useful attention operations ÷ execution time, expressed in TFLOPS and combined across cases."
       },
-      "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
+      "reader_compute": "Worker: 1 GPU; Judge: 1 separate GPU. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "sageattention": {
       "task_id": "sageattention_quantized_attention_bf16_h100_seed_v2",
@@ -1822,7 +1830,7 @@
         "Edit versioned submission.py files, then select the submitted version with FINAL_VERSION."
       ],
       "requirements": [
-        "Default allocation: one GPU shared by Work and Judge; Work pauses during evaluation.",
+        "Worker: 1 GPU; Judge: 1 separate GPU.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "PyTorch 2.8 / CUDA 12.9 / Triton task environment.",
         "Synthetic workloads and real-layer fixtures from CogVideoX-2B and Llama-3.1-8B."
@@ -1924,8 +1932,8 @@
         "Only candidates passing every required accuracy and integrity check receive the aggregate throughput score."
       ],
       "test_commands": "./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1",
-      "launch_setup": "nvidia-smi -L\nDEVICE_UUID=GPU-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-      "launch_command": "launch/sageattention-qattn/run.sh \\\n  --device-uuid \"$DEVICE_UUID\" \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --auth /path/to/auth.json",
+      "launch_setup": "nvidia-smi --query-gpu=index,uuid --format=csv,noheader",
+      "launch_command": "WORK_GPU=0 JUDGE_GPU=1 launch/sageattention-qattn/run.sh \\\n  --legacy-dual-gpu \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --auth /path/to/auth.json",
       "reader_overview": "Attention can run faster when intermediate values use fewer bits, but this introduces numerical error. The agent improves a working quantized-attention implementation, speeding up the complete operation from input preprocessing through output generation.",
       "reader_setup": [
         {
@@ -1949,7 +1957,7 @@
         "meaning": "Measures the full attention pipeline, including smoothing and quantization, using dense attention work as the common operation count. Video and language-model workloads have equal weight.",
         "rule": "Score = dense-equivalent attention operations ÷ execution time, expressed in TFLOPS and combined across cases."
       },
-      "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
+      "reader_compute": "Worker: 1 GPU; Judge: 1 separate GPU. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "minference": {
       "task_id": "minference_sparse_prefill_h100_seed_v3",
@@ -1961,7 +1969,7 @@
         "Edit the estimator, sparse structure, budgets, indexing, and kernels in versioned candidates; select the version with FINAL_VERSION."
       ],
       "requirements": [
-        "Default allocation: Work 1 GPU + Judge 1 GPU (2 GPUs per run).",
+        "Worker: 1 GPU; Judge: 1 separate GPU.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "PyTorch 2.8 / CUDA 12.9 environment with Triton, Transformers, and FlashAttention.",
         "Llama-3.1-8B and RULER prompts for generating layer Q/K/V at multiple context lengths."
@@ -2121,7 +2129,7 @@
         "meaning": "Measures how much full-attention work the faster implementation replaces per second. Timing includes selecting the sparse pattern and any accuracy-repair computation. Results are combined across 48 task, length, and layer settings.",
         "rule": "Score = dense-equivalent attention operations ÷ full call time, expressed in TFLOPS and combined across cases."
       },
-      "reader_compute": "One GPU for development and a separate GPU for evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
+      "reader_compute": "Worker: 1 GPU; Judge: 1 separate GPU. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "lmcache": {
       "task_id": "lmcache_paged_kv_block_transfer_h100_seed_v1",
@@ -2134,7 +2142,7 @@
         "Select the submission with FINAL_VERSION; record experiments in notes.md."
       ],
       "requirements": [
-        "Default allocation: one GPU shared by Work and Judge; Work pauses during evaluation.",
+        "Worker: 1 GPU; Judge: 1 separate GPU.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "At least 16 GiB of pinnable host memory for mapped-host transfers.",
         "PyTorch 2.8 / CUDA 12.9 build environment and KV-transfer descriptors."
@@ -2240,8 +2248,8 @@
         "A same-run bandwidth-envelope check validates reported performance against measured device and host transfer capacity."
       ],
       "test_commands": "./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1",
-      "launch_setup": "nvidia-smi -L\nDEVICE_UUID=GPU-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-      "launch_command": "launch/lmcache-kv-transfer/run.sh \\\n  --device-uuid \"$DEVICE_UUID\" \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --auth /path/to/auth.json",
+      "launch_setup": "nvidia-smi --query-gpu=index,uuid --format=csv,noheader",
+      "launch_command": "WORK_GPU=0 JUDGE_GPU=1 launch/lmcache-kv-transfer/run.sh \\\n  --legacy-dual-gpu \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --auth /path/to/auth.json",
       "reader_overview": "Language model serving reuses cached attention data, which must move between paged engine buffers and contiguous cache storage. The agent improves a GPU transfer kernel to move this data faster across device and host-memory paths.",
       "reader_setup": [
         {
@@ -2265,7 +2273,7 @@
         "meaning": "Measures logical KV-cache data moved per second. The final score combines device, host, and mixed-transfer workloads with weights of 55%, 15%, and 30%.",
         "rule": "Per-case bandwidth = transferred gigabytes ÷ transfer seconds; score = weighted geometric mean of group bandwidths."
       },
-      "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
+      "reader_compute": "Worker: 1 GPU; Judge: 1 separate GPU. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "flash-kmeans": {
       "task_id": "flash_kmeans_paper_h100_kernel_lab_v7_scratch",
@@ -2278,7 +2286,7 @@
         "Create FINAL_VERSION to choose the submitted implementation; use notes.md for experiments."
       ],
       "requirements": [
-        "Default allocation: one GPU shared by Work and Judge; Work pauses during evaluation.",
+        "Worker: 1 GPU; Judge: 1 separate GPU.",
         "Release hardware: H100 NVL 94 GB.",
         "PyTorch 2.7.1 / CUDA 12.8 task environment.",
         "GPU-resident points, centroids, and precomputed point norms."
@@ -2373,8 +2381,8 @@
         "Fresh-process cases start with an empty compilation cache; first-call cost is diagnostic, while warmed execution contributes to the latency score."
       ],
       "test_commands": "bash /workspace/public_tests/run_public_tests.sh --quick\nbash /workspace/public_tests/run_public_tests.sh",
-      "launch_setup": "nvidia-smi -L\nDEVICE_UUID=GPU-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-      "launch_command": "launch/flash-kmeans/run.sh \\\n  --device-uuid \"$DEVICE_UUID\" \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --auth /path/to/auth.json",
+      "launch_setup": "nvidia-smi --query-gpu=index,uuid --format=csv,noheader",
+      "launch_command": "WORK_GPU=0 JUDGE_GPU=1 launch/flash-kmeans/run.sh \\\n  --legacy-dual-gpu \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --auth /path/to/auth.json",
       "reader_overview": "One K-Means iteration assigns every point to its nearest cluster center and then updates each center from its assigned points. The agent implements these two operations efficiently on the GPU.",
       "reader_setup": [
         {
@@ -2398,7 +2406,7 @@
         "meaning": "The Judge measures execution latency across 14 workloads. The website converts that latency to equivalent TFLOPS using a fixed amount of work.",
         "rule": "Displayed score = fixed workload operation count ÷ weighted geometric-mean latency, expressed in TFLOPS."
       },
-      "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB)."
+      "reader_compute": "Worker: 1 GPU; Judge: 1 separate GPU. H100 NVL (94 GB)."
     },
     "mamba2": {
       "task_id": "tilelang_mamba2_ssd_forward_h100_seed_v2",
@@ -2411,7 +2419,7 @@
         "Tune TileLang computation and buffer layouts; select the submission through FINAL_VERSION."
       ],
       "requirements": [
-        "Default allocation: one GPU shared by Work and Judge; Work pauses during evaluation.",
+        "Worker: 1 GPU; Judge: 1 separate GPU.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "PyTorch 2.8 / CUDA 12.9 with TileLang 0.1.13.",
         "State-space tensors with Mamba-2, Codestral, and Falcon-H1 geometries."
@@ -2518,8 +2526,8 @@
         "Operator records verify the TileLang computation boundary; finite writes, unchanged inputs, warm-up time, and temporary memory are also checked."
       ],
       "test_commands": "./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1",
-      "launch_setup": "nvidia-smi -L\nDEVICE_UUID=GPU-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-      "launch_command": "launch/tilelang-mamba2-ssd-v2/run.sh \\\n  --device-uuid \"$DEVICE_UUID\" \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --auth /path/to/auth.json",
+      "launch_setup": "nvidia-smi --query-gpu=index,uuid --format=csv,noheader",
+      "launch_command": "WORK_GPU=0 JUDGE_GPU=1 launch/tilelang-mamba2-ssd-v2/run.sh \\\n  --legacy-dual-gpu \\\n  --model MODEL_ID --effort max --hours 12 \\\n  --auth /path/to/auth.json",
       "reader_overview": "State-space models carry a compact state through a sequence to compute each token’s output. The agent speeds up this forward operation by improving how work is divided and intermediate states are stored.",
       "reader_setup": [
         {
@@ -2543,7 +2551,7 @@
         "meaning": "Measures sequence-processing speed using the prescribed state-update and output-projection work. All work in the forward call is timed, and the three model families have equal weight.",
         "rule": "Score = recurrence-equivalent operations ÷ execution time, expressed in TFLOPS and combined across cases."
       },
-      "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
+      "reader_compute": "Worker: 1 GPU; Judge: 1 separate GPU. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "kvpress": {
       "task_id": "kvpress_kv_eviction_policy_qwen3_8b_h100_scratch_v2",
@@ -2556,7 +2564,7 @@
         "Optional policy assets are supported within the documented size limit."
       ],
       "requirements": [
-        "Select 1 Work GPU and 1–8 separate Judge GPUs of the same model.",
+        "Worker: 1 GPU; Judge: 7 separate GPUs.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "Frozen Qwen3-8B and the supplied retrieval, aggregation, QA, and generation inputs."
       ],
@@ -2645,7 +2653,7 @@
         "Index validity, layer budgets, input preservation, deterministic replay, timing, and memory must pass alongside finite fidelity measurements."
       ],
       "test_commands": "cd /app/workdir/kv_eviction_lab\n./tools/run_one.sh --version 1\n./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1",
-      "launch_command": "launch/kvpress-kv-eviction-scratch/run.sh \\\n  --model MODEL_ID \\\n  --effort max \\\n  --hours 24 \\\n  --work-gpu 0 \\\n  --judge-gpus 1 \\\n  --judge-port 18621 \\\n  --auth /path/to/auth.json",
+      "launch_command": "launch/kvpress-kv-eviction-scratch/run.sh \\\n  --model MODEL_ID \\\n  --effort max \\\n  --hours 24 \\\n  --work-gpu 0 \\\n  --judge-gpus 1,2,3,4,5,6,7 \\\n  --judge-port 18621 \\\n  --auth /path/to/auth.json",
       "launch_setup": "",
       "reader_overview": "Language models retain information from the input text in a memory called the KV cache, which can become expensive for long passages. The agent designs a rule for removing cache entries while preserving the model’s predictions about the next token.",
       "reader_setup": [
@@ -2670,7 +2678,7 @@
         "meaning": "Measures how closely the compressed cache preserves the model’s next-token probabilities. A score of 100 means identical distributions. The score combines four task families at three eviction settings.",
         "rule": "Score = 100 × average across three eviction settings of the geometric mean of four family fidelities."
       },
-      "reader_compute": "One GPU for development and 1–8 separate GPUs of the same model for evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
+      "reader_compute": "Worker: 1 GPU; Judge: 7 separate GPUs. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "kvzip": {
       "task_id": "kvzip_query_agnostic_kv_scoring_qwen3_8b_h100_scratch_v2",
@@ -2683,7 +2691,7 @@
         "Optional scorer assets are supported within the documented size limit."
       ],
       "requirements": [
-        "Select 1 Work GPU and 1–8 separate Judge GPUs of the same model.",
+        "Worker: 1 GPU; Judge: 7 separate GPUs.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "Frozen Qwen3-8B and the supplied retrieval, contextual-QA, and redundancy workloads."
       ],
@@ -2772,7 +2780,7 @@
         "Random-shape warm-up, timed scoring, and fresh-copy replay check finite outputs, deterministic behavior, input preservation, and resource limits."
       ],
       "test_commands": "cd /app/workdir/kv_scoring_lab\n./tools/run_one.sh --version 1\n./tools/run_public_tests.sh --quick --candidate-version 1\n./tools/run_public_tests.sh --candidate-version 1\n./tools/check_submission_size.sh",
-      "launch_command": "launch/kvzip-kv-scoring/run.sh \\\n  --model MODEL_ID \\\n  --effort max \\\n  --hours 24 \\\n  --work-gpu 0 \\\n  --judge-gpus 1 \\\n  --judge-port 18622 \\\n  --auth /path/to/auth.json",
+      "launch_command": "launch/kvzip-kv-scoring/run.sh \\\n  --model MODEL_ID \\\n  --effort max \\\n  --hours 24 \\\n  --work-gpu 0 \\\n  --judge-gpus 1,2,3,4,5,6,7 \\\n  --judge-port 18622 \\\n  --auth /path/to/auth.json",
       "launch_setup": "",
       "reader_overview": "A model may need to answer several questions about a document while keeping only a small part of its cached context. The agent assigns importance scores before any question is known, so the retained information supports accurate answers across different questions.",
       "reader_setup": [
@@ -2797,7 +2805,7 @@
         "meaning": "Measures how much answer quality remains after cache compression, relative to the same model with its full cache. A score of 100 matches full-cache answer quality, averaged across dataset groups and the three memory budgets.",
         "rule": "Score = 100 × average ratio of compressed-cache answer quality to full-cache answer quality."
       },
-      "reader_compute": "One GPU for development and 1–8 separate GPUs of the same model for evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
+      "reader_compute": "Worker: 1 GPU; Judge: 7 separate GPUs. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "qvg": {
       "task_id": "quant_videogen_cross_model_kv_codec_h100_scratch_v4",
@@ -2810,7 +2818,7 @@
         "Use notes.md to record compression, reconstruction, and video-quality experiments."
       ],
       "requirements": [
-        "Select 1 Work GPU and 1–8 separate Judge GPUs of the same model.",
+        "Worker: 1 GPU; Judge: 6 separate GPUs (8 for GLM).",
         "Release hardware: H100 NVL 94 GB.",
         "LongCat-Video, HY-WorldPlay-8B, and the supplied video-generation inputs.",
         "PyTorch 2.8 / CUDA 12.8 runtime with video-quality evaluators; Judge supports 1–8 same-model GPUs.",
@@ -2902,7 +2910,7 @@
         "Formal LongCat-Video and HY-WorldPlay cases enforce PSNR, SSIM, LPIPS, and VBench quality gates, plus runtime, compression-call coverage, and device-memory limits."
       ],
       "test_commands": "cd /workspace/submission\npython /workspace/public_tests/codec_source_policy.py --submission /workspace/submission --json\npython /workspace/public_tests/run_public_tests.py\npython /workspace/public_tests/run_self_forcing_paper.py --mode candidate --prefixes 350 --vbench",
-      "launch_command": "launch/quant-videogen/run.sh \\\n  --model MODEL_ID \\\n  --effort max \\\n  --hours 24 \\\n  --work-gpu 0 \\\n  --judge-gpus 1 \\\n  --judge-port 18623 \\\n  --auth /path/to/auth.json",
+      "launch_command": "launch/quant-videogen/run.sh \\\n  --model MODEL_ID \\\n  --effort max \\\n  --hours 24 \\\n  --work-gpu 0 \\\n  --judge-gpus 1,2,3,4,5,6 \\\n  --judge-port 18623 \\\n  --auth /path/to/auth.json",
       "launch_setup": "",
       "reader_overview": "Video generators store attention information between generation steps, consuming substantial memory as videos grow. The agent builds one compression and reconstruction method that reduces this stored information across two video models while maintaining video quality and acceptable generation time.",
       "reader_setup": [
@@ -2927,7 +2935,7 @@
         "meaning": "Measures persistent KV-cache storage reduction across both video models. All reconstruction metadata counts toward stored size. A score of 1 means no compression.",
         "rule": "Per-model compression = original BF16 bytes ÷ stored bytes; score = geometric mean of the two model factors."
       },
-      "reader_compute": "One GPU for development and 1–8 separate GPUs of the same model for evaluation. H100 NVL (94 GB)."
+      "reader_compute": "Worker: 1 GPU; Judge: 6 separate GPUs (8 for GLM). H100 NVL (94 GB)."
     },
     "eagle3": {
       "task_id": "eagle3_spec_decode_engine_qwen3_8b_h100_v1",
@@ -2940,7 +2948,7 @@
         "The engine can change tree strategy, batching, kernels, cache layout, compilation, and buffer reuse."
       ],
       "requirements": [
-        "Default allocation: 1 GPU shared serially by Work and Judge; --legacy-dual-gpu enables separate cards.",
+        "Worker: 1 GPU; Judge: 1 separate GPU.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "Fixed Qwen3-8B target, EAGLE-3 draft head, and the supplied generation prompts.",
         "PyTorch 2.8 / CUDA 12.9, Transformers 4.53.1, Triton, and nvcc."
@@ -3030,8 +3038,8 @@
         "Formal evaluation also checks stopping, determinism, request isolation, source/model integrity, memory, and completed execution."
       ],
       "test_commands": "cd /app/workdir/spec_lab\n/workspace/public_tests/run_public_tests.sh --cpu-only\n/workspace/public_tests/run_public_tests.sh --quick --candidate-version 1\n/workspace/public_tests/run_public_tests.sh --full --candidate-version 1",
-      "launch_command": "launch/eagle3-spec-decode/run.sh \\\n  --model MODEL_ID \\\n  --effort max \\\n  --hours 24 \\\n  --device-uuid \"$DEVICE_UUID\" \\\n  --judge-port 18386 \\\n  --auth /path/to/auth.json",
-      "launch_setup": "nvidia-smi -L\nDEVICE_UUID=GPU-REPLACE-WITH-YOUR-UUID",
+      "launch_command": "WORK_GPU=0 JUDGE_GPU=1 launch/eagle3-spec-decode/run.sh \\\n  --legacy-dual-gpu \\\n  --model MODEL_ID --effort max --hours 24 \\\n  --judge-port 18386 \\\n  --auth /path/to/auth.json",
+      "launch_setup": "nvidia-smi --query-gpu=index,uuid --format=csv,noheader",
       "reader_overview": "Speculative decoding uses a small drafting component to propose several tokens for a larger model to check together. The agent accelerates this complete proposal-and-check process.",
       "reader_setup": [
         {
@@ -3055,7 +3063,7 @@
         "meaning": "Measures generated tokens per second over complete generation calls, including prompt processing. The final score gives equal weight to the six workloads.",
         "rule": "Per-workload throughput = generated tokens ÷ generation seconds; score = geometric mean of six throughputs."
       },
-      "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
+      "reader_compute": "Worker: 1 GPU; Judge: 1 separate GPU. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "llada": {
       "task_id": "llada_h100_decoder_optimization_v2",
@@ -3068,7 +3076,7 @@
         "Choose the submission through FINAL_VERSION and document experiments in notes.md."
       ],
       "requirements": [
-        "Default allocation: 1 GPU shared serially by Work and Judge; --legacy-dual-gpu enables separate cards.",
+        "Worker: 1 GPU; Judge: 1 separate GPU.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "LLaDA-8B-Instruct, its tokenizer, and GSM8K, MATH, HumanEval, and MBPP workloads.",
         "PyTorch 2.7.1 / CUDA 12.8 / Transformers 4.49 task environment."
@@ -3166,8 +3174,8 @@
         "Determinism, cache isolation, model integrity, complete output buffers, timeouts, and memory limits also gate acceptance."
       ],
       "test_commands": "cd /app/workdir/decoder_lab\nbash /workspace/public_tests/run_public_tests.sh --cpu-only\nbash /workspace/public_tests/run_public_tests.sh --quick\nbash /workspace/public_tests/run_public_tests.sh",
-      "launch_command": "launch/llada-h100/run.sh \\\n  --model MODEL_ID \\\n  --effort max \\\n  --hours 24 \\\n  --device-uuid \"$DEVICE_UUID\" \\\n  --judge-port 18384 \\\n  --auth /path/to/auth.json",
-      "launch_setup": "export LLADA_MODEL_REPO=\"$(.venv/bin/python scripts/infrathon/assets.py hub-cache)/models--GSAI-ML--LLaDA-8B-Instruct\"\nnvidia-smi -L\nDEVICE_UUID=GPU-REPLACE-WITH-YOUR-UUID\npython3 tasks/latest/llada-h100-decoder-optimization-v2-vanilla-seed/scripts/make_reference_archives.py --task-root tasks/latest/llada-h100-decoder-optimization-v2-vanilla-seed --stress-extra-mib 61440",
+      "launch_command": "WORK_GPU=0 JUDGE_GPU=1 launch/llada-h100/run.sh \\\n  --legacy-dual-gpu \\\n  --model MODEL_ID --effort max --hours 24 \\\n  --judge-port 18384 \\\n  --auth /path/to/auth.json",
+      "launch_setup": "export LLADA_MODEL_REPO=\"$(.venv/bin/python scripts/infrathon/assets.py hub-cache)/models--GSAI-ML--LLaDA-8B-Instruct\"\nnvidia-smi -L\npython3 tasks/latest/llada-h100-decoder-optimization-v2-vanilla-seed/scripts/make_reference_archives.py --task-root tasks/latest/llada-h100-decoder-optimization-v2-vanilla-seed --stress-extra-mib 61440",
       "reader_overview": "LLaDA generates text by repeatedly filling missing positions in an output sequence using a diffusion language model. The agent speeds up this iterative process through better scheduling and reuse of computation while preserving useful completions and answer quality on math and coding tasks.",
       "reader_setup": [
         {
@@ -3191,7 +3199,7 @@
         "meaning": "Measures useful completion tokens per second, with counting rules for each benchmark’s stopping behavior. Quality and output-length retention are checked against the frozen reference decoder.",
         "rule": "Per-workload throughput = useful completion tokens ÷ decoding seconds; score = geometric mean of twelve throughputs."
       },
-      "reader_compute": "One GPU, used in turn for development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
+      "reader_compute": "Worker: 1 GPU; Judge: 1 separate GPU. H100 NVL (94 GB) or H100 SXM (80 GB)."
     },
     "sdv2": {
       "task_id": "streamdiffusionv2_dual_h100_pipeline_runtime_seed_v2",
@@ -3204,7 +3212,7 @@
         "Optimize placement, communication, complete KV-state migration, buffers, and stream/graph scheduling."
       ],
       "requirements": [
-        "Default allocation: one 2-GPU NVLink pair shared by Work and Judge.",
+        "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "At least 64 GiB usable host RAM per container.",
         "PyTorch 2.6 / CUDA 12.4 runtime, frozen StreamDiffusionV2 computation, video chunks, and prompt embeddings.",
@@ -3328,7 +3336,8 @@
         "meaning": "Balances video frame rate with tail latency. The latency term uses the delay below which 99% of chunks finish.",
         "rule": "Per-stream score = FPS × fourth root of (reference tail latency ÷ candidate tail latency); score = geometric mean across streams."
       },
-      "reader_compute": "Two GPUs connected by NVLink, shared by development and evaluation. H100 NVL (94 GB) or H100 SXM (80 GB)."
+      "reader_compute": "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair. H100 NVL (94 GB) or H100 SXM (80 GB).",
+      "publish_launch_example": false
     },
     "serving": {
       "task_id": "concurrent_agent_serving_optimizer_qwen36_swe192_v24",
@@ -3341,7 +3350,7 @@
         "Read the supplied RUNTIME_CONTRACT.json and submission/ARCHITECTURE.md for the serving contract and starter design."
       ],
       "requirements": [
-        "Default allocation: CPU-only Work/Judge and an external 2-GPU TP=2 backend.",
+        "Worker and Judge run on CPUs; the model backend uses 2 dedicated GPUs.",
         "Release hardware: H100 NVL 94 GB or H100 SXM 80 GB.",
         "Qwen3.6-27B served by vLLM 0.24.0 and 192 SWE-bench Lite tool environments.",
         "Disk: about 230 GB for SWE-bench images, 55.6 GB for model files, and 30 GB for the backend image.",
@@ -3471,7 +3480,15 @@
         "meaning": "Measures completed tool steps per minute across all 192 coding agents.",
         "rule": "Score = total completed tool steps ÷ 30 minutes."
       },
-      "reader_compute": "The scheduling gateway runs on CPUs. A separate model server uses two GPUs. H100 NVL (94 GB) or H100 SXM (80 GB)."
+      "reader_compute": "Worker and Judge run on CPUs; the model backend uses 2 dedicated GPUs. H100 NVL (94 GB) or H100 SXM (80 GB)."
     }
+  },
+  "gpu_allocation_source": {
+    "archive": "_AI_Infra____New_Template_Version___Zhengyu_Hu.zip",
+    "archive_sha256": "33a9afe93c9e8f143f79f0a98a6a7474684ac2233add0731451c133ece939a0c",
+    "member": "main.tex",
+    "member_sha256": "c843af22cd24f66f1d109508e4f19010c39f3c9f3e827930bceb48f54b1f1fa4",
+    "section": "Hardware Configuration / GPU Budget",
+    "table_label": "tab:gpu_budgets"
   }
 }

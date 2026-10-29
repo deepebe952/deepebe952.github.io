@@ -25,7 +25,7 @@
       <div class="doc-resource-links"><a href="https://example.com/infrathon/code" data-mock-resource>Code ↗</a><a href="https://example.com/infrathon/containers" data-mock-resource>Docker Hub ↗</a><a href="https://example.com/infrathon/data" data-mock-resource>Hugging Face ↗</a></div><p class="doc-resource-status">Release links coming soon.</p>
     </header>
     <section class="doc-section" id="requirements"><h2>Requirements</h2>
-      <ul><li>Linux x86-64, Docker 24+, and the NVIDIA Container Toolkit.</li><li>An H100 NVL or H100 SXM host. The example below uses one GPU shared by Work and Judge.</li><li><code>uv</code>, <code>git</code>, <code>jq</code>, <code>flock</code>, <code>rsync</code>, <code>patch</code>, <code>curl</code>, and <code>sha256sum</code>.</li><li>Credentials for your agent’s model provider.</li></ul>
+      <ul><li>Linux x86-64, Docker 24+, and the NVIDIA Container Toolkit.</li><li>An H100 NVL or H100 SXM host. The example below uses one GPU for Worker and a separate GPU for Judge.</li><li><code>uv</code>, <code>git</code>, <code>jq</code>, <code>flock</code>, <code>rsync</code>, <code>patch</code>, <code>curl</code>, and <code>sha256sum</code>.</li><li>Credentials for your agent’s model provider.</li></ul>
       <p>Set Docker’s default runtime to <code>nvidia</code> and check GPU access:</p>
       <div class="doc-code"><pre><code>sudo nvidia-ctk runtime configure --runtime=docker --set-as-default
 sudo systemctl restart docker
@@ -106,12 +106,11 @@ print(&quot;Registered&quot;, task_id, &quot;in&quot;, root)
 PY
 .venv/bin/sforge versions --version-store-root &quot;$SFORGE_VERSION_STORE_ROOT&quot; --verify</code></pre></div></details><p>For Miles, copy the printed absolute path into <code>SFORGE_VERSION_STORE_ROOT</code> in the task’s <code>run.env</code>. For Concurrent serving, keep this variable exported in the launch shell. Register each task once in the same store.</p></section>
     <section class="doc-section" id="run"><h2>Run a task</h2>
-      <p>Select your allocated GPU by UUID. This example uses the paper’s 12-hour budget; replace the UUID, model ID, and authentication path:</p>
+      <p>Select separate GPUs for Worker and Judge. Replace the GPU indices, model ID, and authentication path:</p>
       <div class="doc-code"><pre><code>nvidia-smi -L
-DEVICE_UUID=GPU-REPLACE-WITH-YOUR-UUID
-launch/standalone-fp8/run.sh \
+WORK_GPU=0 JUDGE_GPU=1 launch/standalone-fp8/run.sh \
   --model MODEL_ID --effort max --hours 12 \
-  --device-uuid "$DEVICE_UUID" \
+  --legacy-dual-gpu \
   --auth /path/to/auth.json</code></pre></div>
       <h3>Submit a candidate</h3>
       <p>Inside the running Work environment, run the task’s public tests, then submit the current implementation:</p>
