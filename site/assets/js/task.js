@@ -23,7 +23,6 @@
     $("#t-name").textContent = t.name;
     $("#t-summary").textContent = guide.reader_overview;
     $("#task-run-commands").open = false;
-    $("#task-run-label").textContent = guide.launch_command ? "Environment setup and launch commands" : "Environment setup";
     $("#t-meta").replaceChildren(h("span", { text: `Experiment budget: ${t.budget_h} hours` }));
     const readerFacts = [...guide.reader_setup, { name: "Hardware", description: guide.reader_compute }];
     $("#t-reader-setup").replaceChildren(...readerFacts.map(row => h("div", {}, h("dt", { text: row.name }), h("dd", { text: row.description }))));
@@ -84,7 +83,7 @@
     try { [key, section] = decodeURIComponent(location.hash.slice(1)).split("/"); }
     catch { key = null; }
     const t = TASK[key] || D.tasks[0];
-    const showCommands = section === "run";
+    const showCommands = ["run", "running", "resources", "setup"].includes(section);
     const showMetric = section === "evaluation" || section === "metric-details";
     section = { workspace: "setting", instructions: "setting", implementation: "setting", resources: "running", setup: "running", run: "running", evaluation: "metric-details" }[section] || section;
     const restoringScroll = currentKey === null && performance.getEntriesByType("navigation")[0]?.type === "back_forward";

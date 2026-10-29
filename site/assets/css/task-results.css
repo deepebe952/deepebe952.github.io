@@ -17,7 +17,7 @@
 #task-results #t-flags[hidden] { display: none; }
 #task-results #t-flags summary { cursor: pointer; }
 #task-results #t-flag-text { margin: 10px 0 0; font-size: 13px; line-height: 1.6; }
-@container task-results (min-width: 900px) {
+@container task-results (min-width: 620px) {
   #task-results .task-results-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.55fr); }
 }
 @container task-results (max-width: 560px) {
