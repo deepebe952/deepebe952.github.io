@@ -383,7 +383,7 @@
         "rule": "Score = useful matrix operations per GPU ÷ complete execution time, expressed in TFLOPS and combined across cases."
       },
       "reader_compute": "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair. H100 NVL (94 GB) or H100 SXM (80 GB).",
-      "publish_launch_example": false
+      "launch_note": "This launcher uses the same GPU pair for Worker and Judge."
     },
     "orpo": {
       "task_id": "qwen3_1p7b_orpo_training_optimizer_dual_h100_v4",
@@ -508,7 +508,7 @@
         "rule": "Score = 100 × geometric mean of training speedup across five workloads."
       },
       "reader_compute": "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair. H100 NVL (94 GB) or H100 SXM (80 GB).",
-      "publish_launch_example": false
+      "launch_note": "This launcher uses the same GPU pair for Worker and Judge."
     },
     "gkd": {
       "task_id": "qwen3_4b_to_1p7b_gkd_distillation_optimizer_dual_h100_v1",
@@ -626,7 +626,7 @@
         "rule": "Score = 100 × geometric mean of training speedup across five workloads."
       },
       "reader_compute": "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair. H100 NVL (94 GB).",
-      "publish_launch_example": false
+      "launch_note": "This launcher uses the same GPU pair for Worker and Judge."
     },
     "opcd": {
       "task_id": "miles_qwen3_opcd_2xh100_v3",
@@ -776,7 +776,7 @@
         "rule": "Score = accuracy gain in percentage points ÷ training hours."
       },
       "reader_compute": "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair. H100 NVL (94 GB) or H100 SXM (80 GB).",
-      "publish_launch_example": false
+      "launch_note": "This launcher uses the same GPU pair for Worker and Judge."
     },
     "opd": {
       "task_id": "miles_qwen3_opd_scratch_2xh100_v2",
@@ -938,7 +938,7 @@
         "rule": "Score = accuracy gain in percentage points ÷ training hours."
       },
       "reader_compute": "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair. H100 NVL (94 GB) or H100 SXM (80 GB).",
-      "publish_launch_example": false
+      "launch_note": "This launcher uses the same GPU pair for Worker and Judge."
     },
     "alfworld": {
       "task_id": "miles_qwen3_alfworld_agentic_rl_2xh100_v1",
@@ -1088,7 +1088,7 @@
         "rule": "Score = game-success gain in percentage points ÷ training hours."
       },
       "reader_compute": "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair. H100 NVL (94 GB) or H100 SXM (80 GB).",
-      "publish_launch_example": false
+      "launch_note": "This launcher uses the same GPU pair for Worker and Judge."
     },
     "sd35": {
       "task_id": "miles_diffusion_sd35m_mopd_2xh100_v2",
@@ -1251,7 +1251,7 @@
         "rule": "Score = average fraction of the teacher quality gap closed ÷ replay hours."
       },
       "reader_compute": "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair. H100 NVL (94 GB) or H100 SXM (80 GB).",
-      "publish_launch_example": false
+      "launch_note": "This launcher uses the same GPU pair for Worker and Judge."
     },
     "wan22": {
       "task_id": "miles_diffusion_wan22_dancegrpo_2xh100_v2",
@@ -1410,7 +1410,7 @@
         "rule": "Score = 1 ÷ median replay duration in hours."
       },
       "reader_compute": "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair. H100 NVL (94 GB) or H100 SXM (80 GB).",
-      "publish_launch_example": false
+      "launch_note": "This launcher uses the same GPU pair for Worker and Judge."
     },
     "grouped-fp8": {
       "task_id": "standalone_dynamic_grouped_fp8_h100_scratch_v3",
@@ -3337,7 +3337,7 @@
         "rule": "Per-stream score = FPS × fourth root of (reference tail latency ÷ candidate tail latency); score = geometric mean across streams."
       },
       "reader_compute": "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair. H100 NVL (94 GB) or H100 SXM (80 GB).",
-      "publish_launch_example": false
+      "launch_note": "This launcher uses the same GPU pair for Worker and Judge."
     },
     "serving": {
       "task_id": "concurrent_agent_serving_optimizer_qwen36_swe192_v24",

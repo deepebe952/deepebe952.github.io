@@ -59,6 +59,7 @@
     }
     if (guide.launch_command) {
       setup.append(h("h3", { text: "Launch" }));
+      if (guide.launch_note) setup.append(h("p", { text: guide.launch_note }));
       if (guide.launch_setup) setup.append(Docs.code(guide.launch_setup));
       setup.append(Docs.code(guide.launch_command));
     }
