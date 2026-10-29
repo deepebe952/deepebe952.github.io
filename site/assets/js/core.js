@@ -62,6 +62,7 @@ window.IX = (() => {
   const ordinal = (n) => (n === 1 ? "1st" : n === 2 ? "2nd" : n === 3 ? "3rd" : `${n}th`);
   const pct = (x, dp = 0) => `${(x * 100).toFixed(dp)}%`;
   const taskHref = (key) => `task.html#${key}`;
+  const taskResultsHref = (key) => `task-results.html#${key}`;
   const runHref = (key, m) => `trajectories.html#${key}/${m}`;
   const groupName = (t) => `${cap(t.stage)} · ${cap(t.level)}`;
   const effortNote = () => "effort max";
@@ -331,10 +332,10 @@ window.IX = (() => {
   }
 
   /* ---------- chrome ---------- */
-  const PAGES = [["framework.html", "Framework"], ["experimental-results.html", "Experimental Results"], ["agent-behavior.html", "Agent Behavior"], ["docs.html", "Docs"]];
+  const PAGES = [["framework.html", "Framework"], ["experimental-results.html", "Experimental Results"], ["agent-behavior.html", "Agent Behavior"], ["tasks.html", "Tasks"], ["docs.html", "Docs"]];
   function chrome() {
     const page = document.body.dataset.page;
-    const activePage = page === "task" ? "docs" : page;
+    const activePage = page === "task" ? "tasks" : page;
     const logo = s("svg", { width: 22, height: 22, viewBox: "0 0 32 32", "aria-hidden": "true" });
     s("rect", { x: 1, y: 1, width: 30, height: 30, rx: 8, fill: "none", stroke: C.hair2 }, logo);
     s("path", { d: "M7 22h4v-8h4v5h4V9h4v10h3", fill: "none", stroke: C.ink, "stroke-width": 2.2, "stroke-linejoin": "round" }, logo);
@@ -379,7 +380,7 @@ window.IX = (() => {
   chrome();
   return {
     D, K, MODELS, MODEL, PROVIDER, COLOR, C, TASK, STAGES, LEVELS, reduceMotion, cap,
-    s, st, h, $, fmt, unitOf, withUnit, metricLabel, ordinal, pct, taskHref, runHref, groupName, effortNote,
+    s, st, h, $, fmt, unitOf, withUnit, metricLabel, ordinal, pct, taskHref, taskResultsHref, runHref, groupName, effortNote,
     marker, swatch, who, showTip, hideTip, filterTasks, rankScores, bootstrap, standings,
     niceTicks, bestAt, makeLegend, setFocus, trajChart, traceChart, fingerprint, hbar, wireTabs, seg,
   };

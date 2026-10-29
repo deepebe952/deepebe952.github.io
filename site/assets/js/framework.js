@@ -24,7 +24,7 @@
   document.querySelectorAll("[data-framework-level-count]").forEach((label) => {
     label.textContent = D.tasks.filter((task) => task.level === label.dataset.frameworkLevelCount).length;
   });
-  $("#inventory-summary").textContent = `All ${D.tasks.length} tasks, grouped by application stage and optimization level. Select a task to open its details and results.`;
+  $("#inventory-summary").textContent = `${D.tasks.length} tasks grouped by application stage and optimization level.`;
 
   const links = document.querySelectorAll('.subnav[aria-label="Framework sections"] a');
   function markSection() {

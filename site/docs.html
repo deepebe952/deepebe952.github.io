@@ -17,14 +17,13 @@
 <link rel="stylesheet" href="assets/css/docs.css">
 </head>
 <body data-page="docs">
-<div class="docs-layout">
-  <button class="docs-menu-button" id="docs-menu" aria-expanded="false" aria-controls="docs-sidebar">☰ Documentation</button>
-  <aside class="docs-sidebar" id="docs-sidebar"><label class="sr-only" for="docs-search">Find a task</label><input class="search" id="docs-search" type="search" placeholder="Find a task…"><nav id="docs-nav" aria-label="Documentation"></nav></aside>
+<div class="docs-layout setup-layout">
+  <button class="docs-menu-button" id="docs-menu" aria-expanded="false" aria-controls="docs-sidebar">☰ Setup guide</button>
+  <aside class="docs-sidebar" id="docs-sidebar"><nav id="docs-nav" aria-label="Documentation"></nav></aside>
   <main class="doc-article" id="main-content">
     <header class="doc-header"><div class="crumbs"><a href="index.html">Home</a><span>/</span><span>Docs</span></div><h1>Setup guide</h1><p class="lede">Install the harness, prepare a task, and run an agent.</p>
-      <div class="doc-resource-links"><a href="https://example.com/infrathon/code" data-mock-resource>Code ↗</a><a href="https://example.com/infrathon/containers" data-mock-resource>Docker ↗</a><a href="https://example.com/infrathon/data" data-mock-resource>Dataset ↗</a></div><p class="doc-resource-status">Release links coming soon.</p>
+      <div class="doc-resource-links"><a href="https://example.com/infrathon/code" data-mock-resource>Code ↗</a><a href="https://example.com/infrathon/containers" data-mock-resource>Docker Hub ↗</a><a href="https://example.com/infrathon/data" data-mock-resource>Hugging Face ↗</a></div><p class="doc-resource-status">Release links coming soon.</p>
     </header>
-    <details class="docs-mobile-contents"><summary>On this page</summary><nav id="docs-mobile-toc"></nav></details>
     <section class="doc-section" id="requirements"><h2>Requirements</h2>
       <ul><li>Linux x86-64, Docker 24+, and the NVIDIA Container Toolkit.</li><li>An H100 NVL or H100 SXM host. The example below uses one GPU for Work and one for Judge.</li><li><code>uv</code>, <code>git</code>, <code>jq</code>, <code>flock</code>, <code>rsync</code>, <code>patch</code>, <code>curl</code>, and <code>sha256sum</code>.</li><li>Credentials for your agent’s model provider.</li></ul>
       <p>GPU allocation and model downloads are listed on each task page.</p>
@@ -110,7 +109,7 @@ PY
       <div class="doc-code"><pre><code>sforge-submit --details
 sforge-submit --list</code></pre></div>
       <p>The first command submits a candidate and returns feedback. The second lists previous submissions.</p>
-      <p>Choose a task in the sidebar for its workspace, resources, and launcher.</p>
+      <p>See <a href="tasks.html">Tasks</a> for task instructions and launch commands.</p>
     </section>
     <section class="doc-section" id="outputs"><h2>Results and logs</h2>
       <p>Runs are saved under <code>outputs/&lt;task-directory&gt;/runs/&lt;run-id&gt;/</code>.</p>
@@ -124,7 +123,6 @@ sforge-submit --list</code></pre></div>
       <p>For setup questions, join <a href="https://discord.gg/k9geNtHek" target="_blank" rel="noopener noreferrer">Discord</a>.</p>
     </section>
   </main>
-  <aside class="docs-toc" aria-label="On this page"><h2>On this page</h2><nav id="docs-toc-links"></nav></aside>
 </div>
 <script src="data/infrathon.js"></script>
 <script src="assets/js/core.js"></script>

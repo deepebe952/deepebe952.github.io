@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Infrathon Task</title>
-<meta name="description" content="Infrathon task guides: workspace, setup, evaluation, results, and model run logs.">
+<meta name="description" content="Infrathon task instructions, environment setup, and evaluation metrics.">
 <meta property="og:title" content="Infrathon">
 <meta property="og:description" content="Can frontier models solve long-horizon AI infrastructure tasks? 25 tasks, 6 configurations, 150 runs on H100s.">
 <meta name="theme-color" content="#ffffff">
@@ -18,25 +18,19 @@
 </head>
 <body data-page="task">
 <div class="docs-layout">
-  <button class="docs-menu-button" id="docs-menu" aria-expanded="false" aria-controls="docs-sidebar">☰ Documentation</button>
-  <aside class="docs-sidebar" id="docs-sidebar"><label class="sr-only" for="docs-search">Find a task</label><input class="search" id="docs-search" type="search" placeholder="Find a task…"><nav id="docs-nav" aria-label="Documentation"></nav></aside>
+  <button class="docs-menu-button" id="docs-menu" aria-expanded="false" aria-controls="docs-sidebar">☰ Tasks</button>
+  <aside class="docs-sidebar" id="docs-sidebar"><label class="sr-only" for="docs-search">Find a task</label><input class="search" id="docs-search" type="search" placeholder="Find a task…"><nav id="docs-nav" aria-label="Tasks"></nav></aside>
   <main class="doc-article" id="main-content">
     <header class="doc-header" id="task-overview">
       <button class="btn task-back" id="task-back" type="button">← Back</button>
-      <div class="crumbs"><a href="docs.html">Docs</a><span>/</span><span id="t-group"></span></div>
+      <div class="crumbs"><a href="tasks.html">Tasks</a><span>/</span><span id="t-group"></span></div>
       <h1 id="t-name">Task</h1><p class="lede" id="t-summary"></p><div class="doc-meta" id="t-meta"></div>
+      <a class="task-results-link" id="t-results-link" href="task-results.html">View results →</a>
     </header>
     <details class="docs-mobile-contents"><summary>On this page</summary><nav id="docs-mobile-toc"></nav></details>
-    <section class="doc-section" id="task-workspace"><h2>Workspace</h2><div id="t-workspace"></div></section>
-    <section class="doc-section" id="task-resources"><h2>Requirements</h2><ul id="t-resources"></ul></section>
-    <section class="doc-section" id="task-run"><h2>Run this task</h2><p>Complete the <a href="docs.html#installation">installation</a>, then prepare this task’s assets and images:</p><div id="t-setup"></div><ol id="t-workflow"></ol><p>Submit from the running Work environment with <code>sforge-submit --details</code>.</p></section>
-    <section class="doc-section" id="task-metric"><h2>Evaluation</h2><p id="t-evaluation"></p><details class="metric-details" id="metric-calculation"><summary>Score calculation</summary><div class="metric-explanation" id="t-metric-details"></div></details></section>
-    <section class="doc-section" id="task-results"><h2>Results</h2><div class="doc-results">
-      <div class="card"><div class="card-head"><div><h3>Best scores</h3><p id="t-metric"></p></div></div><div class="card-body bars" id="t-bars"></div></div>
-      <div class="card"><div class="card-head"><div><h3>Optimization trajectories</h3><p>Lines show the best score so far; dots mark submissions.</p></div></div><div class="card-body"><div class="legend" id="t-legend" style="margin-bottom:12px"></div><div class="chart" id="t-traj"></div></div></div>
-      <div class="card"><div class="card-head"><h3>Submission history</h3></div><div class="card-body"><div class="trace" id="t-trace"></div><div class="trace-keys" style="margin-top:10px"><span class="key"><i></i>scored</span><span class="key"><i class="bad"></i>failed checks</span><span class="key"><i class="rej"></i>rejected</span><span class="key"><i class="infra"></i>infrastructure failure</span></div></div></div>
-      <div class="card"><div class="card-head"><h3>Per-model results</h3></div><div class="scroll-x"><table class="data" id="t-table" style="min-width:640px"></table></div><details class="card-foot" id="t-flags"><summary>Run annotations</summary><p id="t-flag-text"></p></details></div>
-    </div></section>
+    <section class="doc-section" id="task-instructions"><h2>Instructions</h2><div id="t-workspace"></div><ol id="t-workflow"></ol></section>
+    <section class="doc-section" id="task-setup"><h2>Setup</h2><ul id="t-resources"></ul><details class="task-run-commands" id="task-run-commands"><summary>Run commands</summary><p>Complete the <a href="docs.html#installation">installation</a>, then prepare this task’s assets and images:</p><div id="t-setup"></div><p>Submit from the running Work environment with <code>sforge-submit --details</code>.</p></details></section>
+    <section class="doc-section" id="task-evaluation"><h2>Evaluation</h2><p id="t-evaluation"></p><details class="metric-details" id="metric-calculation"><summary>Score calculation</summary><div class="metric-explanation" id="t-metric-details"></div></details></section>
     <nav class="pager" id="t-pager" aria-label="Other tasks"></nav>
   </main>
   <aside class="docs-toc" aria-label="On this page"><h2>On this page</h2><nav id="docs-toc-links"></nav></aside>

@@ -1,5 +1,6 @@
 /* Documentation: navigation, article, and on-page contents. */
 .docs-layout { display: grid; grid-template-columns: 210px minmax(0, 820px) 160px; gap: 36px; max-width: 1440px; margin: 0 auto; padding: 42px 32px 70px; align-items: start; }
+.setup-layout { grid-template-columns: 210px minmax(0, 820px); max-width: 1170px; }
 .docs-sidebar, .docs-toc { position: sticky; top: calc(var(--nav-height) + 24px); max-height: calc(100dvh - var(--nav-height) - 48px); overflow-y: auto; scrollbar-width: thin; font-size: 14px; }
 .docs-sidebar .search { width: 100%; margin-bottom: 22px; background: var(--panel); }
 .docs-nav-heading { margin: 24px 10px 8px; font-size: 13px; font-weight: 600; color: var(--ink); }
@@ -27,6 +28,10 @@
 .doc-section li + li { margin-top: 6px; }
 .doc-section code { font-family: var(--f-mono); font-size: .85em; overflow-wrap: anywhere; }
 .doc-meta { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 20px 0 0; color: var(--ink-3); font-size: 13px; }
+.task-results-link { display: inline-block; margin-top: 18px; font-size: 14px; color: var(--m-sol); }
+.task-results-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.task-run-commands > summary { cursor: pointer; font-size: 15px; color: var(--ink); }
+.task-run-commands[open] > summary { margin-bottom: 18px; }
 .doc-code { position: relative; margin: 18px 0 24px; border: 1px solid var(--hair-2); border-radius: 9px; background: var(--panel-2); }
 .doc-code pre { margin: 0; padding: 42px 18px 18px; overflow: auto; font: 400 13px/1.7 var(--f-mono); color: var(--ink); }
 .doc-code code { font: inherit; white-space: pre; overflow-wrap: normal; }

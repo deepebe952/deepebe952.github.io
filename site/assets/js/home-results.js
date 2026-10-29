@@ -90,7 +90,7 @@
         const x = X0[level] + (i % COLS) * (TW + G);
         const y = Y0[stage] + offset + Math.floor(i / COLS) * (TH + G);
         const winner = task.winner, color = COLOR[winner];
-        const tile = s("a", { class: "tile", href: X.taskHref(task.key), tabindex: 0, role: "link", "data-task": task.key, "aria-label": `${task.name}, ${cap(stage)} ${level}: top configuration ${MODEL[winner].name}, ${withUnit(task, task.results[winner].best)}. Open task details.` }, svg);
+        const tile = s("a", { class: "tile", href: X.taskResultsHref(task.key), tabindex: 0, role: "link", "data-task": task.key, "aria-label": `${task.name}, ${cap(stage)} ${level}: top configuration ${MODEL[winner].name}, ${withUnit(task, task.results[winner].best)}. Open task results.` }, svg);
         s("rect", { class: "bg", x, y, width: TW, height: TH, rx: 5, fill: color, "fill-opacity": 0.2, stroke: color, "stroke-opacity": 0.55 }, tile);
         st(tile, x + 6, y + 15, task.short, { fill: C.ink, "font-size": task.short.length > 7 ? 8.4 : 9.4, "font-weight": 500 });
         X.marker(tile, winner, x + 9.5, y + 29, 3, { ring: "transparent", ringW: 0 });
@@ -143,7 +143,7 @@
   // shared chart focus listeners and selected model remain intact.
   const taskRows = D.tasks.map((task) => {
     const winner = task.winner;
-    const row = h("a", { class: "card task-result-row", href: X.taskHref(task.key), id: `task-result-${task.key}`, "data-task": task.key, "data-stage": task.stage, "data-level": task.level },
+    const row = h("a", { class: "card task-result-row", href: X.taskResultsHref(task.key), id: `task-result-${task.key}`, "data-task": task.key, "data-stage": task.stage, "data-level": task.level },
       h("div", { class: "task-result-info" }, h("h3", { text: task.name }), h("p", { class: "target", text: task.target })),
       h("div", { class: "task-result-category" }, h("span", { class: "label", text: "Category" }), h("span", { text: `${cap(task.stage)} · ${cap(task.level)}` })),
       h("div", { class: "task-result-budget" }, h("span", { class: "label", text: "Budget" }), h("b", { text: `${task.budget_h} h` })),

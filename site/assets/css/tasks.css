@@ -1,0 +1,11 @@
+/* Task guides share the documentation shell. */
+.task-directory-group + .task-directory-group { margin-top: 30px; }
+.task-directory-group h3 { margin: 0 0 10px; color: var(--ink-3); font-size: 14px; font-weight: 500; }
+.doc-section .task-directory-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--hair); }
+.doc-section .task-directory-list li { margin: 0; }
+.task-directory-link { position: relative; display: grid; gap: 3px; padding: 15px 32px 15px 0; border-bottom: 1px solid var(--hair); }
+.task-directory-name { color: var(--ink); font-size: 15px; font-weight: 500; line-height: 1.5; }
+.task-directory-target { color: var(--ink-3); font-size: 14px; line-height: 1.6; }
+.task-directory-arrow { position: absolute; top: 17px; right: 4px; color: var(--ink-3); font-size: 15px; }
+.task-directory-link:hover .task-directory-name, .task-directory-link:hover .task-directory-arrow { color: var(--m-sol); }
+.task-directory-link:focus-visible { outline: 2px solid var(--m-sol); outline-offset: 3px; border-radius: 3px; }

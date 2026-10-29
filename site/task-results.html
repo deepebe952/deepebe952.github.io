@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Task Results · Infrathon</title>
+<meta name="description" content="Task results, optimization trajectories, submission history, and model run logs for Infrathon.">
+<meta property="og:title" content="Infrathon">
+<meta property="og:description" content="Can frontier models solve long-horizon AI infrastructure tasks? 25 tasks, 6 configurations, 150 runs on H100s.">
+<meta name="theme-color" content="#ffffff">
+<script src="assets/js/theme.js"></script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23060709'/%3E%3Cpath d='M7 22h4v-8h4v5h4V9h4v10h3' fill='none' stroke='%23ededef' stroke-width='2.4'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/css/site.css">
+<link rel="stylesheet" href="assets/css/task-results.css">
+</head>
+<body data-page="task-results">
+<main id="main-content">
+  <header class="page-head"><div class="wrap">
+    <div class="task-result-actions"><button class="btn task-back" id="task-back" type="button">← Back</button><a class="btn" id="t-instructions" href="task.html">Task instructions →</a></div>
+    <div class="task-result-context"><span class="label">Results</span><span id="t-group"></span></div>
+    <h1 id="t-name">Task</h1>
+    <p class="lede" id="t-summary"></p>
+    <div class="task-result-meta" id="t-meta"></div>
+  </div></header>
+  <section class="sec" aria-label="Task results"><div class="wrap">
+    <div class="task-results-grid">
+      <section class="card task-best-scores" aria-labelledby="best-scores-title"><div class="card-head"><div><h2 id="best-scores-title">Best scores</h2><p id="t-metric"></p></div></div><div class="card-body bars" id="t-bars"></div></section>
+      <section class="card task-trajectories" aria-labelledby="trajectories-title"><div class="card-head"><div><h2 id="trajectories-title">Optimization trajectories</h2><p>Lines show the best score so far; dots mark submissions.</p></div></div><div class="card-body"><div class="legend" id="t-legend"></div><div class="chart" id="t-traj"></div></div></section>
+      <section class="card task-submissions" aria-labelledby="submissions-title"><div class="card-head"><h2 id="submissions-title">Submission history</h2></div><div class="card-body"><div class="trace" id="t-trace" tabindex="0" role="region" aria-label="Submission history chart; scroll horizontally on a small screen"></div><div class="trace-keys"><span class="key"><i></i>scored</span><span class="key"><i class="bad"></i>failed checks</span><span class="key"><i class="rej"></i>rejected</span><span class="key"><i class="infra"></i>infrastructure failure</span></div></div></section>
+      <section class="card task-model-results" aria-labelledby="model-results-title"><div class="card-head"><h2 id="model-results-title">Per-model results</h2></div><div class="scroll-x" tabindex="0" role="region" aria-labelledby="model-results-title"><table class="data" id="t-table"></table></div><details class="card-foot" id="t-flags"><summary>Run annotations</summary><p id="t-flag-text"></p></details></section>
+    </div>
+    <nav class="pager" id="t-pager" aria-label="Other task results"></nav>
+  </div></section>
+</main>
+<script src="data/infrathon.js"></script>
+<script src="assets/js/core.js"></script>
+<script src="assets/js/task-results.js"></script>
+</body>
+</html>

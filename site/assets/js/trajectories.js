@@ -25,10 +25,10 @@
     document.title = `Run log · ${t.name} · ${MODEL[state.model].short} · Infrathon`;
     $("#r-lede").textContent = `${t.name} · ${MODEL[state.model].name}`;
     X.seg($("#r-model"), MODELS.filter((m) => t.results[m]).map((m) => [m, MODEL[m].short]), state.model, (v) => { state.model = v; go(); renderRun(); });
-    $("#r-tasklink").href = X.taskHref(t.key);
+    $("#r-tasklink").href = X.taskResultsHref(t.key);
     $("#r-tasklink").textContent = t.name;
-    $("#r-back").href = X.taskHref(t.key);
-    $("#r-back").setAttribute("aria-label", `Back to task: ${t.name}`);
+    $("#r-back").href = X.taskResultsHref(t.key);
+    $("#r-back").setAttribute("aria-label", `Back to results: ${t.name}`);
     const c = r.counts;
     const k = [
       [r.best == null ? "—" : withUnit(t, r.best), `best during run${r.flag ? ` [${r.flag}]` : ""}${t.ranks[state.model] ? ` · rank ${X.ordinal(Math.round(t.ranks[state.model]))}` : ""}`],
@@ -76,7 +76,7 @@
     // the task whose Run log link opened this page. Keep that return destination
     // only while viewing the same task, including after model changes.
     const cameFromTask = referrer?.origin === location.origin
-      && referrer.pathname === new URL("task.html", location.href).pathname
+      && referrer.pathname === new URL("task-results.html", location.href).pathname
       && (!referrer.hash || referrer.hash.split("/")[0] === `#${entryTask}`);
     if (cameFromTask && state.task === entryTask && history.length > 1) {
       event.preventDefault();

@@ -1,8 +1,8 @@
-/* Task documentation and results: task.html#<key>/<section>. */
+/* Task instructions: task.html#<key>/<section>. */
 (() => {
   "use strict";
   const X = window.IX, Docs = window.InfrathonDocs, guides = window.INFRATHON_DOCS.tasks;
-  const { D, MODELS, MODEL, COLOR, TASK, h, $, cap, fmt, withUnit, metricLabel, ordinal } = X;
+  const { D, TASK, h, $, cap } = X;
   const miles = { opcd: "miles-opcd", opd: "miles-opd", alfworld: "miles-alfworld", sd35: "miles-diffusion-opd", wan22: "miles-diffusion-wan" };
   let currentKey = null;
 
@@ -11,7 +11,7 @@
     const cameFromSite = referrer?.origin === location.origin;
     const cameFromLog = /\/(?:trajectories|runs)\.html$/.test(referrer?.pathname || "");
     if (cameFromSite && !cameFromLog && history.length > 1) history.back();
-    else location.assign("index.html#results");
+    else location.assign("tasks.html");
   });
 
   function render(t) {
@@ -20,7 +20,8 @@
     $("#t-group").textContent = `${cap(t.stage)} · ${cap(t.level)}`;
     $("#t-name").textContent = t.name;
     $("#t-summary").textContent = guide.objective;
-    $("#t-metric").textContent = `${metricLabel(t)} · higher is better`;
+    $("#t-results-link").href = X.taskResultsHref(t.key);
+    $("#task-run-commands").open = false;
     $("#t-meta").replaceChildren(h("span", { text: `${t.budget_h}-hour budget` }), h("span", { text: t.start === "seed" ? "Seed implementation" : "From scratch" }));
     $("#t-workspace").replaceChildren(h("ul", {}, guide.workspace.map(text => h("li", { text }))));
     $("#t-resources").replaceChildren(...guide.requirements.map(text => h("li", { text })));
@@ -65,42 +66,6 @@
       if (info.example) metricDetails.append(h("p", { class: "metric-example", text: info.example }));
       if (info.conditions.length) metricDetails.append(h("h4", { text: "Validation" }), h("ul", {}, info.conditions.map(text => h("li", { text }))));
     }
-    const bars = $("#t-bars");
-    bars.replaceChildren();
-    const max = Math.max(...MODELS.map((m) => t.results[m]?.best ?? 0), 1e-9);
-    const order = [...MODELS].sort((a, b) => (t.results[b]?.best ?? -1) - (t.results[a]?.best ?? -1));
-    for (const m of order) {
-      const r = t.results[m], v = r?.best;
-      const label = v == null ? (!r ? "no run" : "no valid score")
-        : `${withUnit(t, v)}${r.flag ? `  [${r.flag}]` : ""}${t.winner === m ? "  · top" : ""}`;
-      bars.append(h("div", { class: "bar-row" }, X.who(m, MODEL[m].short), X.hbar(COLOR[m], v == null ? 0 : v / max, label, { max: 62, faded: !!r?.flag, muted: v == null })));
-    }
-
-    const leg = $("#t-legend");
-    leg.replaceChildren();
-    X.makeLegend(leg);
-    $("#t-traj").replaceChildren(X.trajChart(t, { W: 640, H: 300, compact: false, dots: true, rug: true }));
-    $("#t-trace").replaceChildren(X.traceChart(t, true));
-
-    const tbl = $("#t-table");
-    tbl.replaceChildren(h("thead", {}, h("tr", {}, ["Model", "Score", "Rank", "Time to best", "Submissions", ""].map((x, i) => h("th", { scope: "col", class: i > 0 && i < 5 ? "n" : null, text: x })))));
-    const tb = h("tbody");
-    for (const m of MODELS) {
-      const r = t.results[m];
-      if (!r) { tb.append(h("tr", {}, h("td", {}, X.who(m)), h("td", { colspan: 5, class: "muted", text: "No run" }))); continue; }
-      tb.append(h("tr", {},
-        h("td", {}, X.who(m), r.flag ? h("span", { class: "chip", style: "margin-left:8px", text: r.flag }) : null),
-        h("td", { class: "n", text: fmt(r.best) }),
-        h("td", { class: "n", text: t.ranks[m] ? ordinal(Math.round(t.ranks[m])) : "—" }),
-        h("td", { class: "n", text: r.best_at_h == null ? "—" : `${fmt(r.best_at_h, 2)} h` }),
-        h("td", { class: "n", text: r.n_sub }),
-        h("td", {}, h("a", { class: "link", href: X.runHref(t.key, m), text: "Run log" }))));
-    }
-    tbl.append(tb);
-    const flags = [...new Set(Object.values(t.flags))];
-    $("#t-flags").hidden = flags.length === 0;
-    $("#t-flag-text").textContent = flags.map(f => `${f}: ${D.flag_legend[f]}`).join(" · ");
-
     const i = D.tasks.indexOf(t), prev = D.tasks[(i + D.tasks.length - 1) % D.tasks.length], next = D.tasks[(i + 1) % D.tasks.length];
     $("#t-pager").replaceChildren(
       h("a", { href: X.taskHref(prev.key) }, h("small", { text: "Previous task" }), prev.name),
@@ -112,8 +77,17 @@
     try { [key, section] = decodeURIComponent(location.hash.slice(1)).split("/"); }
     catch { key = null; }
     const t = TASK[key] || D.tasks[0];
+    if (section === "results") {
+      const resultURL = new URL(X.taskResultsHref(t.key), location.href);
+      resultURL.search = location.search;
+      location.replace(resultURL.href);
+      return;
+    }
+    const showCommands = section === "run";
+    section = { workspace: "instructions", resources: "setup", run: "setup", metric: "evaluation" }[section] || section;
     const changed = currentKey !== t.key;
     if (changed) { currentKey = t.key; render(t); }
+    if (showCommands) $("#task-run-commands").open = true;
     if (section) requestAnimationFrame(() => document.getElementById(`task-${section}`)?.scrollIntoView());
     else window.scrollTo(0, 0);
   }
