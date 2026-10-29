@@ -750,7 +750,7 @@
       "test_commands": "# Use fresh output directories for each attempt.\ncd /app/workdir/miles_lab\npython /opt/miles_opcd_public/run_public.py --suite probe --output /scratch/check/probe\npython /opt/miles_opcd_public/run_public.py --suite small --output /scratch/check/small --probe-output /scratch/check/probe\npython /opt/miles_opcd_public/run_public.py --suite perf --output /scratch/check/perf --probe-output /scratch/check/probe",
       "scratch_setup": "# Choose a writable directory on your non-system data disk.\nexport MILES_SCRATCH_ROOT=/absolute/path/on-data-disk/infrathon-scratch\nmkdir -p \"$MILES_SCRATCH_ROOT\"",
       "launch_setup": "export SFORGE_CPUSET=auto",
-      "launch_command": "launch/miles-opcd/run.sh --config launch/miles-opcd/run.env --dry-run\nlaunch/miles-opcd/run.sh --config launch/miles-opcd/run.env --foreground",
+      "launch_command": "launch/miles-opcd/run.sh --config launch/miles-opcd/run.env --foreground",
       "config_setup": "cp launch/miles-opcd/codex.env.example launch/miles-opcd/run.env\n# Use the paper’s 24-hour budget.\nsed -i 's/^TASK_TIMEOUT=.*/TASK_TIMEOUT=86400/' launch/miles-opcd/run.env",
       "reader_overview": "A Qwen3-1.7B student must learn medical knowledge from a frozen teacher that receives an additional medical instruction. The agent implements this learning process in the Miles training framework, then makes the full cycle of answer generation, teacher feedback and student updates faster.",
       "reader_setup": [
@@ -776,7 +776,9 @@
         "rule": "Score = accuracy gain in percentage points ÷ training hours."
       },
       "reader_compute": "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair. H100 NVL (94 GB) or H100 SXM (80 GB).",
-      "launch_note": "This launcher uses the same GPU pair for Worker and Judge."
+      "launch_note": "This launcher uses the same GPU pair for Worker and Judge.",
+      "launch_check_command": "launch/miles-opcd/run.sh --config launch/miles-opcd/run.env --dry-run",
+      "launch_description": "Start the full run in the current terminal:"
     },
     "opd": {
       "task_id": "miles_qwen3_opd_scratch_2xh100_v2",
@@ -912,7 +914,7 @@
       "test_commands": "# Use fresh output directories for each attempt.\ncd /app/workdir/miles_lab\npython /opt/miles_opd_public/run_public.py --suite probe --output /scratch/public/probe-001\npython /opt/miles_opd_public/run_public.py --suite small --output /scratch/public/small-001 --probe-output /scratch/public/probe-001\npython /opt/miles_opd_public/run_public.py --suite perf --output /scratch/public/perf-001 --probe-output /scratch/public/probe-001",
       "scratch_setup": "# Choose a writable directory on your non-system data disk.\nexport MILES_SCRATCH_ROOT=/absolute/path/on-data-disk/infrathon-scratch\nmkdir -p \"$MILES_SCRATCH_ROOT\"",
       "launch_setup": "export SFORGE_CPUSET=auto",
-      "launch_command": "launch/miles-opd/run.sh --config launch/miles-opd/run.env --dry-run\nlaunch/miles-opd/run.sh --config launch/miles-opd/run.env --foreground",
+      "launch_command": "launch/miles-opd/run.sh --config launch/miles-opd/run.env --foreground",
       "config_setup": "cp launch/miles-opd/codex.env.example launch/miles-opd/run.env\n# Use the paper’s 24-hour budget.\nsed -i 's/^TASK_TIMEOUT=.*/TASK_TIMEOUT=86400/' launch/miles-opd/run.env",
       "reader_overview": "A Qwen3-1.7B student generates math solutions and learns from a frozen Qwen3-4B teacher’s assessment of those same responses. The agent builds this online learning loop in the Miles training framework and speeds up generation, feedback and training.",
       "reader_setup": [
@@ -938,7 +940,9 @@
         "rule": "Score = accuracy gain in percentage points ÷ training hours."
       },
       "reader_compute": "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair. H100 NVL (94 GB) or H100 SXM (80 GB).",
-      "launch_note": "This launcher uses the same GPU pair for Worker and Judge."
+      "launch_note": "This launcher uses the same GPU pair for Worker and Judge.",
+      "launch_check_command": "launch/miles-opd/run.sh --config launch/miles-opd/run.env --dry-run",
+      "launch_description": "Start the full run in the current terminal:"
     },
     "alfworld": {
       "task_id": "miles_qwen3_alfworld_agentic_rl_2xh100_v1",
@@ -1062,7 +1066,7 @@
       "test_commands": "# Use fresh output directories for each attempt.\ncd /app/workdir/miles_lab\npython /opt/miles_alfworld_public/run_public.py --suite probe --output /scratch/public/probe-check\npython /opt/miles_alfworld_public/run_public.py --suite small --output /scratch/public/small-check --probe-output /scratch/public/probe-check\npython /opt/miles_alfworld_public/run_public.py --suite perf --output /scratch/public/perf-check --probe-output /scratch/public/probe-check",
       "scratch_setup": "# Choose a writable directory on your non-system data disk.\nexport MILES_SCRATCH_ROOT=/absolute/path/on-data-disk/infrathon-scratch\nmkdir -p \"$MILES_SCRATCH_ROOT\"",
       "launch_setup": "export SFORGE_CPUSET=auto",
-      "launch_command": "launch/miles-alfworld/run.sh --config launch/miles-alfworld/run.env --dry-run\nlaunch/miles-alfworld/run.sh --config launch/miles-alfworld/run.env --foreground",
+      "launch_command": "launch/miles-alfworld/run.sh --config launch/miles-alfworld/run.env --foreground",
       "config_setup": "cp launch/miles-alfworld/codex.env.example launch/miles-alfworld/run.env\n# Use the paper’s 24-hour budget.\nsed -i 's/^TASK_TIMEOUT=.*/TASK_TIMEOUT=86400/' launch/miles-alfworld/run.env",
       "reader_overview": "Qwen3-4B learns to complete household tasks by interacting with the ALFWorld text environment and receiving a reward when it succeeds. The agent connects these interactions to the Miles training framework, then accelerates game collection, model updates and weight transfer.",
       "reader_setup": [
@@ -1088,7 +1092,9 @@
         "rule": "Score = game-success gain in percentage points ÷ training hours."
       },
       "reader_compute": "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair. H100 NVL (94 GB) or H100 SXM (80 GB).",
-      "launch_note": "This launcher uses the same GPU pair for Worker and Judge."
+      "launch_note": "This launcher uses the same GPU pair for Worker and Judge.",
+      "launch_check_command": "launch/miles-alfworld/run.sh --config launch/miles-alfworld/run.env --dry-run",
+      "launch_description": "Start the full run in the current terminal:"
     },
     "sd35": {
       "task_id": "miles_diffusion_sd35m_mopd_2xh100_v2",
@@ -1225,7 +1231,7 @@
       "after_pull_command": ".venv/bin/python scripts/infrathon/assets.py own \"$TASK\" \\\n  --image miles_diffusion_opd.judge.miles_diffusion_sd35m_mopd_2xh100_v2:local",
       "scratch_setup": "# Choose a writable directory on your non-system data disk.\nexport MILES_SCRATCH_ROOT=/absolute/path/on-data-disk/infrathon-scratch\nmkdir -p \"$MILES_SCRATCH_ROOT\"",
       "launch_setup": "export SFORGE_CPUSET=auto",
-      "launch_command": "launch/miles-diffusion-opd/run.sh --config launch/miles-diffusion-opd/run.env --dry-run\nlaunch/miles-diffusion-opd/run.sh --config launch/miles-diffusion-opd/run.env --foreground",
+      "launch_command": "launch/miles-diffusion-opd/run.sh --config launch/miles-diffusion-opd/run.env --foreground",
       "config_setup": "cp launch/miles-diffusion-opd/codex.env.example launch/miles-diffusion-opd/run.env\n# Use the paper’s 24-hour budget.\nsed -i 's/^TASK_TIMEOUT=.*/TASK_TIMEOUT=86400/' launch/miles-diffusion-opd/run.env",
       "reader_overview": "A Stable Diffusion 3.5 Medium image generator learns from two teachers, one specializing in readable text and the other in visual aesthetics. The agent implements their guidance in the Miles Diffusion training framework and accelerates training of a small student adapter.",
       "reader_setup": [
@@ -1251,7 +1257,9 @@
         "rule": "Score = average fraction of the teacher quality gap closed ÷ replay hours."
       },
       "reader_compute": "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair. H100 NVL (94 GB) or H100 SXM (80 GB).",
-      "launch_note": "This launcher uses the same GPU pair for Worker and Judge."
+      "launch_note": "This launcher uses the same GPU pair for Worker and Judge.",
+      "launch_check_command": "launch/miles-diffusion-opd/run.sh --config launch/miles-diffusion-opd/run.env --dry-run",
+      "launch_description": "Start the full run in the current terminal:"
     },
     "wan22": {
       "task_id": "miles_diffusion_wan22_dancegrpo_2xh100_v2",
@@ -1384,7 +1392,7 @@
       "after_pull_command": ".venv/bin/python scripts/infrathon/assets.py own \"$TASK\" \\\n  --image miles_diffusion_wan.judge.miles_diffusion_wan22_dancegrpo_2xh100_v2:local",
       "scratch_setup": "# Choose a writable directory on your non-system data disk.\nexport MILES_SCRATCH_ROOT=/absolute/path/on-data-disk/infrathon-scratch\nmkdir -p \"$MILES_SCRATCH_ROOT\"",
       "launch_setup": "export SFORGE_CPUSET=auto",
-      "launch_command": "launch/miles-diffusion-wan/run.sh --config launch/miles-diffusion-wan/run.env --dry-run\nlaunch/miles-diffusion-wan/run.sh --config launch/miles-diffusion-wan/run.env --foreground",
+      "launch_command": "launch/miles-diffusion-wan/run.sh --config launch/miles-diffusion-wan/run.env --foreground",
       "config_setup": "cp launch/miles-diffusion-wan/codex.env.example launch/miles-diffusion-wan/run.env\n# Use the paper’s 24-hour budget.\nsed -i 's/^TASK_TIMEOUT=.*/TASK_TIMEOUT=86400/' launch/miles-diffusion-wan/run.env",
       "reader_overview": "Wan2.2 learns to produce videos using a fixed preference scorer that rewards the generated results. The agent adds the required video-training method to the Miles Diffusion training framework, then speeds up reward calculation, model training and transfer of updated weights.",
       "reader_setup": [
@@ -1410,7 +1418,9 @@
         "rule": "Score = 1 ÷ median replay duration in hours."
       },
       "reader_compute": "Worker: 2 GPUs; Judge: 2 GPUs on a separate NVLink pair. H100 NVL (94 GB) or H100 SXM (80 GB).",
-      "launch_note": "This launcher uses the same GPU pair for Worker and Judge."
+      "launch_note": "This launcher uses the same GPU pair for Worker and Judge.",
+      "launch_check_command": "launch/miles-diffusion-wan/run.sh --config launch/miles-diffusion-wan/run.env --dry-run",
+      "launch_description": "Start the full run in the current terminal:"
     },
     "grouped-fp8": {
       "task_id": "standalone_dynamic_grouped_fp8_h100_scratch_v3",

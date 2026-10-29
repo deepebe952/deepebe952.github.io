@@ -30,7 +30,7 @@ PROJECT = "https://github.com/deepebe952/infrathon"
 SHA256 = re.compile(r"[0-9a-f]{64}\Z")
 LAUNCHER = re.compile(r"(?:\./)?launch/[^/\s]+/run\.sh\Z")
 COMMAND_FIELDS = (
-    "config_setup", "launch_setup", "launch_command", "scratch_setup",
+    "config_setup", "launch_setup", "launch_check_command", "launch_command", "scratch_setup",
     "after_pull_command", "test_commands",
 )
 

@@ -61,6 +61,8 @@
       setup.append(h("h3", { text: "Launch" }));
       if (guide.launch_note) setup.append(h("p", { text: guide.launch_note }));
       if (guide.launch_setup) setup.append(Docs.code(guide.launch_setup));
+      if (guide.launch_check_command) setup.append(h("p", { text: "Check the configuration:" }), Docs.code(guide.launch_check_command));
+      if (guide.launch_description) setup.append(h("p", { text: guide.launch_description }));
       setup.append(Docs.code(guide.launch_command));
     }
 
